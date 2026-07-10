@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.emirgasic.forecastfm"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.emirgasic.forecastfm"
