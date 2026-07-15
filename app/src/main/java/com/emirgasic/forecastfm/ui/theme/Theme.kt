@@ -7,56 +7,95 @@ import androidx.compose.runtime.Composable
 
 private val MorningColorScheme = lightColorScheme(
     primary = MorningPrimary,
-    secondary = MorningSecondary,
-    tertiary = MorningAccent,
-
-    background = MorningBackground,
-    surface = MorningSurface,
-
     onPrimary = MorningTitle,
+
+    secondary = MorningSecondary,
     onSecondary = MorningTitle,
+
+    tertiary = MorningAccent,
     onTertiary = MorningTitle,
 
+    background = MorningBackground,
     onBackground = MorningBody,
+
+    surface = MorningSurface,
     onSurface = MorningBody,
 
-    error = MorningError
+    surfaceVariant = MorningCard,
+    onSurfaceVariant = MorningMuted,
+
+    outline = MorningBorder,
+    outlineVariant = MorningBorder,
+
+    error = MorningError,
+    onError = MorningSurface,
+
+    inverseSurface = MorningPrimaryDark,
+    inverseOnSurface = MorningBackground,
+
+    scrim = MorningBorder
 )
 
 private val AfternoonColorScheme = lightColorScheme(
     primary = AfternoonPrimary,
-    secondary = AfternoonSecondary,
-    tertiary = AfternoonAccent,
-
-    background = AfternoonBackground,
-    surface = AfternoonSurface,
-
     onPrimary = AfternoonTitle,
+
+    secondary = AfternoonSecondary,
     onSecondary = AfternoonTitle,
+
+    tertiary = AfternoonAccent,
     onTertiary = AfternoonTitle,
 
+    background = AfternoonBackground,
     onBackground = AfternoonBody,
+
+    surface = AfternoonSurface,
     onSurface = AfternoonBody,
 
-    error = AfternoonError
+    surfaceVariant = AfternoonCard,
+    onSurfaceVariant = AfternoonMuted,
+
+    outline = AfternoonBorder,
+    outlineVariant = AfternoonBorder,
+
+    error = AfternoonError,
+    onError = AfternoonSurface,
+
+    inverseSurface = AfternoonPrimaryDark,
+    inverseOnSurface = AfternoonBackground,
+
+    scrim = AfternoonBorder
 )
 
 private val NightColorScheme = darkColorScheme(
     primary = NightPrimary,
-    secondary = NightSecondary,
-    tertiary = NightAccent,
-
-    background = NightBackground,
-    surface = NightSurface,
-
     onPrimary = NightTitle,
+
+    secondary = NightSecondary,
     onSecondary = NightTitle,
+
+    tertiary = NightAccent,
     onTertiary = NightTitle,
 
+    background = NightBackground,
     onBackground = NightBody,
+
+    surface = NightSurface,
     onSurface = NightBody,
 
-    error = NightError
+    surfaceVariant = NightCard,
+    onSurfaceVariant = NightMuted,
+
+    outline = NightBorder,
+    outlineVariant = NightBorder,
+
+    error = NightError,
+    onError = NightSurface,
+
+    inverseSurface = NightPrimaryDark,
+    inverseOnSurface = NightBackground,
+
+    scrim = NightBorder
 )
 
 @Composable
@@ -67,6 +106,7 @@ fun ForecastfmTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

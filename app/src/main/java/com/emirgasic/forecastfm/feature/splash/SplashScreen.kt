@@ -30,7 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 @Composable
 fun SplashScreen(navController:NavController,modifier: Modifier=Modifier){
 
-   /* LaunchedEffect(Unit) {
+  LaunchedEffect(Unit) {
 
         delay(2000)
 
@@ -40,7 +40,7 @@ fun SplashScreen(navController:NavController,modifier: Modifier=Modifier){
             }
         }
 
-    }*/
+    }
 
 
 
