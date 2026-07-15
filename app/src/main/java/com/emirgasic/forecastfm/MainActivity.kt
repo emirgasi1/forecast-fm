@@ -11,7 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.emirgasic.forecastfm.core.navigation.NavGraph
+import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.feature.playground.ComposePlayground
+import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.ui.theme.ForecastfmTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,11 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ForecastfmTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ComposePlayground(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+               NavGraph()
             }
         }
     }

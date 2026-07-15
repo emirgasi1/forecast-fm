@@ -31,12 +31,7 @@ import com.emirgasic.forecastfm.R
 
 @Composable
 fun ComposePlayground(modifier:Modifier=Modifier){
-    Scaffold(){
-        innerPadding->
-        Column(modifier=Modifier.padding(innerPadding)) {
-            Text("Something")
-        }
-    }
+
 
 }
 

@@ -1,55 +1,69 @@
 package com.emirgasic.forecastfm.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val MorningColorScheme = lightColorScheme(
+    primary = MorningPrimary,
+    secondary = MorningSecondary,
+    tertiary = MorningAccent,
+
+    background = MorningBackground,
+    surface = MorningSurface,
+
+    onPrimary = MorningTitle,
+    onSecondary = MorningTitle,
+    onTertiary = MorningTitle,
+
+    onBackground = MorningBody,
+    onSurface = MorningBody,
+
+    error = MorningError
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val AfternoonColorScheme = lightColorScheme(
+    primary = AfternoonPrimary,
+    secondary = AfternoonSecondary,
+    tertiary = AfternoonAccent,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = AfternoonBackground,
+    surface = AfternoonSurface,
+
+    onPrimary = AfternoonTitle,
+    onSecondary = AfternoonTitle,
+    onTertiary = AfternoonTitle,
+
+    onBackground = AfternoonBody,
+    onSurface = AfternoonBody,
+
+    error = AfternoonError
+)
+
+private val NightColorScheme = darkColorScheme(
+    primary = NightPrimary,
+    secondary = NightSecondary,
+    tertiary = NightAccent,
+
+    background = NightBackground,
+    surface = NightSurface,
+
+    onPrimary = NightTitle,
+    onSecondary = NightTitle,
+    onTertiary = NightTitle,
+
+    onBackground = NightBody,
+    onSurface = NightBody,
+
+    error = NightError
 )
 
 @Composable
 fun ForecastfmTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    colorScheme: androidx.compose.material3.ColorScheme = MorningColorScheme,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
