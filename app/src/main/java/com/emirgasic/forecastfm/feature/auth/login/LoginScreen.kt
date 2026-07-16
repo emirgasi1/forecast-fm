@@ -137,8 +137,8 @@ fun LoginScreen(modifier:Modifier= Modifier){
 
                 Spacer(modifier.height(32.dp))
 
-                Text(text="Forgot password?")
-                Spacer(modifier.height(32.dp))
+                Text(text="Forgot password?",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium)
+                Spacer(modifier.height(20.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -161,6 +161,11 @@ fun LoginScreen(modifier:Modifier= Modifier){
                         color = MaterialTheme.colorScheme.outline
                     )
                 }
+                Spacer(modifier.height(20.dp))
+                Text(text="Continue with Google",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium)
+                Spacer(modifier.height(12.dp))
+                Text(text="Sign Up",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium)
+                Spacer(modifier.height(32.dp))
             }
         }
 
