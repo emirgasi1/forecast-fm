@@ -1,6 +1,7 @@
 package com.emirgasic.forecastfm.feature.auth.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +53,7 @@ fun LoginScreen(modifier:Modifier= Modifier){
 
 
     Box(modifier.fillMaxSize()){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxWidth()) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "Logo",
@@ -112,10 +117,50 @@ fun LoginScreen(modifier:Modifier= Modifier){
                                         R.drawable.visibilityoff
                                 ),
                                 contentDescription = "Toggle Password Visibility"
+                                , modifier = Modifier.size(24.dp)
                             )
                         }
                     }
                 )
+                Spacer(modifier=modifier.height(32.dp))
+                Button(
+                    onClick = {
+
+                    },modifier=modifier.fillMaxWidth().height(54.dp),
+                    shape=RoundedCornerShape(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.background
+                    )){
+                    Text(text="Log In"  ,style=MaterialTheme.typography.titleMedium)
+                }
+
+                Spacer(modifier.height(32.dp))
+
+                Text(text="Forgot password?")
+                Spacer(modifier.height(32.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
+                    Text(
+                        text = " OR ",
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         }
 
