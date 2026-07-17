@@ -9,6 +9,7 @@ object Routes{
     const val Welcome="welcome"
     const val Login="login"
     const val Register="register"
+    const val ForgotPassword="forgotpassword"
     const val Home="home"
     const val Profile="profile"
     const val Settings="settings"

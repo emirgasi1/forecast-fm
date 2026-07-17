@@ -1,4 +1,4 @@
-package com.emirgasic.forecastfm.feature.auth.login
+package com.emirgasic.forecastfm.feature.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,48 +28,80 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import com.emirgasic.forecastfm.R
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
 
+
 @Composable
-fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
+fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
+
+    var username by remember{
+        mutableStateOf("")
+    }
+
     var email by remember {
         mutableStateOf("")
     }
     var password by remember {
         mutableStateOf("")
     }
+    var passwordCheck by remember{
+        mutableStateOf("")
+    }
     var passwordVisible by remember {
         mutableStateOf(false)
     }
 
+    var checkMark by remember{
+        mutableStateOf(false)
+    }
+
+    val scrollState = rememberScrollState()
 
     Box(modifier.fillMaxSize()){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).verticalScroll(scrollState)) {
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier.size(250.dp)
             )
-            Text(text="Welcome Back",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineLarge,modifier = Modifier.offset(y = (-30).dp))
-            Spacer(modifier=modifier.height(24.dp))
-            Text(text="Continue your Sarajevo vibe.",color= MaterialTheme.colorScheme.onBackground,style= MaterialTheme.typography.titleLarge,modifier=modifier.width(320.dp))
+            Text(text="Create Account",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineLarge,modifier = Modifier.offset(y = (-30).dp))
+            Text(text="Join the Bascarsija vibe today",color= MaterialTheme.colorScheme.onBackground,style= MaterialTheme.typography.titleLarge,modifier=modifier.width(320.dp))
 
-            Spacer(modifier=modifier.height(24.dp))
+            Spacer(modifier=modifier.height(14.dp))
             Column (horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.width(320.dp)){
+                Text(text="Username",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { newUsername ->
+                        username = newUsername
+                    },
+                    label = {
+                        Text("User78")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+                Spacer(modifier=modifier.height(14.dp))
                 Text(text="Email",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
                 OutlinedTextField(
                     value = email,
@@ -87,7 +121,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
-                Spacer(modifier=modifier.height(34.dp))
+                Spacer(modifier=modifier.height(14.dp))
                 Text(text="Password",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
                 OutlinedTextField(
                     value = password,
@@ -125,7 +159,65 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                         }
                     }
                 )
-                Spacer(modifier=modifier.height(32.dp))
+                Spacer(modifier=modifier.height(14.dp))
+                Text(text="Confirm Password",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
+                OutlinedTextField(
+                    value = passwordCheck,
+                    onValueChange = { newPassword ->
+                        passwordCheck = newPassword
+                    },
+                    label = {
+                        Text("password123")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+
+                    visualTransformation =
+                        if (passwordVisible)
+                            VisualTransformation.None
+                        else
+                            PasswordVisualTransformation(),
+
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                passwordVisible = !passwordVisible
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (passwordVisible)
+                                        R.drawable.visibilityon
+                                    else
+                                        R.drawable.visibilityoff
+                                ),
+                                contentDescription = "Toggle Password Visibility"
+                                , modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Start),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = checkMark,
+                        onCheckedChange = {
+                            checkMark = it
+                        }
+                    )
+
+                    Text(
+                        text = "I Agree to the Terms & Privacy",
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Spacer(modifier=modifier.height(20.dp))
                 Button(
                     onClick = {
 
@@ -140,8 +232,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
 
                 Spacer(modifier.height(32.dp))
 
-                Text(text="Forgot password?",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium,modifier=modifier.clickable{navController.navigate(Routes.ForgotPassword)})
-                Spacer(modifier.height(20.dp))
+
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -167,7 +258,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                 Spacer(modifier.height(20.dp))
                 Text(text="Continue with Google",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium)
                 Spacer(modifier.height(12.dp))
-                Text(text="Sign Up",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium,modifier=modifier.clickable{navController.navigate(Routes.Register)})
+                Text(text="Log In",color= MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleMedium,modifier=modifier.clickable{navController.navigate(Routes.Login)})
                 Spacer(modifier.height(32.dp))
             }
         }
