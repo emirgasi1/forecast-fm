@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +27,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import kotlinx.coroutines.delay
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SplashScreen(navController:NavController,modifier: Modifier=Modifier){
@@ -56,31 +58,33 @@ fun SplashScreen(navController:NavController,modifier: Modifier=Modifier){
             )
             Text(text="Forecast FM",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineLarge)
             Row (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().offset(x=(-16).dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally ),
                 verticalAlignment = Alignment.CenterVertically
             ){
                 Row (
+                    modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
                 ){
-                    Text("●",color= MaterialTheme.colorScheme.onBackground)
-                    Spacer(Modifier.width(2.dp))
+
                     Text(text="Weather",color= MaterialTheme.colorScheme.onBackground,style= MaterialTheme.typography.bodyLarge)
 
                 }
+                Box(
+                    modifier=Modifier.size(6.dp).background(color= MaterialTheme.colorScheme.onBackground,shape=CircleShape)
+                )
                 Row (
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text("●",color= MaterialTheme.colorScheme.onBackground)
-                    Spacer(Modifier.width(2.dp))
                     Text(text="Music",color= MaterialTheme.colorScheme.onBackground,style= MaterialTheme.typography.bodyLarge)
 
                 }
+                Box(
+                    modifier=Modifier.size(6.dp).background(color= MaterialTheme.colorScheme.onBackground,shape=CircleShape)
+                )
                 Row (
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text("●",color= MaterialTheme.colorScheme.onBackground)
-                    Spacer(Modifier.width(2.dp))
                     Text(text="Style",color= MaterialTheme.colorScheme.onBackground,style= MaterialTheme.typography.bodyLarge)
 
                 }

@@ -39,15 +39,14 @@ fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier
     var email by remember{
         mutableStateOf("")
     }
-    Box(modifier.fillMaxSize()){
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier=modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-            Image(painter = painterResource(R.drawable.lock,), contentDescription = "Lock Logo",modifier = Modifier.size(250.dp))
+            Image(painter = painterResource(R.drawable.lock,), contentDescription = "Lock Logo",modifier = Modifier.size(100.dp))
             Spacer(modifier.height(52.dp))
             Text(text="Reset Your Password",color=MaterialTheme.colorScheme.onPrimary, style=MaterialTheme.typography.headlineLarge,modifier = Modifier.offset(y = (-30).dp))
-            Spacer(modifier.height(64.dp))
-            Text(text="Enter your email associated with your account",color=MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleLarge,modifier = Modifier.size(250.dp))
-            Spacer(modifier.height(48.dp))
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.width(320.dp)){
+            Text(text="Enter your email associated with your account",color=MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleLarge,modifier=modifier.width(320.dp))
+            Spacer(modifier=modifier.height(30.dp))
+            Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center, modifier = modifier.width(320.dp)){
                 Text(text="Email",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineSmall)
                 Spacer(modifier.width(24.dp))
                 OutlinedTextField(value=email,
@@ -56,7 +55,6 @@ fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier
                     ,label={
                         Text("example@gmail.com")
                            },
-
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -67,8 +65,6 @@ fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
-
-
                 Spacer(modifier=modifier.height(32.dp))
                 Button(
                     onClick = {
@@ -78,12 +74,12 @@ fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.background
-                    )){
-                    Text(text="Log In"  ,style=MaterialTheme.typography.titleMedium)
+                    ))
+                {
+                    Text(text="Log In"  ,style=MaterialTheme.typography.titleLarge)
                 }
-
                 Spacer(modifier.height(32.dp))
-                Text(text="Back to Login",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge,modifier=modifier.clickable{navController.navigate(Routes.Login)})
+                Text(text="Back to Login",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleSmall,modifier=modifier.clickable{navController.navigate(Routes.Login)})
             }
         }
     }

@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
+import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 
 @Composable
@@ -19,7 +20,7 @@ fun NavGraph(modifier:Modifier=Modifier){
 
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash
+        startDestination = Routes.Home
     ) {
 
         composable(Routes.Splash) {
@@ -33,6 +34,9 @@ fun NavGraph(modifier:Modifier=Modifier){
         }
         composable(Routes.ForgotPassword){
             ForgotPasswordScreen(navController=navController)
+        }
+        composable(Routes.Home){
+            HomeScreen(navController=navController)
         }
 
 
