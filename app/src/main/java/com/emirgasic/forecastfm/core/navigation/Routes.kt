@@ -13,4 +13,10 @@ object Routes{
     const val Home="home"
     const val Profile="profile"
     const val Settings="settings"
+    const val Music="music"
+    const val Feed="feed"
+    const val Map="map"
+    const val Style="style"
+    const val Main="main"
+
 }

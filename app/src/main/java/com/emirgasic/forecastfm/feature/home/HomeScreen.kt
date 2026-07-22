@@ -1,7 +1,10 @@
 package com.emirgasic.forecastfm.feature.home
 
+import android.R.attr.onClick
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,24 +18,33 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHost
 import com.emirgasic.forecastfm.R
+import androidx.compose.material3.NavigationBarItem
 
 @Composable
-fun HomeScreen(navController: NavController,modifier:Modifier= Modifier){
-    Box(modifier=modifier.fillMaxSize().background(color=MaterialTheme.colorScheme.background)) {
+fun HomeScreen(navController: NavController,modifier:Modifier= Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
@@ -67,79 +79,101 @@ fun HomeScreen(navController: NavController,modifier:Modifier= Modifier){
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                    ),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = Color.Transparent
                     )
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.Top,
-                        modifier = Modifier.padding(12.dp)
+                    Box(
+                        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.background
+                                    )
+                                )
+                            )
                     ) {
-                        Text(
-                            text = "Weather Forecast",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "12°C",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                        Text(
-                            text = "Sunny",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.Top
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Top,
+                            modifier = Modifier.padding(
+                                start = 12.dp,
+                                top = 12.dp,
+                                end = 12.dp,
+                                bottom = 20.dp
+                            )
                         ) {
                             Text(
-                                "Feels like:",
+                                text = "Weather Forecast",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "12°C",
                                 color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyLarge
+                                style = MaterialTheme.typography.headlineLarge
                             )
-                            Spacer(modifier.width(16.dp))
                             Text(
-                                "Thunderus",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodyLarge
+                                text = "Sunny",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.headlineMedium
                             )
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Text(
-                                "Humidity:",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(modifier.width(16.dp))
-                            Text(
-                                "Strong",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Text(
-                                "Wind:",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(modifier.width(16.dp))
-                            Text(
-                                "20km/h",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.Start,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    "Feels like:",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(modifier.width(16.dp))
+                                Text(
+                                    "Thunderus",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.Start,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    "Humidity:",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(modifier.width(16.dp))
+                                Text(
+                                    "Strong",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.Start,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    "Wind:",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(modifier.width(16.dp))
+                                Text(
+                                    "20km/h",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
                     }
                 }
@@ -150,120 +184,163 @@ fun HomeScreen(navController: NavController,modifier:Modifier= Modifier){
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier.height(38.dp))
-                LazyRow(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(26.dp),
-                    modifier = modifier.background(color = MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(10.dp).clip(MaterialTheme.shapes.medium)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
+                                    MaterialTheme.colorScheme.background
+                                )
+                            )
+                        )
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.background,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        )
                 ) {
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.sun),
-                                contentDescription = "Sun",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Text(
-                                text = "Mon",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "12°C",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleLarge
-                            )
+
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(26.dp)
+                    ) {
+
+                        item {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.sun),
+                                    contentDescription = "Sun",
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Text(
+                                    text = "Mon",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = "12°C",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                         }
-                    }
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.sunny_cloudy),
-                                contentDescription = "sunny_cloudy",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Text(
-                                text = "Tue",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "2°C",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleLarge
-                            )
+
+                        item {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.sunny_cloudy),
+                                    contentDescription = "Sunny cloudy",
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Text(
+                                    text = "Tue",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = "2°C",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                         }
-                    }
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.sun),
-                                contentDescription = "Sun",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Text(
-                                text = "Wed",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "22°C",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleLarge
-                            )
+
+                        item {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.sun),
+                                    contentDescription = "Sun",
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Text(
+                                    text = "Wed",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = "22°C",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                         }
-                    }
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.sunny_cloudy),
-                                contentDescription = "sunny_cloudy",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Text(
-                                text = "Thu",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "10°C",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleLarge
-                            )
+
+                        item {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.sunny_cloudy),
+                                    contentDescription = "Sunny cloudy",
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Text(
+                                    text = "Thu",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = "10°C",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                         }
-                    }
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.heavy_rain),
-                                contentDescription = "cloudy",
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Text(
-                                text = "Fri",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "-2°C",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.titleLarge
-                            )
+
+                        item {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.heavy_rain),
+                                    contentDescription = "Heavy rain",
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Text(
+                                    text = "Fri",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Text(
+                                    text = "-2°C",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                         }
                     }
                 }
@@ -277,20 +354,13 @@ fun HomeScreen(navController: NavController,modifier:Modifier= Modifier){
                 Column(
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-
-                    // Playlist 1
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.medium)
+                        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(10.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
 
                             Text(
                                 text = "Midnight Coffee",
@@ -348,14 +418,10 @@ fun HomeScreen(navController: NavController,modifier:Modifier= Modifier){
                     }
 
 
-                    // Playlist 2
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.medium)
+                        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(10.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
 
                         Row(
