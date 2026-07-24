@@ -23,6 +23,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
@@ -154,6 +156,24 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
+                        Row(verticalAlignment = Alignment.CenterVertically){
+                            Text(
+                                text = "18 songs",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = "1h 12min",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Image(
                                 painter = painterResource(R.drawable.heart),
@@ -215,6 +235,24 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.titleMedium
                             )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically){
+                            Text(
+                                text = "18 songs",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = "1h 12min",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Image(
@@ -302,6 +340,24 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                style = MaterialTheme.typography.titleMedium
                            )
                        }
+                       Row(verticalAlignment = Alignment.CenterVertically){
+                           Text(
+                               text = "18 songs",
+                               color = MaterialTheme.colorScheme.onPrimary,
+                               style = MaterialTheme.typography.titleMedium
+                           )
+                           Text(
+                               text = "•",
+                               style = MaterialTheme.typography.bodyLarge,
+                               color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                           )
+                           Text(
+                               text = "1h 12min",
+                               color = MaterialTheme.colorScheme.onPrimary,
+                               style = MaterialTheme.typography.titleMedium
+                           )
+
+                       }
                        Row(verticalAlignment = Alignment.CenterVertically) {
                            Image(
                                painter = painterResource(R.drawable.heart),
@@ -363,6 +419,24 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.titleMedium
                             )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically){
+                            Text(
+                                text = "18 songs",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = "1h 12min",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Image(
@@ -518,13 +592,16 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                        color = MaterialTheme.colorScheme.outline
                    )){
                    Column(modifier=Modifier.fillMaxWidth()
-                       .background(color= MaterialTheme.colorScheme.background)
+                       .background(color= MaterialTheme.colorScheme.surfaceVariant)
                        .padding(16.dp),
                        horizontalAlignment = Alignment.CenterHorizontally,
                        verticalArrangement = Arrangement.spacedBy(16.dp)) {
                        Image(painter=painterResource(R.drawable.album1),
                            contentDescription = "album_cover",
-                           modifier=Modifier.size(300.dp))
+                           modifier=Modifier.size(300.dp)
+                               .clip(MaterialTheme.shapes.medium)
+                               .border(width=1.dp,color= MaterialTheme.colorScheme.outline.copy(alpha=0.3f)
+                               ,shape= MaterialTheme.shapes.medium))
                        Text(text="I No Longer Fear the Razor Guarding My Heel",
                            maxLines = 2,
                            overflow= TextOverflow.Ellipsis,
@@ -537,7 +614,13 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                            Text(text="Lo-fi",
                                color=MaterialTheme.colorScheme.onBackground,
                                style=MaterialTheme.typography.bodyLarge)
-                           Spacer(modifier.width(28.dp))
+                           Spacer(modifier.width(8.dp))
+                           Text(
+                               text = "•",
+                               style = MaterialTheme.typography.bodyLarge,
+                               color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                           )
+                           Spacer(modifier.width(8.dp))
                            Text(text="Cozy Night",
                                color=MaterialTheme.colorScheme.onBackground,
                                style=MaterialTheme.typography.bodyLarge)
@@ -556,7 +639,7 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                color = MaterialTheme.colorScheme.onPrimary,
                                style = MaterialTheme.typography.bodyLarge
                            )
-                           Spacer(modifier.width(28.dp))
+                           Spacer(modifier.width(56.dp))
                            Image(
                                painter = painterResource(R.drawable.heart),
                                contentDescription = "Heart",
@@ -569,6 +652,16 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                                style = MaterialTheme.typography.bodyLarge
                            )
 
+                       }
+
+                       Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                           TextButton(
+                               onClick = {
+                               }
+                           ) {
+                               Text("View Playlist", color = MaterialTheme.colorScheme.primary,
+                                   style= MaterialTheme.typography.bodyLarge)
+                           }
                        }
                    }
                }
