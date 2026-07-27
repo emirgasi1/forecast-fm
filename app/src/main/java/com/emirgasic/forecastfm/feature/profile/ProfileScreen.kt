@@ -35,9 +35,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.navigation.Routes
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.IconButton
 
 @Composable
-fun ProfileScreen(navController: NavController,modifier: Modifier=Modifier){
+fun ProfileScreen(mainNavController: NavController, rootNavController: NavController,modifier: Modifier=Modifier){
     val posts = listOf(
         "1st Post",
         "2nd Post",
@@ -56,7 +59,18 @@ fun ProfileScreen(navController: NavController,modifier: Modifier=Modifier){
                     color= MaterialTheme.colorScheme.onBackground,
                     style= MaterialTheme.typography.headlineSmall)
                 Spacer(modifier.weight(1f))
-                Image(painter = painterResource(R.drawable.cogwheel), contentDescription = "Style",modifier = Modifier.size(30.dp))
+                IconButton(
+                    onClick = {
+                        rootNavController.navigate(Routes.Settings)
+                    }
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.cogwheel),
+                        contentDescription = "Settings",
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+
             }}
             item{
             Spacer(modifier.height(18.dp))}

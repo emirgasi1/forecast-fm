@@ -13,7 +13,12 @@ object Routes{
     const val Home="home"
     const val Profile="profile"
     const val Settings="settings"
+
+    const val EditProfile="editprofile"
+
     const val Music="music"
+    const val Playlist="playlist"
+    const val MusicHistory="musichistory"
     const val Feed="feed"
     const val Map="map"
     const val Style="style"

@@ -38,9 +38,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.emirgasic.forecastfm.core.navigation.Routes
 
 @Composable
-fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
+fun MusicScreen(mainNavController: NavController,
+                rootNavController: NavController,
+                modifier: Modifier =Modifier) {
     var search by remember {
         mutableStateOf("")
     }
@@ -657,6 +660,7 @@ fun MusicScreen(navController: NavController,modifier: Modifier =Modifier) {
                        Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
                            TextButton(
                                onClick = {
+                                   rootNavController.navigate(Routes.Playlist)
                                }
                            ) {
                                Text("View Playlist", color = MaterialTheme.colorScheme.primary,

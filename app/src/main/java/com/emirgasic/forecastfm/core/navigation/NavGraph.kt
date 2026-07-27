@@ -13,55 +13,75 @@ import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
+import com.emirgasic.forecastfm.feature.music.musichistory.MusicHistoryScreen
+import com.emirgasic.forecastfm.feature.music.playlist.PlaylistScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
+import com.emirgasic.forecastfm.feature.settings.SettingsScreen
+import com.emirgasic.forecastfm.feature.settings.edit_profile.EditProfileScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 
 @Composable
-fun NavGraph(modifier:Modifier=Modifier){
-
+fun NavGraph(modifier: Modifier = Modifier){
 
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
         startDestination = Routes.Main
-    ) {
+    ){
 
-        composable(Routes.Splash) {
-            SplashScreen(navController=navController)
+        composable(Routes.Splash){
+            SplashScreen(navController)
         }
+
         composable(Routes.Login){
-            LoginScreen(navController=navController)
+            LoginScreen(navController)
         }
+
         composable(Routes.Register){
-            RegisterScreen(navController=navController)
+            RegisterScreen(navController)
         }
+
         composable(Routes.ForgotPassword){
-            ForgotPasswordScreen(navController=navController)
+            ForgotPasswordScreen(navController)
         }
+
         composable(Routes.Main){
 
-            MainScreen()
+            MainScreen(
+                rootNavController = navController
+            )
 
         }
-        composable(Routes.Map){
-            MapScreen(navController = navController)
-        }
-        composable(Routes.Feed){
-            FeedScreen(navController = navController)
-        }
-        composable(Routes.Music){
-            MusicScreen(navController = navController)
-        }
-        composable(Routes.Style){
-            StyleScreen(navController = navController)
-        }
-        composable(Routes.Profile){
-            ProfileScreen(navController=navController)
-        }
 
+        composable(Routes.Settings){
 
+            SettingsScreen(
+                navController = navController
+            )
+
+        }
+        composable(Routes.EditProfile){
+
+            EditProfileScreen(
+                navController = navController
+            )
+
+        }
+        composable(Routes.Playlist){
+
+            PlaylistScreen(
+                navController = navController
+            )
+
+        }
+        composable(Routes.MusicHistory){
+
+            MusicHistoryScreen(
+                navController = navController
+            )
+
+        }
     }
-
 }

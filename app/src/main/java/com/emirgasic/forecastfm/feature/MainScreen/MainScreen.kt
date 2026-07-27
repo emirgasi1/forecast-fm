@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -13,25 +15,20 @@ import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
 
-
 @Composable
-fun MainScreen(){
-
+fun MainScreen(
+    rootNavController: NavHostController,
+    modifier: Modifier = Modifier
+){
     val mainNavController = rememberNavController()
 
-
     Scaffold(
-
         bottomBar = {
-
             BottomBar(
                 navController = mainNavController
             )
-
         }
-
     ){ paddingValues ->
-
 
         NavHost(
             navController = mainNavController,
@@ -40,51 +37,38 @@ fun MainScreen(){
         ){
 
             composable(Routes.Home){
-
                 HomeScreen(
                     navController = mainNavController
                 )
-
             }
-
 
             composable(Routes.Music){
-
                 MusicScreen(
-                    navController = mainNavController
+                    mainNavController = mainNavController,
+                    rootNavController = rootNavController
                 )
-
             }
 
-
             composable(Routes.Map){
-
                 MapScreen(
                     navController = mainNavController
                 )
-
             }
 
-
             composable(Routes.Style){
-
                 StyleScreen(
                     navController = mainNavController
                 )
-
             }
-
 
             composable(Routes.Profile){
 
                 ProfileScreen(
-                    navController = mainNavController
+                    mainNavController = mainNavController,
+                    rootNavController = rootNavController
                 )
 
             }
-
         }
-
     }
-
 }
