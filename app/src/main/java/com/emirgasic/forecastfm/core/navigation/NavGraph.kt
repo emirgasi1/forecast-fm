@@ -20,6 +20,7 @@ import com.emirgasic.forecastfm.feature.settings.SettingsScreen
 import com.emirgasic.forecastfm.feature.settings.edit_profile.EditProfileScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
+import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier){
@@ -82,6 +83,11 @@ fun NavGraph(modifier: Modifier = Modifier){
                 navController = navController
             )
 
+        }
+        composable(Routes.NewPost){
+            NewPostScreen(
+                navController=navController
+            )
         }
     }
 }

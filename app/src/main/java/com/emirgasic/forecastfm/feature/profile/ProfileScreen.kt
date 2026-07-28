@@ -38,7 +38,9 @@ import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.IconButton
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
 @Composable
 fun ProfileScreen(mainNavController: NavController, rootNavController: NavController,modifier: Modifier=Modifier){
     val posts = listOf(
@@ -187,11 +189,24 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
             item{Spacer(modifier.height(20.dp))
             }
             item {
-                Text(
-                    text = "Posts",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
+                    Text(
+                        text = "Posts",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Spacer(modifier.width(4.dp))
+                    IconButton(
+                        onClick = {
+                            rootNavController.navigate(Routes.NewPost)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Photo"
+                        )
+                    }
+                }
             }
             item{Spacer(modifier.height(20.dp))
             }

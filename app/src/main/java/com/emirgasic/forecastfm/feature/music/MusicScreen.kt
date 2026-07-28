@@ -149,20 +149,20 @@ fun MusicScreen(mainNavController: NavController,
                         ) {
                             Text(
                                 text = "Summer Walks",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
 
                             Text(
                                 text = "Chill Pop",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
                         Row(verticalAlignment = Alignment.CenterVertically){
                             Text(
                                 text = "18 songs",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
@@ -172,7 +172,7 @@ fun MusicScreen(mainNavController: NavController,
                             )
                             Text(
                                 text = "1h 12min",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
 
@@ -186,7 +186,7 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "124",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier.weight(1f))
@@ -198,7 +198,7 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "Play",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -229,20 +229,20 @@ fun MusicScreen(mainNavController: NavController,
                         ) {
                             Text(
                                 text = "Golden Hour",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
 
                             Text(
                                 text = "Indie",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
                         Row(verticalAlignment = Alignment.CenterVertically){
                             Text(
                                 text = "18 songs",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
@@ -252,7 +252,7 @@ fun MusicScreen(mainNavController: NavController,
                             )
                             Text(
                                 text = "1h 12min",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.titleMedium
                             )
 
@@ -266,7 +266,7 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "87",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier.weight(1f))
@@ -278,7 +278,7 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "Play",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -333,20 +333,20 @@ fun MusicScreen(mainNavController: NavController,
                        ) {
                            Text(
                                text = "Midnight Coffee",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.titleMedium
                            )
 
                            Text(
                                text = "Lo-fi",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.titleMedium
                            )
                        }
                        Row(verticalAlignment = Alignment.CenterVertically){
                            Text(
                                text = "18 songs",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.titleMedium
                            )
                            Text(
@@ -356,7 +356,7 @@ fun MusicScreen(mainNavController: NavController,
                            )
                            Text(
                                text = "1h 12min",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.titleMedium
                            )
 
@@ -370,7 +370,7 @@ fun MusicScreen(mainNavController: NavController,
                            Spacer(modifier.width(6.dp))
                            Text(
                                "452",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.bodyLarge
                            )
                            Spacer(modifier.weight(1f))
@@ -382,7 +382,7 @@ fun MusicScreen(mainNavController: NavController,
                            Spacer(modifier.width(6.dp))
                            Text(
                                "Play",
-                               color = MaterialTheme.colorScheme.onPrimary,
+                               color = MaterialTheme.colorScheme.onSurfaceVariant,
                                style = MaterialTheme.typography.bodyLarge
                            )
                        }
@@ -450,7 +450,7 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "318",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier.weight(1f))
@@ -462,10 +462,74 @@ fun MusicScreen(mainNavController: NavController,
                             Spacer(modifier.width(6.dp))
                             Text(
                                 "Play",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
+                    }
+                }
+
+            }
+            item {
+                Spacer(modifier.height(16.dp))
+            }
+            item{
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.music),
+                        contentDescription = "Trend",
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Text(
+                        text = "Music History",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
+            }
+            item {
+                Spacer(modifier.height(16.dp))
+            }
+
+
+
+
+
+            item{
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline
+                    ), onClick = {rootNavController.navigate(Routes.MusicHistory)},
+                ) {
+                    Column(
+                        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Last Played:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "Uptown Jazz",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+
                     }
                 }
 
