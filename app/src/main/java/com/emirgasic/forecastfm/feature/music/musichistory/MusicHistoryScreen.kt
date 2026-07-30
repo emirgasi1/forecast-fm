@@ -23,6 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.components.music.musichistory.HistorySection
+import com.emirgasic.forecastfm.core.ui.components.music.musichistory.MusicHistoryEntryCard
 
 @Composable
 fun MusicHistoryScreen(navController: NavController,modifier: Modifier =Modifier) {
@@ -34,40 +36,18 @@ fun MusicHistoryScreen(navController: NavController,modifier: Modifier =Modifier
     {
         LazyColumn(modifier.fillMaxWidth(),verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.Start) {
 
-            item{
-                Text(text="Today",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineMedium)
+            item {
+                HistorySection(
+                    title = "Today",
+                    playlist = "Morning Coffee Jazz",
+                    weatherIcon = painterResource(R.drawable.sun),
+                    weather = "Sunny",
+                    temperature = "12°C",
+                    location = "Baščaršija",
+                    time = "08:34 AM"
+                )
             }
-            item{
-                Spacer(modifier.height(16.dp))
-            }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )) {
-                    Column(modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceVariant).padding(16.dp),horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(20.dp),) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.music),
-                                contentDescription = "Music",
-                                Modifier.size(20.dp))
-                            Text(text="Morning Coffee Jazz",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.sun),
-                                contentDescription = "Weather",
-                                Modifier.size(20.dp))
-                            Text(text="Sunny",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="12°C",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="Bascarsija",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top) {
-                            Text(text="08:34 AM",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
-            }
+
 
 
             item{
@@ -111,77 +91,45 @@ fun MusicHistoryScreen(navController: NavController,modifier: Modifier =Modifier
             item{
                 Spacer(modifier.height(16.dp))
             }
-            item{
-                Text(text="Today",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineMedium)
-            }
-            item{
-                Spacer(modifier.height(16.dp))
-            }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )) {
-                    Column(modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceVariant).padding(16.dp),horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(20.dp),) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.music),
-                                contentDescription = "Music",
-                                Modifier.size(20.dp))
-                            Text(text="Morning Coffee Jazz",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.sun),
-                                contentDescription = "Weather",
-                                Modifier.size(20.dp))
-                            Text(text="Sunny",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="12°C",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="Bascarsija",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top) {
-                            Text(text="08:34 AM",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
+            item {
+                HistorySection(
+                    title = "Yesterday",
+                    playlist = "Morning Coffee Jazz",
+                    weatherIcon = painterResource(R.drawable.sun),
+                    weather = "Sunny",
+                    temperature = "12°C",
+                    location = "Baščaršija",
+                    time = "08:34 AM"
+                )
             }
 
             item{
                 Spacer(modifier.height(16.dp))
             }
-            item{
-                Text(text="Today",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineMedium)
+            item {
+                HistorySection(
+                    title = "2 Days Ago",
+                    playlist = "Morning Coffee Jazz",
+                    weatherIcon = painterResource(R.drawable.sun),
+                    weather = "Sunny",
+                    temperature = "12°C",
+                    location = "Baščaršija",
+                    time = "08:34 AM"
+                )
             }
             item{
                 Spacer(modifier.height(16.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )) {
-                    Column(modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceVariant).padding(16.dp),horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(20.dp),) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.music),
-                                contentDescription = "Music",
-                                Modifier.size(20.dp))
-                            Text(text="Morning Coffee Jazz",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                            Image(painter = painterResource(R.drawable.sun),
-                                contentDescription = "Weather",
-                                Modifier.size(20.dp))
-                            Text(text="Sunny",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="12°C",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                            Text(text="Bascarsija",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                        Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top) {
-                            Text(text="08:34 AM",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
+            item {
+                HistorySection(
+                    title = "Last Week",
+                    playlist = "Morning Coffee Jazz",
+                    weatherIcon = painterResource(R.drawable.sun),
+                    weather = "Sunny",
+                    temperature = "12°C",
+                    location = "Baščaršija",
+                    time = "08:34 AM"
+                )
             }
         }
 

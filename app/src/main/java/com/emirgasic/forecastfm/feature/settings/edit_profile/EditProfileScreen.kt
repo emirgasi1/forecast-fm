@@ -34,6 +34,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
+import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
+import com.emirgasic.forecastfm.core.ui.components.editprofile.ProfilePhotoEditor
+import com.emirgasic.forecastfm.core.ui.components.editprofile.ProfileTextField
+import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,13 +65,13 @@ fun EditProfileScreen(navController: NavController,modifier: Modifier =Modifier)
     }
     Box(
         modifier = Modifier
+            .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
             .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
     ){
-        Text(text="Edit Profile",
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.headlineMedium)
-
+        ScreenTitle(
+            title = "Edit Profile"
+        )
         LazyColumn(modifier=Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally){
@@ -75,171 +80,68 @@ fun EditProfileScreen(navController: NavController,modifier: Modifier =Modifier)
             item{
                 Spacer(modifier.height(54.dp))
             }
-            item{
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Image(
-                        painter = painterResource(R.drawable.profile_picture),
-                        contentDescription = "Profile picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-            item{
-                Spacer(modifier.height(12.dp))
-            }
-            item{
-                Text(text="Change Photo",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall)
-            }
-            item{
-                Spacer(modifier.height(28.dp))
-            }
-            item{
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ){
-                    Text(text="Username",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
-            }
-            item{
-                Spacer(modifier.height(8.dp))
-            }
-            item{
-                OutlinedTextField(
-                    value=username,
-                    onValueChange={username=it},
-                    modifier.fillMaxWidth(),
-                    label={
-                        Text("Emir")
-                    }, singleLine = true
-                )
-            }
-            item{
-                Spacer(modifier.height(28.dp))
-            }
-            item{
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ){
-                    Text(text="Bio",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
-            }
-            item{
-                Spacer(modifier.height(8.dp))
-            }
-            item{
-                OutlinedTextField(
-                    value=bio,
-                    onValueChange={bio=it},
-                    modifier.fillMaxWidth()
-                        .height(120.dp),
-                    label={
-                        Text("Coffee. Music. Sarajevo.")
+            item {
+                ProfilePhotoEditor(
+                    image = painterResource(R.drawable.profile_picture),
+                    onClick = {
+                        // Later: open image picker
                     }
                 )
             }
             item{
                 Spacer(modifier.height(28.dp))
             }
-
+            item {
+                ProfileTextField(
+                    title = "Username",
+                    value = username,
+                    onValueChange = {
+                        username = it
+                    },
+                    placeholder = "Emir"
+                )
+            }
             item{
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ){
-                    Text(text="Favorite Location",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
+                Spacer(modifier.height(28.dp))
+            }
+            item {
+                ProfileTextField(
+                    title = "Bio",
+                    value = bio,
+                    onValueChange = {
+                        bio = it
+                    },
+                    placeholder = "Coffee. Music. Sarajevo.",
+                    singleLine = false,
+                    height = 120.dp
+                )
+            }
+            item{
+                Spacer(modifier.height(28.dp))
+            }
+
+            item {
+                SectionTitle(
+                    title = "Favorite Location"
+                )
             }
             item{
                 Spacer(modifier.height(8.dp))
             }
-            item{
-
-                ExposedDropdownMenuBox(
-
+            item {
+                LocationDropdown(
+                    selectedLocation = selectedLocation,
+                    locations = locations,
                     expanded = expanded,
-
                     onExpandedChange = {
-                        expanded = !expanded
+                        expanded = it
+                    },
+                    onLocationSelected = {
+                        selectedLocation = it
                     }
-
-                ) {
-
-                    OutlinedTextField(
-
-                        value = selectedLocation,
-
-                        onValueChange = {},
-
-                        readOnly = true,
-
-                        label = {
-                            Text("Location")
-                        },
-
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                expanded = expanded
-                            )
-                        },
-
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-
-                    )
-
-
-                    ExposedDropdownMenu(
-
-                        expanded = expanded,
-
-                        onDismissRequest = {
-                            expanded = false
-                        }
-
-                    ) {
-
-                        locations.forEach { location ->
-
-                            DropdownMenuItem(
-
-                                text = {
-                                    Text(location)
-                                },
-
-                                onClick = {
-
-                                    selectedLocation = location
-                                    expanded = false
-
-                                }
-
-                            )
-
-                        }
-
-                    }
-
-                }
-
+                )
             }
+
             item{
                 Spacer(modifier.height(20.dp))
             }

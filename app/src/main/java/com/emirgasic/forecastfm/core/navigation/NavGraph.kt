@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
+import com.emirgasic.forecastfm.feature.comments.CommentsScreen
 import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
@@ -21,6 +22,7 @@ import com.emirgasic.forecastfm.feature.settings.edit_profile.EditProfileScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
+import com.emirgasic.forecastfm.feature.weather.WeatherScreen
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier){
@@ -63,6 +65,7 @@ fun NavGraph(modifier: Modifier = Modifier){
             )
 
         }
+
         composable(Routes.EditProfile){
 
             EditProfileScreen(
@@ -88,6 +91,15 @@ fun NavGraph(modifier: Modifier = Modifier){
             NewPostScreen(
                 navController=navController
             )
+        }
+        composable(Routes.Weather){
+            WeatherScreen(
+                navController=navController
+            )
+        }
+
+        composable(Routes.Comments) {
+            CommentsScreen(navController=navController)
         }
     }
 }

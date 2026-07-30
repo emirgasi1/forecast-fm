@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
@@ -38,7 +39,8 @@ fun MainScreen(
 
             composable(Routes.Home){
                 HomeScreen(
-                    navController = mainNavController
+                    mainNavController = mainNavController,
+                    rootNavController = rootNavController
                 )
             }
 
@@ -68,6 +70,12 @@ fun MainScreen(
                     rootNavController = rootNavController
                 )
 
+            }
+            composable(Routes.Feed) {
+                FeedScreen(
+                    mainNavController = mainNavController,
+                    rootNavController = rootNavController
+                )
             }
         }
     }

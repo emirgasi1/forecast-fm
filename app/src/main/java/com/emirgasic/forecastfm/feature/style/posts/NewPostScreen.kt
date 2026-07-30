@@ -36,6 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.ui.components.style.posts.DropdownSelector
+import com.emirgasic.forecastfm.core.ui.components.style.posts.ImagePickerCard
+import com.emirgasic.forecastfm.core.ui.components.style.posts.PostActionButtons
+import com.emirgasic.forecastfm.core.ui.components.style.posts.ProfileInputField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,9 +47,14 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
     var caption by remember(){
         mutableStateOf("")
     }
-    var expanded by remember {
-        mutableStateOf(false)
+    var weather by remember {
+        mutableStateOf("")
     }
+
+    var location by remember {
+        mutableStateOf("")
+    }
+
 
     var selectedPlaylist by remember {
         mutableStateOf("Jazz")
@@ -80,64 +89,35 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
             item {
                 Spacer(modifier.height(20.dp))
             }
-            item{Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                shape = MaterialTheme.shapes.medium,
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline
+            item {
+                ImagePickerCard(
+                    icon = painterResource(R.drawable.camera),
+                    text = "Add a photo"
                 )
-            ){
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text="Add a photo",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    Image(painter=painterResource(R.drawable.camera), contentDescription = "Camera",modifier.size(20.dp))
-                }
-            }
             }
             item {
                 Spacer(modifier.height(18.dp))
             }
-            item {
-                Text(
-                    text = "Caption",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleLarge
+            item{
+                ProfileInputField(
+                    title = "Caption",
+                    value = caption,
+                    placeholder = "What's today's vibe?",
+                    onValueChange = { caption = it }
                 )
             }
-            item {
-                Spacer(modifier.height(6.dp))
-            }
-            item{
-            OutlinedTextField(value=caption,
-                onValueChange = {caption=it},
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("What's today's vibe?") },
-                singleLine = true
-
-            )}
             item{
             Spacer(modifier.height(18.dp))}
-            item{
-            Text(text="Weather",
-                color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.titleLarge)}
-            item{
-            Spacer(modifier.height(6.dp))}
-            item{
-            OutlinedTextField(value=caption,
-                onValueChange = {caption=it},
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Sunny") },
-                singleLine = true
-
-            )}
+            item {
+                ProfileInputField(
+                    title = "Weather",
+                    value = weather,
+                    placeholder = "Sunny",
+                    onValueChange = {
+                        weather = it
+                    }
+                )
+            }
             item {
                 Spacer(modifier.height(18.dp))
             }
@@ -166,81 +146,26 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
                 style = MaterialTheme.typography.titleLarge)}
             item{
                 Spacer(modifier.height(6.dp))}
-            item{
-            ExposedDropdownMenuBox(
+            item {
 
-                expanded = expanded,
-
-                onExpandedChange = {
-                    expanded = !expanded
-                } ,modifier=Modifier.background(color= MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-
-                OutlinedTextField(
-
-                    value = selectedPlaylist,
-
-                    onValueChange = {},
-
-                    readOnly = true,
-
-                    label = {
-                        Text("Playlist")
-                    },
-
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = expanded
-                        )
-                    },
-
-                    modifier = Modifier.menuAnchor()
-
+                DropdownSelector(
+                    title = "Playlist",
+                    selected = selectedPlaylist,
+                    options = playlists,
+                    onSelected = {
+                        selectedPlaylist = it
+                    }
                 )
 
-                ExposedDropdownMenu(
-
-                    expanded = expanded,
-
-                    onDismissRequest = {
-                        expanded = false
-                    },
-
-
-                    ) {
-                    playlists.forEach { location ->
-
-                        DropdownMenuItem(
-
-                            text = {
-                                Text(location)
-                            },
-
-                            onClick = {
-
-                                selectedPlaylist = location
-                                expanded = false
-
-                            }
-                        )
-
-                    }
-
-                }
-
             }
-        }
             item{Spacer(modifier.height(18.dp))}
-            item{
-                Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top){
-                    Button(onClick={}) {
-                        Text("Post")
-                    }
-                    Spacer(modifier.width(10.dp))
-                    Button(onClick={}) {
-                        Text("Delete")
-                    }
-                }
+            item {
+
+                PostActionButtons(
+                    onPostClick = {},
+                    onDeleteClick = {}
+                )
+
             }
         }
     }

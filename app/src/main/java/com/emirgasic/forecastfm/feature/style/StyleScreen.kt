@@ -28,6 +28,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
+import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
+
 @Composable
 fun StyleScreen(navController: NavController,modifier: Modifier=Modifier){
     val outfits = listOf(
@@ -40,12 +43,10 @@ fun StyleScreen(navController: NavController,modifier: Modifier=Modifier){
         .background(color = MaterialTheme.colorScheme.background)
         .padding(top = 20.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)){
         Column(verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.Start){
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top){
-                Image(painter = painterResource(R.drawable.clothes), contentDescription = "Style",modifier = Modifier.size(30.dp))
-                Text(text="Style",
-                    color= MaterialTheme.colorScheme.onBackground,
-                    style= MaterialTheme.typography.headlineSmall)
-            }
+            ScreenTitle(
+                title = "Style",
+                icon = painterResource(R.drawable.clothes)
+            )
             Spacer(modifier.height(20.dp))
             Text(text="Outfits inspired by Sarajevo weather",color= MaterialTheme.colorScheme.onBackground)
             Spacer(modifier.height(20.dp))
@@ -58,59 +59,12 @@ fun StyleScreen(navController: NavController,modifier: Modifier=Modifier){
 
                 items(outfits) { outfit ->
 
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(0.8f),
-                        shape = MaterialTheme.shapes.large,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
+                    OutfitCard(
+                        title = outfit,
+                        temperature = "18°C",
+                        timeOfDay = "Morning"
+                    )
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .background(
-                                        MaterialTheme.colorScheme.surface
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                Text(
-                                    text = "Outfit Image",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-
-                            Spacer(
-                                modifier = Modifier.height(12.dp)
-                            )
-
-                            Text(
-                                text = outfit,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Text(
-                                text = "18°C • Morning",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                    alpha = 0.7f
-                                )
-                            )
-                        }
-                    }
                 }
             }
         }

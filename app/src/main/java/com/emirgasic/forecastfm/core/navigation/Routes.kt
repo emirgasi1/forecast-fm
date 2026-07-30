@@ -21,10 +21,12 @@ object Routes{
     const val MusicHistory="musichistory"
 
     const val Feed="feed"
+
+    const val Weather="weather"
     const val Map="map"
     const val Style="style"
 
     const val NewPost="newpost"
     const val Main="main"
-
+    const val Comments = "comments"
 }

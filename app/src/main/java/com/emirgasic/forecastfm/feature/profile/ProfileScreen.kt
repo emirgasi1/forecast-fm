@@ -41,6 +41,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
+import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
+import com.emirgasic.forecastfm.core.ui.components.profile.FavoritePlaylistCard
+import com.emirgasic.forecastfm.core.ui.components.profile.ProfileHeader
+import com.emirgasic.forecastfm.core.ui.components.profile.ProfilePostCard
+import com.emirgasic.forecastfm.core.ui.components.profile.ProfileStatsCard
+
 @Composable
 fun ProfileScreen(mainNavController: NavController, rootNavController: NavController,modifier: Modifier=Modifier){
     val posts = listOf(
@@ -56,144 +62,75 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
     ){
         LazyColumn(modifier=Modifier.fillMaxSize(),verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally){
             item{
-            Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top){
-                Text(text="Style",
-                    color= MaterialTheme.colorScheme.onBackground,
-                    style= MaterialTheme.typography.headlineSmall)
-                Spacer(modifier.weight(1f))
-                IconButton(
-                    onClick = {
-                        rootNavController.navigate(Routes.Settings)
+                Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top){
+                    Text(text="Style",
+                        color= MaterialTheme.colorScheme.onBackground,
+                        style= MaterialTheme.typography.headlineSmall)
+                    Spacer(modifier.weight(1f))
+                    IconButton(
+                        onClick = {
+                            rootNavController.navigate(Routes.Settings)
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.cogwheel),
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.cogwheel),
-                        contentDescription = "Settings",
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
 
-            }}
+                }}
             item{
-            Spacer(modifier.height(18.dp))}
-            item{
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-
-                Image(
-                    painter = painterResource(R.drawable.profile_picture),
-                    contentDescription = "Profile picture",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }}
-            item{
-            Spacer(modifier.height(18.dp))}
-            item{
-            Text(text="Emir",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.headlineMedium)}
-            item{
-            Spacer(modifier.height(10.dp))}
+                Spacer(modifier.height(18.dp))}
             item {
-                Text(
-                    text = "Coffee, music & Sarajevo",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall
+                ProfileHeader(
+                    image = painterResource(R.drawable.profile_picture),
+                    username = "Emir",
+                    bio = "Coffee, music & Sarajevo"
+                )
+            }
+            item {
+                Spacer(modifier.height(28.dp))
+            }
+            item {
+                ProfileStatsCard(
+                    likes = "24",
+                    saved = "19",
+                    posts = "104"
                 )
             }
             item {
                 Spacer(modifier.height(28.dp))
             }
             item{
-
-            Card(modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                shape=MaterialTheme.shapes.medium) {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly){
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(text="24",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        Text(text="Likes",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleLarge)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(text="19",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        Text(text="Saved",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleLarge)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(text="104",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleMedium)
-                        Text(text="Posts",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleLarge)
-                    }
-                }
-
-            }
-            }
-            item {
-                Spacer(modifier.height(28.dp))
-            }
-            item{
-                Text(text="Favorite Playlist",
-                    color=MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall)
-
+                SectionTitle(
+                    title = "Favorite Playlist"
+                )
             }
             item{
                 Spacer(modifier.height(18.dp))
             }
-            item{
-                Card(modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                        border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                        shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(painter=painterResource(R.drawable.music), contentDescription = "Music",modifier=Modifier.size(20.dp))
-                        Spacer(modifier.width(28.dp))
-                        Text(
-                            text = "Chill Pop",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
+            item {
+                FavoritePlaylistCard(
+                    icon = painterResource(R.drawable.music),
+                    playlist = "Chill Pop"
+                )
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(painter=painterResource(R.drawable.music), contentDescription = "Music",modifier=Modifier.size(20.dp))
-                        Spacer(modifier.width(28.dp))
-                        Text(
-                            text = "Sarajevo Nights",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
+            item {
+                FavoritePlaylistCard(
+                    icon = painterResource(R.drawable.music),
+                    playlist = "Sarajevo Nights"
+                )
             }
             item{Spacer(modifier.height(20.dp))
             }
             item {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
-                    Text(
-                        text = "Posts",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall
+                    SectionTitle(
+                        title = "Posts"
                     )
                     Spacer(modifier.width(4.dp))
                     IconButton(
@@ -211,59 +148,20 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
             item{Spacer(modifier.height(20.dp))
             }
             items(posts.chunked(2)) { rowPosts ->
-
+                Spacer(modifier.height(20.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
                     rowPosts.forEach { post ->
 
-                        Card(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(180.dp),
-                            shape = MaterialTheme.shapes.large,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .background(
-                                            MaterialTheme.colorScheme.surface
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-
-                                    Text(
-                                        text = "Post Image"
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier.height(8.dp)
-                                )
-
-                                Text(
-                                    text = post,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-
+                        ProfilePostCard(
+                            modifier = Modifier.weight(1f),
+                            title = post,
+                            onClick = {
+                                // Navigate later
                             }
-                        }
+                        )
                     }
                 }
             }

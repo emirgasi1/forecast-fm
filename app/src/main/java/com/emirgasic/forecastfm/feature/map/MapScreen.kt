@@ -39,6 +39,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
+import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
+import com.emirgasic.forecastfm.core.ui.components.map.LocationRecommendationCard
+import com.emirgasic.forecastfm.core.ui.components.map.MapPreviewCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,171 +72,41 @@ fun MapScreen(navController: NavController,modifier: Modifier =Modifier){
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ){
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.mappin),
-                    contentDescription = "Pin",
-                    modifier = Modifier.size(30.dp)
-                )
-                Text(
-                    text = "Map",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            }
+            ScreenTitle(
+                title = "Map",
+                icon = painterResource(R.drawable.mappin)
+            )
             Spacer(modifier.height(16.dp))
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp),
-                shape = MaterialTheme.shapes.medium,
-                border = BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.mappin),
-                            contentDescription = "Map",
-                            modifier = Modifier.size(48.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Interactive Map",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        Text(
-                            text = "Google Maps",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            MapPreviewCard(
+                icon = painterResource(R.drawable.mappin)
+            )
             Spacer(modifier.height(16.dp))
 
 
-            ExposedDropdownMenuBox(
-
+            LocationDropdown(
+                selectedLocation = selectedLocation,
+                locations = locations,
                 expanded = expanded,
-
                 onExpandedChange = {
-                    expanded = !expanded
-                } ,modifier=Modifier.background(color= MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-
-                OutlinedTextField(
-
-                    value = selectedLocation,
-
-                    onValueChange = {},
-
-                    readOnly = true,
-
-                    label = {
-                        Text("Location")
-                    },
-
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = expanded
-                        )
-                    },
-
-                    modifier = Modifier.menuAnchor()
-
-                )
-
-                ExposedDropdownMenu(
-
-                    expanded = expanded,
-
-                    onDismissRequest = {
-                        expanded = false
-                    },
-
-
-                ) {
-                    locations.forEach { location ->
-
-                        DropdownMenuItem(
-
-                            text = {
-                                Text(location)
-                            },
-
-                            onClick = {
-
-                                selectedLocation = location
-                                expanded = false
-
-                            }
-                        )
-
-                    }
-
+                    expanded = it
+                },
+                onLocationSelected = {
+                    selectedLocation = it
+                    expanded = false
                 }
-
-            }
+            )
             Spacer(modifier.height(18.dp))
-            Card(modifier=Modifier.fillMaxWidth(),
-                shape= MaterialTheme.shapes.medium,
-                border= BorderStroke(width=1.dp,MaterialTheme.colorScheme.outline),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )) {
-                Column(modifier=Modifier.fillMaxWidth().padding(14.dp),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                    Row(horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically){
-                            Image(painter=painterResource(R.drawable.mappin), contentDescription = "Location",modifier.size(20.dp))
-                            Spacer(modifier.width(8.dp))
-                            Text(text="Bascarsija",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge)
-                    }
-                    Row(horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically){
-                        Image(painter=painterResource(R.drawable.sun), contentDescription = "Sun",modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="22°C",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier.width(8.dp))
-                        Text(text="•",color= MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.3f),style= MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Sunny",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge)
-                    }
-                    Row(horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically){
-                        Image(painter=painterResource(R.drawable.music), contentDescription = "Music",modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Coffee House Vibes",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge)
-                    }
-                    Row(horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically){
-                        Image(painter=painterResource(R.drawable.clothes), contentDescription = "Style",modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Light Jacket + Jeans",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.bodyLarge)
-                    }
-                    Button(onClick = {}) {
-                        Text(text="View Details")
-                    }
+            LocationRecommendationCard(
+                location = "Baščaršija",
+                weatherIcon = painterResource(R.drawable.sun),
+                temperature = "22°C",
+                weather = "Sunny",
+                music = "Coffee House Vibes",
+                outfit = "Light Jacket + Jeans",
+                onViewDetailsClick = {
+                    // Navigate later
                 }
-            }
+            )
         }
     }
 }

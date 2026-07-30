@@ -40,6 +40,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
+import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
+import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
 
 @Composable
 fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
@@ -48,9 +51,6 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
     }
     var password by remember {
         mutableStateOf("")
-    }
-    var passwordVisible by remember {
-        mutableStateOf(false)
     }
 
 
@@ -67,75 +67,39 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
 
             Spacer(modifier=modifier.height(24.dp))
             Column (horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = modifier.width(320.dp)){
-                Text(text="Email",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { newEmail ->
-                        email = newEmail
-                    },
-                    label = {
-                        Text("example@gmail.com")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text="Email",
+                    color= MaterialTheme.colorScheme.onPrimary,
+                    style= MaterialTheme.typography.titleMedium,
+                    modifier=modifier.align(Alignment.Start)
                 )
-                Spacer(modifier=modifier.height(34.dp))
-                Text(text="Password",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { newPassword ->
-                        password = newPassword
-                    },
-                    label = {
-                        Text("password123")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
 
-                    visualTransformation =
-                        if (passwordVisible)
-                            VisualTransformation.None
-                        else
-                            PasswordVisualTransformation(),
-
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                passwordVisible = !passwordVisible
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible)
-                                        R.drawable.visibilityon
-                                    else
-                                        R.drawable.visibilityoff
-                                ),
-                                contentDescription = "Toggle Password Visibility"
-                                , modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
+                EmailField(
+                    email = email,
+                    onEmailChange = {
+                        email = it
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier=modifier.height(32.dp))
-                Button(
+
+                Spacer(modifier.height(34.dp))
+
+                PasswordField(
+                    password = password,
+                    onPasswordChange = {
+                        password = it
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier.height(32.dp))
+
+                AuthButton(
+                    text = "Log In",
                     onClick = {
 
-                    },modifier=modifier.fillMaxWidth().height(54.dp),
-                    shape=RoundedCornerShape(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.background
-                    )){
-                    Text(text="Log In"  ,style=MaterialTheme.typography.titleMedium)
-                }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier.height(32.dp))
 

@@ -30,6 +30,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.ui.components.settings.SettingsOptionCard
+import com.emirgasic.forecastfm.core.ui.components.settings.SettingsSection
 
 
 @Composable
@@ -52,37 +54,18 @@ fun SettingsScreen(navController: NavController,modifier: Modifier =Modifier){
             item{
                 Spacer(modifier.height(28.dp))
             }
+            item {
+                SettingsSection(
+                    title = "Account"
+                ) {
 
-            item{
-                Text(text="Account",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall)
-            }
-            item{
-                Spacer(modifier.height(16.dp))
-            }
-            item{
-                Card(onClick={
-                    navController.navigate(Routes.EditProfile)
-                },modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Edit Profile",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
+                    SettingsOptionCard(
+                        title = "Edit Profile",
+                        onClick = {
+                            navController.navigate(Routes.EditProfile)
+                        }
+                    )
+
                 }
             }
             item{
@@ -90,77 +73,22 @@ fun SettingsScreen(navController: NavController,modifier: Modifier =Modifier){
             }
 
             item{
-                Text(text="Preferences",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall)
-            }
-            item{
-                Spacer(modifier.height(16.dp))
-            }
-            item{
-                Card(onClick={},modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Default Location",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
-                }
-            }
-            item{
-                Card(onClick={},modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Theme",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
-                }
-            }
-            item{
-                Card(onClick={},modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Notifications",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
+                SettingsSection(
+                    title = "Preferences"
+                ) {
+
+                    SettingsOptionCard(
+                        title = "Default Location"
+                    )
+
+                    SettingsOptionCard(
+                        title = "Theme"
+                    )
+
+                    SettingsOptionCard(
+                        title = "Notifications"
+                    )
+
                 }
             }
 
@@ -170,55 +98,18 @@ fun SettingsScreen(navController: NavController,modifier: Modifier =Modifier){
             }
 
             item{
-                Text(text="About",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineSmall)
-            }
-            item{
-                Spacer(modifier.height(16.dp))
-            }
-            item{
-                Card(onClick={},modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Privacy Policy",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
-                }
-            }
-            item{
-                Card(onClick={},modifier=Modifier.fillMaxWidth(),colors= CardDefaults.cardColors(containerColor= MaterialTheme.colorScheme.surfaceVariant),
-                    border= BorderStroke(width=1.dp, color= MaterialTheme.colorScheme.outline),
-                    shape=MaterialTheme.shapes.medium) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "About App",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null
-                        )
-                    }
+                SettingsSection(
+                    title = "About"
+                ) {
+
+                    SettingsOptionCard(
+                        title = "Privacy Policy"
+                    )
+
+                    SettingsOptionCard(
+                        title = "About App"
+                    )
+
                 }
             }
             item{

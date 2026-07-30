@@ -15,11 +15,14 @@ import com.emirgasic.forecastfm.R
 
 @Composable
 fun BottomBar(navController: NavController){
+    val currentRoute =
+        navController.currentBackStackEntry?.destination?.route
+
     NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceVariant){
         NavigationBarItem(
-            selected = true,
+            selected = currentRoute == Routes.Home,
             onClick = {
-                navController.navigate("home")
+                navController.navigate(Routes.Home)
             },
             icon = {
 
@@ -37,9 +40,9 @@ fun BottomBar(navController: NavController){
             }
         )
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == Routes.Music,
             onClick = {
-                navController.navigate("music")
+                navController.navigate(Routes.Music)
             },
             icon = {
 
@@ -57,9 +60,9 @@ fun BottomBar(navController: NavController){
             }
         )
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == Routes.Map,
             onClick = {
-                navController.navigate("map")
+                navController.navigate(Routes.Map)
             },
             icon = {
 
@@ -77,9 +80,9 @@ fun BottomBar(navController: NavController){
             }
         )
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == Routes.Style,
             onClick = {
-                navController.navigate("style")
+                navController.navigate(Routes.Style)
             },
             icon = {
 
@@ -97,9 +100,29 @@ fun BottomBar(navController: NavController){
             }
         )
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == Routes.Feed,
             onClick = {
-                navController.navigate("profile")
+                navController.navigate(Routes.Feed)
+            },
+            icon = {
+
+                Image(
+                    painter = painterResource(R.drawable.heart),
+                    contentDescription = "Feed",
+                    modifier = Modifier.size(24.dp)
+                )
+
+            },
+            label = {
+                Text(
+                    text = "Feed"
+                )
+            }
+        )
+        NavigationBarItem(
+            selected = currentRoute == Routes.Profile,
+            onClick = {
+                navController.navigate(Routes.Profile)
             },
             icon = {
 

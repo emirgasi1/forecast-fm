@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
+import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
+import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
 
 
 @Composable
@@ -102,100 +105,49 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
                 Spacer(modifier=modifier.height(14.dp))
-                Text(text="Email",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { newEmail ->
-                        email = newEmail
+                Text(
+                    text="Email",
+                    color= MaterialTheme.colorScheme.onPrimary,
+                    style= MaterialTheme.typography.titleMedium,
+                    modifier=Modifier.align(Alignment.Start)
+                )
+
+                EmailField(
+                    email = email,
+                    onEmailChange = {
+                        email = it
                     },
-                    label = {
-                        Text("example@gmail.com")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier=modifier.height(14.dp))
-                Text(text="Password",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { newPassword ->
-                        password = newPassword
-                    },
-                    label = {
-                        Text("password123")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
+                Text(
+                    text="Password",
+                    color= MaterialTheme.colorScheme.onPrimary,
+                    style= MaterialTheme.typography.titleMedium,
+                    modifier=Modifier.align(Alignment.Start)
+                )
 
-                    visualTransformation =
-                        if (passwordVisible)
-                            VisualTransformation.None
-                        else
-                            PasswordVisualTransformation(),
-
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                passwordVisible = !passwordVisible
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible)
-                                        R.drawable.visibilityon
-                                    else
-                                        R.drawable.visibilityoff
-                                ),
-                                contentDescription = "Toggle Password Visibility"
-                                , modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
+                PasswordField(
+                    password = password,
+                    onPasswordChange = {
+                        password = it
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier=modifier.height(14.dp))
-                Text(text="Confirm Password",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
-                OutlinedTextField(
-                    value = passwordCheck,
-                    onValueChange = { newPassword ->
-                        passwordCheck = newPassword
-                    },
-                    label = {
-                        Text("password123")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
+                Text(
+                    text="Confirm Password",
+                    color= MaterialTheme.colorScheme.onPrimary,
+                    style= MaterialTheme.typography.titleMedium,
+                    modifier=Modifier.align(Alignment.Start)
+                )
 
-                    visualTransformation =
-                        if (passwordVisible)
-                            VisualTransformation.None
-                        else
-                            PasswordVisualTransformation(),
-
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                passwordVisible = !passwordVisible
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (passwordVisible)
-                                        R.drawable.visibilityon
-                                    else
-                                        R.drawable.visibilityoff
-                                ),
-                                contentDescription = "Toggle Password Visibility"
-                                , modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
+                PasswordField(
+                    password = passwordCheck,
+                    onPasswordChange = {
+                        passwordCheck = it
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Row(
                     modifier = Modifier
@@ -218,17 +170,13 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                     )
                 }
                 Spacer(modifier=modifier.height(20.dp))
-                Button(
+                AuthButton(
+                    text = "Create Account",
                     onClick = {
 
-                    },modifier=modifier.fillMaxWidth().height(54.dp),
-                    shape=RoundedCornerShape(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.background
-                    )){
-                    Text(text="Log In"  ,style=MaterialTheme.typography.titleMedium)
-                }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier.height(32.dp))
 

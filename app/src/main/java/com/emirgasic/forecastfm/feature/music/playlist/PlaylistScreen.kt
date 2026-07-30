@@ -31,6 +31,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
+import com.emirgasic.forecastfm.core.ui.components.music.playlist.ExternalMusicLinkCard
+import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistHeaderCard
+import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCard
+import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
 
 @Composable
 fun PlaylistScreen(navController: NavController,modifier: Modifier =Modifier){
@@ -44,381 +49,140 @@ fun PlaylistScreen(navController: NavController,modifier: Modifier =Modifier){
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Column(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Image(painter=painterResource(R.drawable.album1),
-                            contentDescription = "album_cover",
-                            modifier=Modifier.size(300.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .border(width=1.dp,color= MaterialTheme.colorScheme.outline.copy(alpha=0.3f)
-                                    ,shape= MaterialTheme.shapes.medium))
-                        Text(text="I No Longer Fear the Razor Guarding My Heel",
-                            maxLines = 2,
-                            overflow= TextOverflow.Ellipsis,
-                            color= MaterialTheme.colorScheme.onPrimary,
-                            style=MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center)
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
-                            Text(text="Lo-fi",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(8.dp))
-                            Text(
-                                text = "•",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-                            Spacer(modifier.width(8.dp))
-                            Text(text="Cozy Night",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                        Spacer(modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
+            item {
 
-                            Image(painter = painterResource(R.drawable.sun),
-                                contentDescription = "Sun",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Sunny",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Text(text="22°C",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Image(painter = painterResource(R.drawable.mappin),
-                                contentDescription = "Location",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Bascarsija",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
+                PlaylistHeaderCard(
+                    album = painterResource(R.drawable.album1),
+                    title = "I No Longer Fear the Razor Guarding My Heel",
+                    genre = "Lo-fi",
+                    mood = "Cozy Night",
+                    weatherIcon = painterResource(R.drawable.sun),
+                    weather = "Sunny",
+                    temperature = "22°C",
+                    locationIcon = painterResource(R.drawable.mappin),
+                    location = "Baščaršija"
+                )
+
             }
             item{
                 Spacer(modifier.height(28.dp))
             }
-            item{
-                Column(modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top) {
-                    Text(text="Best For",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
+            item {
+
+                SectionTitle(
+                    title = "Best For"
+                )
+
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Row(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.Top){
-                        Image(painter=painterResource(R.drawable.coffee), contentDescription = "Coffee",
-                            Modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Morning Coffee",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium)
-                    }
+            item {
 
-                }
+                PlaylistTagCard(
+                    icon = painterResource(R.drawable.coffee),
+                    title = "Morning Coffee"
+                )
+
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Row(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.Top){
-                        Image(painter=painterResource(R.drawable.books), contentDescription = "Coffee",
-                            Modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Studying",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium)
-                    }
+            item {
 
-                }
+                PlaylistTagCard(
+                    icon = painterResource(R.drawable.books),
+                    title = "Studying"
+                )
+
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Row(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.Top){
-                        Image(painter=painterResource(R.drawable.moon), contentDescription = "Coffee",
-                            Modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Late Night Walk",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium)
-                    }
+            item {
 
-                }
+                PlaylistTagCard(
+                    icon = painterResource(R.drawable.moon),
+                    title = "Late Night Walk"
+                )
+
             }
             item{
                 Spacer(modifier.height(28.dp))
             }
 
             item{
-                Column(modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top) {
-                    Text(text="Would You Rather",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
+                SectionTitle(
+                    title = "Would You Rather"
+                )
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Row(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.Top){
-                        Image(painter=painterResource(R.drawable.music), contentDescription = "Coffee",
-                            Modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Open in Spotify",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium)
-                    }
+            item {
 
-                }
+                ExternalMusicLinkCard(
+                    icon = painterResource(R.drawable.music),
+                    title = "Open in Spotify"
+                )
+
             }
             item{
                 Spacer(modifier.height(12.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Row(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.Top){
-                        Image(painter=painterResource(R.drawable.play), contentDescription = "Coffee",
-                            Modifier.size(20.dp))
-                        Spacer(modifier.width(8.dp))
-                        Text(text="Open in Youtube",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleMedium)
-                    }
+            item {
 
-                }
+                ExternalMusicLinkCard(
+                    icon = painterResource(R.drawable.play),
+                    title = "Open in Youtube"
+                )
+
             }
             item{
                 Spacer(modifier.height(28.dp))
             }
 
             item{
-                Column(modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top) {
-                    Text(text="Similar Playlists",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.headlineSmall)
-                }
+                SectionTitle(
+                    title = "Similar Playlists"
+                )
             }
             item{
                 Spacer(modifier.height(16.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Column(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Image(painter=painterResource(R.drawable.album2),
-                            contentDescription = "album_cover",
-                            modifier=Modifier.size(300.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .border(width=1.dp,color= MaterialTheme.colorScheme.outline.copy(alpha=0.3f)
-                                    ,shape= MaterialTheme.shapes.medium))
-                        Text(text="GoodNight Lovell",
-                            maxLines = 2,
-                            overflow= TextOverflow.Ellipsis,
-                            color= MaterialTheme.colorScheme.onPrimary,
-                            style=MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center)
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
-                            Text(text="Lo-fi",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(8.dp))
-                            Text(
-                                text = "•",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-                            Spacer(modifier.width(8.dp))
-                            Text(text="Cozy Night",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                        Spacer(modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
+            item {
 
-                            Image(painter = painterResource(R.drawable.heavy_rain),
-                                contentDescription = "Rain",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Sunny",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Text(text="-4°C",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Image(painter = painterResource(R.drawable.mappin),
-                                contentDescription = "Location",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Otoka",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
+                SimilarPlaylistCard(
+                    album = painterResource(R.drawable.album2),
+                    title = "GoodNight Lovell",
+                    genre = "Lo-fi",
+                    mood = "Cozy Night",
+                    weatherIcon = painterResource(R.drawable.heavy_rain),
+                    weather = "Rainy",
+                    temperature = "-4°C",
+                    locationIcon = painterResource(R.drawable.mappin),
+                    location = "Otoka"
+                )
+
             }
             item{
                 Spacer(modifier.height(16.dp))
             }
-            item{
-                Card(modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline
-                    )){
-                    Column(modifier=Modifier.fillMaxWidth()
-                        .background(color= MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Image(painter=painterResource(R.drawable.album3),
-                            contentDescription = "album_cover",
-                            modifier=Modifier.size(300.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .border(width=1.dp,color= MaterialTheme.colorScheme.outline.copy(alpha=0.3f)
-                                    ,shape= MaterialTheme.shapes.medium))
-                        Text(text="Lil Nameless 2k16",
-                            maxLines = 2,
-                            overflow= TextOverflow.Ellipsis,
-                            color= MaterialTheme.colorScheme.onPrimary,
-                            style=MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center)
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
-                            Text(text="Lo-fi",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(8.dp))
-                            Text(
-                                text = "•",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-                            Spacer(modifier.width(8.dp))
-                            Text(text="Cozy Night",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                        Spacer(modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically){
+            item {
 
-                            Image(painter = painterResource(R.drawable.sunny_cloudy),
-                                contentDescription = "Sun_Cloudy",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Sunny",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Text(text="22°C",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                            Spacer(modifier.width(18.dp))
-                            Image(painter = painterResource(R.drawable.mappin),
-                                contentDescription = "Location",
-                                modifier.size(20.dp))
-                            Spacer(modifier.width(4.dp))
-                            Text(text="Dobrinja",
-                                color=MaterialTheme.colorScheme.onBackground,
-                                style=MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
+                SimilarPlaylistCard(
+                    album = painterResource(R.drawable.album3),
+                    title = "Lil Nameless 2k16",
+                    genre = "Lo-fi",
+                    mood = "Cozy Night",
+                    weatherIcon = painterResource(R.drawable.sunny_cloudy),
+                    weather = "Sunny",
+                    temperature = "22°C",
+                    locationIcon = painterResource(R.drawable.mappin),
+                    location = "Dobrinja"
+                )
+
+            }
             }
         }
 
@@ -426,5 +190,5 @@ fun PlaylistScreen(navController: NavController,modifier: Modifier =Modifier){
 
 
 
-    }
+
 
