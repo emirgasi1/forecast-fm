@@ -27,14 +27,22 @@ import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.weather.CurrentWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.weather.ForecastRowItem
 import com.emirgasic.forecastfm.core.ui.components.weather.WeatherDetailsCard
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 
 @Composable
 fun WeatherScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel:WeatherViewModel=viewModel()
 ){
+    val weather by viewModel.weather.collectAsState()
 
+    val hourlyForecast by viewModel.hourlyForecast.collectAsState()
+
+    val dailyForecast by viewModel.dailyForecast.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -63,27 +71,33 @@ fun WeatherScreen(
 
 
             item {
-
-                CurrentWeatherCard(
-                    weatherIcon = painterResource(R.drawable.sun),
-                    temperature = "22°C",
-                    condition = "Sunny",
-                    location = "Baščaršija",
-                    updated = "Updated 5 minutes ago"
-                )
+                weather?.let{
+                    CurrentWeatherCard(
+                        weatherIcon = painterResource(R.drawable.sun),
+                        temperature = it.temperature,
+                        condition = it.condition,
+                        location = it.location,
+                        updated = "Updated 5 minutes ago"
+                    )
+            }
             }
 
 
 
             item {
 
-                WeatherDetailsCard(
-                    feelsLike = "21°C",
-                    humidity = "55%",
-                    wind = "8 km/h",
-                    uvIndex = "Moderate",
-                    airQuality = "Good"
-                )
+                weather?.let {
+
+                    WeatherDetailsCard(
+                        feelsLike = it.feelsLike,
+                        humidity = it.humidity,
+                        wind = it.wind,
+                        uvIndex = "Moderate",
+                        airQuality = "Good"
+                    )
+
+                }
+
             }
 
 
@@ -117,36 +131,15 @@ fun WeatherScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ){
+                        hourlyForecast.forEach {
 
-                        ForecastRowItem(
-                            title = "10:00 AM",
-                            icon = painterResource(R.drawable.sun),
-                            temperature = "22°C"
-                        )
+                            ForecastRowItem(
+                                title = it.time,
+                                icon = painterResource(it.icon),
+                                temperature = it.temperature
+                            )
 
-                        ForecastRowItem(
-                            title = "11:00 AM",
-                            icon = painterResource(R.drawable.sun),
-                            temperature = "23°C"
-                        )
-
-                        ForecastRowItem(
-                            title = "12:00 PM",
-                            icon = painterResource(R.drawable.sunny_cloudy),
-                            temperature = "24°C"
-                        )
-
-                        ForecastRowItem(
-                            title = "01:00 PM",
-                            icon = painterResource(R.drawable.sunny_cloudy),
-                            temperature = "25°C"
-                        )
-
-                        ForecastRowItem(
-                            title = "02:00 PM",
-                            icon = painterResource(R.drawable.sun),
-                            temperature = "25°C"
-                        )
+                        }
 
                     }
                 }
@@ -184,40 +177,15 @@ fun WeatherScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ){
 
-                        ForecastRowItem(
-                            title = "Monday",
-                            icon = painterResource(R.drawable.sun),
-                            temperature = "22°C"
-                        )
+                        dailyForecast.forEach {
 
+                            ForecastRowItem(
+                                title = it.time,
+                                icon = painterResource(it.icon),
+                                temperature = it.temperature
+                            )
 
-                        ForecastRowItem(
-                            title = "Tuesday",
-                            icon = painterResource(R.drawable.sunny_cloudy),
-                            temperature = "21°C"
-                        )
-
-
-                        ForecastRowItem(
-                            title = "Wednesday",
-                            icon = painterResource(R.drawable.heavy_rain),
-                            temperature = "18°C"
-                        )
-
-
-                        ForecastRowItem(
-                            title = "Thursday",
-                            icon = painterResource(R.drawable.sun),
-                            temperature = "23°C"
-                        )
-
-
-                        ForecastRowItem(
-                            title = "Friday",
-                            icon = painterResource(R.drawable.sunny_cloudy),
-                            temperature = "24°C"
-                        )
-
+                        }
                     }
                 }
             }

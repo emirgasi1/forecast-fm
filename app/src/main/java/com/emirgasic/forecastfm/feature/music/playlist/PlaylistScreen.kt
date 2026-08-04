@@ -1,5 +1,6 @@
 package com.emirgasic.forecastfm.feature.music.playlist
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,12 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,40 +34,92 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.ExternalMusicLinkCard
+import com.emirgasic.forecastfm.core.ui.components.music.playlist.MusicRow
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistHeaderCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
 
 @Composable
-fun PlaylistScreen(navController: NavController,modifier: Modifier =Modifier){
+fun PlaylistScreen(navController: NavController,
+                   playlistId:String?,
+                   modifier: Modifier =Modifier){
+    val viewModel: PlaylistViewModel = viewModel()
+
+    val playlist by viewModel.playlist.collectAsState()
+    LaunchedEffect(playlistId) {
+
+
+        playlistId?.let {
+            viewModel.loadPlaylist(it)
+        }
+    }
+    if (playlist == null) {
+        Text("Loading...")
+        return
+    }
+
+    Text(
+        text = "ID: $playlistId"
+    )
     Box(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
             .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
     ) {
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+                Spacer(modifier.height(28.dp))
+            }
+
+            item {
 
                 PlaylistHeaderCard(
-                    album = painterResource(R.drawable.album1),
-                    title = "I No Longer Fear the Razor Guarding My Heel",
-                    genre = "Lo-fi",
-                    mood = "Cozy Night",
+                    album = painterResource(playlist!!.albumImage),
+                    title = playlist!!.title,
+                    genre = playlist!!.genre,
+                    mood = playlist!!.mood,
                     weatherIcon = painterResource(R.drawable.sun),
-                    weather = "Sunny",
-                    temperature = "22°C",
+                    weather = playlist!!.weather,
+                    temperature = playlist!!.temperature,
                     locationIcon = painterResource(R.drawable.mappin),
-                    location = "Baščaršija"
+                    location = playlist!!.location
                 )
 
+            }
+            item {
+                Spacer(modifier.height(28.dp))
+            }
+
+            item {
+                SectionTitle(
+                    title = "Songs"
+                )
+            }
+
+            item {
+                Spacer(modifier.height(12.dp))
+            }
+
+            items(playlist!!.songs) { song ->
+
+                MusicRow(
+                    title = song.title,
+                    artist = song.artist,
+                    duration = song.duration,
+                    image = painterResource(song.albumImage)
+                )
+
+                Spacer(modifier.height(12.dp))
             }
             item{
                 Spacer(modifier.height(28.dp))

@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 import com.emirgasic.forecastfm.core.ui.components.map.LocationRecommendationCard
@@ -46,22 +49,27 @@ import com.emirgasic.forecastfm.core.ui.components.map.MapPreviewCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen(navController: NavController,modifier: Modifier =Modifier){
+fun MapScreen(
+    mainNavController: NavController,
+    rootNavController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: MapViewModel = viewModel()
+){
+    val recommendations by viewModel.recommendations.collectAsState()
+
+    val selectedRecommendation by viewModel.selectedRecommendation.collectAsState()
+
     var expanded by remember {
         mutableStateOf(false)
     }
 
-    var selectedLocation by remember {
-        mutableStateOf("Baščaršija")
+    val locations = recommendations.map {
+        it.location
     }
 
-    val locations = listOf(
-        "Baščaršija",
-        "Ilidža",
-        "Trebević",
-        "Dobrinja",
-        "Grbavica"
-    )
+    val selectedLocation =
+        selectedRecommendation?.location ?: ""
+
     Box(
         modifier = Modifier.fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
@@ -78,7 +86,7 @@ fun MapScreen(navController: NavController,modifier: Modifier =Modifier){
             )
             Spacer(modifier.height(16.dp))
             MapPreviewCard(
-                icon = painterResource(R.drawable.mappin)
+                selectedLocation = selectedLocation
             )
             Spacer(modifier.height(16.dp))
 
@@ -91,22 +99,38 @@ fun MapScreen(navController: NavController,modifier: Modifier =Modifier){
                     expanded = it
                 },
                 onLocationSelected = {
-                    selectedLocation = it
+                    viewModel.selectLocation(it)
                     expanded = false
                 }
             )
             Spacer(modifier.height(18.dp))
-            LocationRecommendationCard(
-                location = "Baščaršija",
-                weatherIcon = painterResource(R.drawable.sun),
-                temperature = "22°C",
-                weather = "Sunny",
-                music = "Coffee House Vibes",
-                outfit = "Light Jacket + Jeans",
-                onViewDetailsClick = {
-                    // Navigate later
-                }
-            )
+            selectedRecommendation?.let { recommendation ->
+
+                LocationRecommendationCard(
+
+                    location = recommendation.location,
+
+                    weatherIcon = painterResource(
+                        recommendation.weatherIcon
+                    ),
+
+                    temperature = recommendation.temperature,
+
+                    weather = recommendation.weather,
+
+                    music = recommendation.music,
+
+                    outfit = recommendation.outfit,
+
+                    onViewDetailsClick = {
+                        rootNavController.navigate(
+                            Routes.locationDetailsRoute(
+                                selectedLocation
+                            )
+                        )
+                    }
+                )
+            }
         }
     }
 }

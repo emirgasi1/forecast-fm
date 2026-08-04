@@ -53,7 +53,8 @@ fun MainScreen(
 
             composable(Routes.Map){
                 MapScreen(
-                    navController = mainNavController
+                    mainNavController = mainNavController,
+                    rootNavController = rootNavController
                 )
             }
 

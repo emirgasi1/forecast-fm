@@ -1,5 +1,6 @@
 package com.emirgasic.forecastfm.core.ui.components.music
 
+import android.R.attr.id
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,14 +30,15 @@ import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
 
 @Composable
 fun RecommendedMusicCard(
+    id:String,
     image: Painter,
     title: String,
     genre: String,
     mood: String,
     likes: String,
     modifier: Modifier = Modifier,
-    onPlayClick: () -> Unit = {},
-    onViewPlaylistClick: () -> Unit = {}
+    onPlayClick: () -> Unit,
+    onViewPlaylistClick: (String) -> Unit
 ) {
 
     Card(
@@ -109,7 +111,9 @@ fun RecommendedMusicCard(
 
 
             TextButton(
-                onClick = onViewPlaylistClick
+                onClick = {
+                    onViewPlaylistClick(id.toString())
+                }
             ) {
 
                 Text(

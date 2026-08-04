@@ -12,6 +12,8 @@ import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
 import com.emirgasic.forecastfm.feature.comments.CommentsScreen
 import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
+import com.emirgasic.forecastfm.feature.locationdetails.LocationDetailsScreen
+import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.music.musichistory.MusicHistoryScreen
@@ -73,9 +75,38 @@ fun NavGraph(modifier: Modifier = Modifier){
             )
 
         }
-        composable(Routes.Playlist){
+        composable(
+            route = Routes.Playlist
+        ) { backStackEntry ->
+
+            val playlistId = backStackEntry.arguments?.getString("playlistId")
 
             PlaylistScreen(
+                navController = navController,
+                playlistId = playlistId
+            )
+
+        }
+
+        composable(
+            route = Routes.LocationDetails
+        ) { backStackEntry ->
+
+            val location =
+                backStackEntry.arguments?.getString("location")
+
+
+            LocationDetailsScreen(
+                navController = navController,
+                location = location
+            )
+
+        }
+        composable(
+            route = Routes.PlaceRecommendation
+        ) {
+
+            PlaceRecommendationScreen(
                 navController = navController
             )
 

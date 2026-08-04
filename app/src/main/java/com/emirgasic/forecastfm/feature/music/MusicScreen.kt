@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -30,11 +31,23 @@ import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.common.SearchField
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherRecommendationHeader
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.emirgasic.forecastfm.feature.music.MusicViewModel
 @Composable
 fun MusicScreen(mainNavController: NavController,
                 rootNavController: NavController,
-                modifier: Modifier =Modifier) {
+                modifier: Modifier =Modifier,
+                viewModel: MusicViewModel = viewModel()) {
+    val playlists by viewModel.playlists.collectAsState()
+
+    val weatherPlaylists by viewModel.weatherPlaylists.collectAsState()
+
+    val trendingPlaylists by viewModel.trendingPlaylists.collectAsState()
+
+    val recommendedPlaylist = playlists.firstOrNull()
+
     var search by remember {
         mutableStateOf("")
     }
@@ -80,27 +93,37 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 Spacer(modifier = Modifier.height(20.dp))
             }
-            item {
+            items(weatherPlaylists){ playlist ->
+
                 MusicPlaylistCard(
-                    title = "Summer Walks",
-                    genre = "Chill Pop",
-                    firstSong = "Golden Hour",
-                    songs = "18 songs",
+                    title = playlist.title,
+                    genre = playlist.genre,
+                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
+                    songs = "${playlist.songs.size} songs",
                     duration = "1h 12min",
-                    likes = "124"
+                    likes = playlist.likes.toString()
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
             }
             item {
                 Spacer(modifier.height(16.dp))
             }
-            item {
+            items(trendingPlaylists){ playlist ->
+
                 MusicPlaylistCard(
-                    title = "Golden Hour",
-                    genre = "Indie",
-                    firstSong = "Uptown Jazz",
-                    songs = "18 songs",
+                    title = playlist.title,
+                    genre = playlist.genre,
+                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
+                    songs = "${playlist.songs.size} songs",
                     duration = "1h 12min",
-                    likes = "87"
+                    likes = playlist.likes.toString()
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
             }
 
@@ -117,27 +140,41 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 Spacer(modifier = Modifier.height(20.dp))
             }
-            item {
+            items(trendingPlaylists){ playlist ->
+
                 MusicPlaylistCard(
-                    title = "Midnight Coffee",
-                    genre = "Lo-fi",
-                    firstSong = "Midnight Coffee",
-                    songs = "18 songs",
+                    title = playlist.title,
+                    genre = playlist.genre,
+                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
+                    songs = "${playlist.songs.size} songs",
                     duration = "1h 12min",
-                    likes = "452"
+                    likes = playlist.likes.toString()
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
             }
             item {
                 Spacer(modifier.height(16.dp))
             }
-            item {
+            items(weatherPlaylists){ playlist ->
+
                 MusicPlaylistCard(
-                    title = "Downtown Jazz",
-                    genre = "Jazz",
-                    firstSong = "Golden Hour",
-                    songs = "18 songs",
+                    title = playlist.title,
+                    genre = playlist.genre,
+                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
+                    songs = "${playlist.songs.size} songs",
                     duration = "1h 12min",
-                    likes = "318"
+                    likes = playlist.likes.toString()
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
             }
 
@@ -207,18 +244,35 @@ fun MusicScreen(mainNavController: NavController,
             }
             item {
 
-                RecommendedMusicCard(
-                    image = painterResource(R.drawable.album1),
-                    title = "I No Longer Fear the Razor Guarding My Heel",
-                    genre = "Lo-fi",
-                    mood = "Cozy Night",
-                    likes = "124",
-                    onPlayClick = {
-                    },
-                    onViewPlaylistClick = {
-                        rootNavController.navigate(Routes.Playlist)
-                    }
-                )
+                recommendedPlaylist?.let { playlist ->
+
+                    RecommendedMusicCard(
+                        id = playlist.id,
+
+                        image = painterResource(playlist.albumImage),
+
+                        title = playlist.title,
+
+                        genre = playlist.genre,
+
+                        mood = playlist.mood,
+
+                        likes = playlist.likes.toString(),
+
+                        onPlayClick = {
+
+                        },
+
+                        onViewPlaylistClick = { id ->
+
+                            rootNavController.navigate(
+                                Routes.playlistRoute(id)
+                            )
+
+                        }
+                    )
+
+                }
 
             }
 

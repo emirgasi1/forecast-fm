@@ -20,14 +20,21 @@ import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.emirgasic.forecastfm.feature.feed.FeedViewModel
+import androidx.compose.foundation.lazy.items
 
 @Composable
 fun FeedScreen(
     mainNavController: NavController,
     rootNavController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel:FeedViewModel=viewModel()
 ) {
+
+    val posts by viewModel.posts.collectAsState()
 
     Box(
         modifier = modifier
@@ -57,77 +64,51 @@ fun FeedScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            item {
-                FeedPostCard(
-                    profileImage = painterResource(R.drawable.profile_picture),
-                    username = "Emir",
-                    time = "12 min ago",
-                    weatherIcon = painterResource(R.drawable.sun),
-                    weather = "Sunny",
-                    temperature = "22°C",
-                    location = "Baščaršija",
-                    postImage = painterResource(R.drawable.outfit1),
-                    playlist = "Morning Coffee Jazz",
-                    caption = "Perfect weather for coffee and a walk through Sarajevo ☕",
-                    likes = "128",
-                    comments = "24",
-                    onCommentClick = {
-                        rootNavController.navigate(Routes.Comments)
-                    }
-                )
-            }
 
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+                items(posts){ post ->
 
-            item {
-                FeedPostCard(
-                    profileImage = painterResource(R.drawable.profile_picture),
-                    username = "Sarah",
-                    time = "45 min ago",
-                    weatherIcon = painterResource(R.drawable.heavy_rain),
-                    weather = "Rainy",
-                    temperature = "9°C",
-                    location = "Ilidža",
-                    postImage = painterResource(R.drawable.outfit2),
-                    playlist = "GoodNight Lovell",
-                    caption = "Rainy day outfit 🌧️",
-                    likes = "94",
-                    comments = "17",
-                    onCommentClick = {
-                        rootNavController.navigate(Routes.Comments)
-                    }
-                )
-            }
+                    FeedPostCard(
 
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+                        profileImage = painterResource(post.user.profileImage),
 
-            item {
-                FeedPostCard(
-                    profileImage = painterResource(R.drawable.profile_picture),
-                    username = "Alex",
-                    time = "2 hrs ago",
-                    weatherIcon = painterResource(R.drawable.sunny_cloudy),
-                    weather = "Cloudy",
-                    temperature = "18°C",
-                    location = "Dobrinja",
-                    postImage = painterResource(R.drawable.outfit3),
-                    playlist = "Lil Nameless 2k16",
-                    caption = "Comfortable fit for today's weather.",
-                    likes = "201",
-                    comments = "41",
-                    onCommentClick = {
-                        rootNavController.navigate(Routes.Comments)
-                    }
-                )
-            }
+                        username = post.user.username,
 
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+                        time = "12 min ago",
+
+                        weatherIcon = painterResource(R.drawable.sun),
+
+                        weather = post.weather.condition,
+
+                        temperature = post.weather.temperature,
+
+                        location = post.weather.location,
+
+                        postImage = painterResource(post.image),
+
+                        playlist = post.playlist.title,
+
+                        caption = post.caption,
+
+                        likes = "128",
+
+                        comments = "24",
+
+                        onCommentClick = {
+
+                            rootNavController.navigate(Routes.Comments)
+
+                        }
+
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(20.dp)
+                    )
+
+                }
+
+
+
         }
     }
 }
