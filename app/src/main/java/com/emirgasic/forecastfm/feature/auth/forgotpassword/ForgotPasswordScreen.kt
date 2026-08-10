@@ -19,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthTextField
@@ -35,10 +37,12 @@ import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 
 @Composable
-fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier){
-    var email by remember{
-        mutableStateOf("")
-    }
+fun ForgotPasswordScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: ForgotPasswordViewModel = viewModel()
+){
+    val email by viewModel.email.collectAsState()
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier=modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
             Image(painter = painterResource(R.drawable.lock,), contentDescription = "Lock Logo",modifier = Modifier.size(100.dp))
@@ -50,14 +54,16 @@ fun ForgotPasswordScreen(navController: NavController,modifier:Modifier=Modifier
                 EmailField(
                     email = email,
                     onEmailChange = {
-                        email = it
+                        viewModel.updateEmail(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier=modifier.height(32.dp))
                 AuthButton(
                     text = "Reset Password",
-                    onClick = {}
+                    onClick = {
+                        viewModel.resetPassword()
+                    }
                 )
                 Spacer(modifier.height(32.dp))
                 Text(text="Back to Login",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleSmall,modifier=modifier.clickable{navController.navigate(Routes.Login)})

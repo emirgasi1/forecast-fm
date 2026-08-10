@@ -30,4 +30,24 @@ class MusicViewModel : ViewModel() {
         repository.getPlaylists().drop(1)
     )
 
+
+    private val _search = MutableStateFlow("")
+
+    val search = _search.asStateFlow()
+
+
+    private val _selectedGenre = MutableStateFlow("")
+
+    val selectedGenre = _selectedGenre.asStateFlow()
+
+
+    fun updateSearch(value: String) {
+        _search.value = value
+    }
+
+
+    fun selectGenre(value: String) {
+        _selectedGenre.value = value
+    }
+
 }

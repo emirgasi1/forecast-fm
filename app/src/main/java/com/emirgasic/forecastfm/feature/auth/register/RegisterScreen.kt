@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
@@ -48,28 +50,17 @@ import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
 
 
 @Composable
-fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
+fun RegisterScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel = viewModel()
+){
 
-    var username by remember{
-        mutableStateOf("")
-    }
-
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
-    var passwordCheck by remember{
-        mutableStateOf("")
-    }
-    var passwordVisible by remember {
-        mutableStateOf(false)
-    }
-
-    var checkMark by remember{
-        mutableStateOf(false)
-    }
+    val username by viewModel.username.collectAsState()
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val passwordCheck by viewModel.passwordCheck.collectAsState()
+    val checkMark by viewModel.checkMark.collectAsState()
 
     val scrollState = rememberScrollState()
 
@@ -88,8 +79,8 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                 Text(text="Username",color= MaterialTheme.colorScheme.onPrimary,style= MaterialTheme.typography.titleMedium,modifier=modifier.align(Alignment.Start))
                 OutlinedTextField(
                     value = username,
-                    onValueChange = { newUsername ->
-                        username = newUsername
+                    onValueChange = {
+                        viewModel.updateUsername(it)
                     },
                     label = {
                         Text("User78")
@@ -115,7 +106,7 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                 EmailField(
                     email = email,
                     onEmailChange = {
-                        email = it
+                        viewModel.updateEmail(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -130,7 +121,7 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                 PasswordField(
                     password = password,
                     onPasswordChange = {
-                        password = it
+                        viewModel.updatePassword(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -145,7 +136,7 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                 PasswordField(
                     password = passwordCheck,
                     onPasswordChange = {
-                        passwordCheck = it
+                        viewModel.updatePasswordCheck(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -158,7 +149,7 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                     Checkbox(
                         checked = checkMark,
                         onCheckedChange = {
-                            checkMark = it
+                            viewModel.updateCheckMark(it)
                         }
                     )
 
@@ -173,7 +164,7 @@ fun RegisterScreen(navController: NavController,modifier:Modifier=Modifier){
                 AuthButton(
                     text = "Create Account",
                     onClick = {
-
+                        viewModel.register()
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

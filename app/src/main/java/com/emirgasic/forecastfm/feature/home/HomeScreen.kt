@@ -17,15 +17,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
@@ -35,9 +39,17 @@ import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
 
 @Composable
-fun HomeScreen(mainNavController: NavController,
-               rootNavController: NavController,
-               modifier: Modifier =Modifier) {
+fun HomeScreen(
+    mainNavController: NavController,
+    rootNavController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = viewModel()
+) {
+    val home by viewModel.home.collectAsState()
+    if (home == null) {
+        return
+    }
+
     Box(
         modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
     ) {
@@ -54,7 +66,7 @@ fun HomeScreen(mainNavController: NavController,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Good Morning",
+                        text = home!!.greeting,
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.titleSmall
                     )
@@ -67,17 +79,17 @@ fun HomeScreen(mainNavController: NavController,
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Bascarsija",
+                    text = home!!.weather.location,
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 WeatherCard(
-                    temperature = "12°C",
-                    weather = "Sunny",
-                    feelsLike = "Thunderous",
-                    humidity = "Strong",
-                    wind = "20 km/h"
+                    temperature = home!!.weather.temperature,
+                    weather = home!!.weather.condition,
+                    feelsLike = home!!.weather.feelsLike,
+                    humidity = home!!.weather.humidity,
+                    wind = home!!.weather.wind
                 )
                 Spacer(modifier.height(26.dp))
                 SectionTitle(
@@ -106,8 +118,9 @@ fun HomeScreen(mainNavController: NavController,
                                     MaterialTheme.colorScheme.surfaceVariant
                                 )
                             ),
-                            shape = MaterialTheme.shapes.medium)
-                        .clickable{rootNavController.navigate(Routes.Weather)}
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .clickable { rootNavController.navigate(Routes.Weather) }
                 ) {
 
                     LazyRow(
@@ -118,44 +131,54 @@ fun HomeScreen(mainNavController: NavController,
                         horizontalArrangement = Arrangement.spacedBy(26.dp)
                     ) {
 
-                        item {
+                        items(home!!.forecast) { forecast ->
+
                             ForecastItem(
-                                icon = R.drawable.sun,
-                                day = "Mon",
-                                temperature = "12°C"
+                                icon = forecast.icon,
+                                day = forecast.time,
+                                temperature = forecast.temperature
                             )
+
                         }
 
-                        item {
+                        items(home!!.forecast) { forecast ->
+
                             ForecastItem(
-                                icon = R.drawable.sunny_cloudy,
-                                day = "Tue",
-                                temperature = "2°C"
+                                icon = forecast.icon,
+                                day = forecast.time,
+                                temperature = forecast.temperature
                             )
+
                         }
 
-                        item {
+                        items(home!!.forecast) { forecast ->
+
                             ForecastItem(
-                                icon = R.drawable.sun,
-                                day = "Wed",
-                                temperature = "22°C"
+                                icon = forecast.icon,
+                                day = forecast.time,
+                                temperature = forecast.temperature
                             )
+
                         }
 
-                        item {
+                        items(home!!.forecast) { forecast ->
+
                             ForecastItem(
-                                icon = R.drawable.sunny_cloudy,
-                                day = "Thu",
-                                temperature = "10°C"
+                                icon = forecast.icon,
+                                day = forecast.time,
+                                temperature = forecast.temperature
                             )
+
                         }
 
-                        item {
+                        items(home!!.forecast) { forecast ->
+
                             ForecastItem(
-                                icon = R.drawable.heavy_rain,
-                                day = "Fri",
-                                temperature = "-2°C"
+                                icon = forecast.icon,
+                                day = forecast.time,
+                                temperature = forecast.temperature
                             )
+
                         }
                     }
                 }
@@ -167,43 +190,25 @@ fun HomeScreen(mainNavController: NavController,
                 Column(
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    PlaylistCard(
-                        title = "Midnight Coffee",
-                        genre = "Lo-fi",
-                        artwork = R.drawable.fire,
-                        likes = "54",
-                        onClick = {
-                            rootNavController.navigate(Routes.Playlist)
-                        }
-                    )
 
+                    home!!.playlists.forEach { playlist ->
 
-                    PlaylistCard(
-                        title = "Downtown Coffee",
-                        genre = "Jazz",
-                        artwork = R.drawable.like,
-                        likes = "10",
-                        onClick = {
-                            rootNavController.navigate(Routes.Playlist)
-                        }
-                    )
-
-
-                    // Playlist 3
-                    PlaylistCard(
-                        title = "Morning Coffee",
-                        genre = "Rock",
-                        artwork = R.drawable.okay,
-                        likes = "302",
-                        onClick = {
-                            rootNavController.navigate(Routes.Playlist)
-                        }
-                    )
+                        PlaylistCard(
+                            title = playlist.title,
+                            genre = playlist.genre,
+                            artwork = playlist.albumImage,
+                            likes = playlist.likes.toString(),
+                            onClick = {
+                                rootNavController.navigate(Routes.Playlist)
+                            }
+                        )
 
                     }
+
                 }
             }
         }
     }
+}
 
 

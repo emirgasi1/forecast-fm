@@ -29,98 +29,193 @@ import com.emirgasic.forecastfm.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsOptionCard
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsSection
 
 
 @Composable
-fun SettingsScreen(navController: NavController,modifier: Modifier =Modifier){
+fun SettingsScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel()
+) {
+
+    val accountOptions by viewModel.accountOptions.collectAsState()
+    val preferenceOptions by viewModel.preferenceOptions.collectAsState()
+    val aboutOptions by viewModel.aboutOptions.collectAsState()
+
 
     Box(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
-    ){
-        LazyColumn(modifier=Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start){
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                top = 60.dp,
+                start = 10.dp,
+                end = 10.dp,
+                bottom = 10.dp
+            )
+    ) {
 
-            item{
-                Text(text="Settings",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineMedium)
-            }
-            item{
-                Spacer(modifier.height(28.dp))
-            }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+
+
             item {
+
+                Text(
+                    text = "Settings",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+            }
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
+            }
+
+
+            item {
+
                 SettingsSection(
                     title = "Account"
                 ) {
 
-                    SettingsOptionCard(
-                        title = "Edit Profile",
-                        onClick = {
-                            navController.navigate(Routes.EditProfile)
-                        }
-                    )
+                    accountOptions.forEach { option ->
+
+                        SettingsOptionCard(
+
+                            title = option.title,
+
+                            onClick = {
+
+                                option.route?.let {
+                                    navController.navigate(it)
+                                }
+
+                            }
+
+                        )
+
+                    }
 
                 }
-            }
-            item{
-                Spacer(modifier.height(24.dp))
+
             }
 
-            item{
+
+
+            item {
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+            }
+
+
+
+            item {
+
                 SettingsSection(
                     title = "Preferences"
                 ) {
 
-                    SettingsOptionCard(
-                        title = "Default Location"
-                    )
+                    preferenceOptions.forEach { option ->
 
-                    SettingsOptionCard(
-                        title = "Theme"
-                    )
+                        SettingsOptionCard(
 
-                    SettingsOptionCard(
-                        title = "Notifications"
-                    )
+                            title = option.title,
+
+                            onClick = {
+                                // Add navigation later
+                            }
+
+                        )
+
+                    }
 
                 }
+
             }
 
 
-            item{
-                Spacer(modifier.height(24.dp))
+
+            item {
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
             }
 
-            item{
+
+
+            item {
+
                 SettingsSection(
                     title = "About"
                 ) {
 
-                    SettingsOptionCard(
-                        title = "Privacy Policy"
-                    )
+                    aboutOptions.forEach { option ->
 
-                    SettingsOptionCard(
-                        title = "About App"
+                        SettingsOptionCard(
+
+                            title = option.title,
+
+                            onClick = {
+                                // Add navigation later
+                            }
+
+                        )
+
+                    }
+
+                }
+
+            }
+
+
+
+            item {
+
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
+
+            }
+
+
+
+            item {
+
+                Button(
+                    onClick = {
+
+                    }
+                ) {
+
+                    Text(
+                        text = "Logout"
                     )
 
                 }
+
             }
-            item{
-                Spacer(modifier.height(20.dp))
-            }
-           item{
-               Button(onClick = {}) {
-                   Text(text="View Details")
-               }
-           }
+
+
         }
+
     }
 
 }

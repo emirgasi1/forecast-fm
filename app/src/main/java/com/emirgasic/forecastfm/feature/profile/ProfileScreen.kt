@@ -41,20 +41,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.profile.FavoritePlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileHeader
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfilePostCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileStatsCard
+import androidx.compose.runtime.getValue
 
 @Composable
-fun ProfileScreen(mainNavController: NavController, rootNavController: NavController,modifier: Modifier=Modifier){
-    val posts = listOf(
-        "1st Post",
-        "2nd Post",
-        "3rd Post",
-        "4th Post"
-    )
+fun ProfileScreen(
+    mainNavController: NavController,
+    rootNavController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel()
+) {
+    val profile by viewModel.profile.collectAsState()
+
+    val profileData = profile ?: return
+
+
     Box(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
@@ -84,9 +91,9 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
                 Spacer(modifier.height(18.dp))}
             item {
                 ProfileHeader(
-                    image = painterResource(R.drawable.profile_picture),
-                    username = "Emir",
-                    bio = "Coffee, music & Sarajevo"
+                    image = painterResource(profileData.profileImage),
+                    username = profileData.username,
+                    bio = profileData.bio
                 )
             }
             item {
@@ -94,9 +101,9 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
             }
             item {
                 ProfileStatsCard(
-                    likes = "24",
-                    saved = "19",
-                    posts = "104"
+                    likes = profileData.likes.toString(),
+                    saved = profileData.saved.toString(),
+                    posts = profileData.posts.toString()
                 )
             }
             item {
@@ -110,11 +117,14 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
             item{
                 Spacer(modifier.height(18.dp))
             }
-            item {
+            items(profileData.favoritePlaylists) { playlist ->
+
                 FavoritePlaylistCard(
                     icon = painterResource(R.drawable.music),
-                    playlist = "Chill Pop"
+                    playlist = playlist
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
             item{
                 Spacer(modifier.height(12.dp))
@@ -147,22 +157,23 @@ fun ProfileScreen(mainNavController: NavController, rootNavController: NavContro
             }
             item{Spacer(modifier.height(20.dp))
             }
-            items(posts.chunked(2)) { rowPosts ->
-                Spacer(modifier.height(20.dp))
+            items(profileData.profilePosts.chunked(2)) { rowPosts ->
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     rowPosts.forEach { post ->
 
                         ProfilePostCard(
                             modifier = Modifier.weight(1f),
-                            title = post,
-                            onClick = {
-                                // Navigate later
-                            }
+                            title = post.caption,
+                            onClick = { }
                         )
+
                     }
+
                 }
             }
 

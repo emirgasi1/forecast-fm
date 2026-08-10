@@ -28,18 +28,25 @@ import kotlinx.coroutines.delay
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun SplashScreen(navController:NavController,modifier: Modifier=Modifier){
+fun SplashScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: SplashViewModel = viewModel()
+){
 
-  LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) {
 
-        delay(2000)
+        viewModel.navigateToLogin.collect {
 
-        navController.navigate(Routes.Login) {
-            popUpTo(Routes.Splash) {
-                inclusive = true
+            navController.navigate(Routes.Login) {
+                popUpTo(Routes.Splash) {
+                    inclusive = true
+                }
             }
+
         }
 
     }

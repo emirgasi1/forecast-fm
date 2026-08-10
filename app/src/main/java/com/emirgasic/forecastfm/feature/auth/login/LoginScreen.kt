@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
@@ -45,13 +47,13 @@ import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
 
 @Composable
-fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
+fun LoginScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = viewModel()
+){
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
 
 
     Box(modifier.fillMaxSize()){
@@ -77,7 +79,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                 EmailField(
                     email = email,
                     onEmailChange = {
-                        email = it
+                        viewModel.updateEmail(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -87,7 +89,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                 PasswordField(
                     password = password,
                     onPasswordChange = {
-                        password = it
+                        viewModel.updatePassword(it)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -96,7 +98,7 @@ fun LoginScreen(navController: NavController, modifier:Modifier= Modifier){
                 AuthButton(
                     text = "Log In",
                     onClick = {
-
+                        viewModel.login()
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

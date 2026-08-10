@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
@@ -42,114 +44,176 @@ import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(navController: NavController,modifier: Modifier =Modifier){
+fun EditProfileScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: EditProfileViewModel = viewModel()
+) {
 
-    var username by rememberSaveable {
-        mutableStateOf("")
-    }
-    var bio by rememberSaveable {
-        mutableStateOf("")
-    }
-    val locations = listOf(
-        "Baščaršija",
-        "Ilidža",
-        "Trebević",
-        "Dobrinja"
-    )
+    val profile by viewModel.profile.collectAsState()
+
+
     var expanded by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var selectedLocation by rememberSaveable {
-        mutableStateOf("")
-    }
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
-    ){
-        ScreenTitle(
-            title = "Edit Profile"
-        )
-        LazyColumn(modifier=Modifier.fillMaxSize(),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                top = 60.dp,
+                start = 10.dp,
+                end = 10.dp,
+                bottom = 10.dp
+            )
+    ) {
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally){
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
 
-            item{
-                Spacer(modifier.height(54.dp))
+            item {
+                ScreenTitle(
+                    title = "Edit Profile"
+                )
             }
+
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(54.dp)
+                )
+            }
+
+
+
             item {
                 ProfilePhotoEditor(
-                    image = painterResource(R.drawable.profile_picture),
+                    image = painterResource(profile.profileImage),
                     onClick = {
                         // Later: open image picker
                     }
                 )
             }
-            item{
-                Spacer(modifier.height(28.dp))
+
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
             }
+
+
+
             item {
                 ProfileTextField(
                     title = "Username",
-                    value = username,
+                    value = profile.username,
                     onValueChange = {
-                        username = it
+                        viewModel.updateUsername(it)
                     },
                     placeholder = "Emir"
+
                 )
             }
-            item{
-                Spacer(modifier.height(28.dp))
+
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
             }
+
+
+
             item {
                 ProfileTextField(
                     title = "Bio",
-                    value = bio,
+                    value = profile.bio,
                     onValueChange = {
-                        bio = it
+                        viewModel.updateBio(it)
                     },
                     placeholder = "Coffee. Music. Sarajevo.",
                     singleLine = false,
                     height = 120.dp
                 )
+
             }
-            item{
-                Spacer(modifier.height(28.dp))
+
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
             }
+
+
 
             item {
                 SectionTitle(
                     title = "Favorite Location"
                 )
             }
-            item{
-                Spacer(modifier.height(8.dp))
+
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
             }
+
+
+
             item {
                 LocationDropdown(
-                    selectedLocation = selectedLocation,
-                    locations = locations,
+
+                    selectedLocation = profile.favoriteLocation,
+                    locations = profile.locations,
                     expanded = expanded,
                     onExpandedChange = {
                         expanded = it
                     },
                     onLocationSelected = {
-                        selectedLocation = it
+                        viewModel.updateLocation(it)
+                        expanded = false
                     }
                 )
             }
 
-            item{
-                Spacer(modifier.height(20.dp))
+
+
+            item {
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
             }
-            item{
-                Button(onClick = {}) {
-                    Text(text="Save")
+
+
+
+            item {
+                Button(
+                    onClick = {
+                    }
+                ) {
+                    Text(
+                        text = "Save"
+                    )
                 }
+
             }
+
         }
+
     }
+
 }

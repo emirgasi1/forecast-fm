@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.BottomBar
@@ -30,10 +31,13 @@ import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputFiel
 @Composable
 fun CommentsScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: CommentsViewModel = viewModel()
 ){
 
-    var comment by remember {
+    val comments by viewModel.comments.collectAsState()
+
+    var commentText by remember {
         mutableStateOf("")
     }
 
@@ -47,13 +51,20 @@ fun CommentsScreen(
         bottomBar = {
 
             CommentInputField(
-                value = comment,
+                value = commentText,
+
                 onValueChange = {
-                    comment = it
+                    commentText = it
                 },
+
                 onSendClick = {
 
+                    viewModel.addComment(commentText)
+
+                    commentText = ""
+
                 },
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp)
@@ -78,26 +89,26 @@ fun CommentsScreen(
                 )
             }
 
-            item {
+            items(comments) { comment ->
 
                 CommentCard(
-                    profileImage = painterResource(R.drawable.outfit2),
-                    username = "Emir",
-                    time = "5 min ago",
-                    comment = "Nice outfit!",
-                    likes = "12"
+                    profileImage = painterResource(comment.user.profileImage),
+                    username = comment.user.username,
+                    time = comment.time,
+                    comment = comment.text,
+                    likes = comment.likes.toString()
                 )
 
             }
 
-            item {
+            items(comments) { comment ->
 
                 CommentCard(
-                    profileImage = painterResource(R.drawable.outfit1),
-                    username = "Sara",
-                    time = "10 min ago",
-                    comment = "This playlist fits perfectly 🔥",
-                    likes = "8"
+                    profileImage = painterResource(comment.user.profileImage),
+                    username = comment.user.username,
+                    time = comment.time,
+                    comment = comment.text,
+                    likes = comment.likes.toString()
                 )
 
             }

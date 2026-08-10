@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
@@ -43,29 +45,14 @@ import com.emirgasic.forecastfm.core.ui.components.style.posts.ProfileInputField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
-    var caption by remember(){
-        mutableStateOf("")
-    }
-    var weather by remember {
-        mutableStateOf("")
-    }
+fun NewPostScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: NewPostViewModel = viewModel()
+) {
+    val newPost by viewModel.newPost.collectAsState()
 
-    var location by remember {
-        mutableStateOf("")
-    }
-
-
-    var selectedPlaylist by remember {
-        mutableStateOf("Jazz")
-    }
-    val playlists = listOf(
-        "Jazz",
-        "Rock",
-        "Metal",
-        "Balkan",
-        "Hip-Pop"
-    )
+    val post = newPost ?: return
     Box(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
@@ -91,8 +78,12 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
             }
             item {
                 ImagePickerCard(
+                    image = post.image,
                     icon = painterResource(R.drawable.camera),
-                    text = "Add a photo"
+                    text = "Add a photo",
+                    onClick = {
+                        // open gallery
+                    }
                 )
             }
             item {
@@ -101,9 +92,11 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
             item{
                 ProfileInputField(
                     title = "Caption",
-                    value = caption,
+                    value = post.caption,
                     placeholder = "What's today's vibe?",
-                    onValueChange = { caption = it }
+                    onValueChange = {
+                        viewModel.updateCaption(it)
+                    }
                 )
             }
             item{
@@ -111,10 +104,10 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
             item {
                 ProfileInputField(
                     title = "Weather",
-                    value = weather,
+                    value = post.weather,
                     placeholder = "Sunny",
                     onValueChange = {
-                        weather = it
+                        viewModel.updateWeather(it)
                     }
                 )
             }
@@ -131,13 +124,24 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
             item {
                 Spacer(modifier.height(6.dp))
             }
-            item{OutlinedTextField(value=caption,
-                onValueChange = {caption=it},
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Bascarsija") },
-                singleLine = true
+            item{
+                OutlinedTextField(
+                value = post.location,
 
-            )}
+                onValueChange = {
+                    viewModel.updateLocation(it)
+                },
+
+                modifier = Modifier.fillMaxWidth(),
+
+                placeholder = {
+                    Text("Baščaršija")
+                },
+
+                singleLine = true
+            )
+
+            }
             item{Spacer(modifier.height(18.dp))}
 
             item{
@@ -150,10 +154,13 @@ fun NewPostScreen(navController: NavController,modifier: Modifier =Modifier) {
 
                 DropdownSelector(
                     title = "Playlist",
-                    selected = selectedPlaylist,
-                    options = playlists,
+
+                    selected = post.selectedPlaylist,
+
+                    options = post.playlists,
+
                     onSelected = {
-                        selectedPlaylist = it
+                        viewModel.selectPlaylist(it)
                     }
                 )
 

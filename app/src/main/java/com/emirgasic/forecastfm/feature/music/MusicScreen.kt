@@ -48,12 +48,8 @@ fun MusicScreen(mainNavController: NavController,
 
     val recommendedPlaylist = playlists.firstOrNull()
 
-    var search by remember {
-        mutableStateOf("")
-    }
-    var selectedGenre by remember{
-        mutableStateOf("")
-    }
+    val search by viewModel.search.collectAsState()
+    val selectedGenre by viewModel.selectedGenre.collectAsState()
     Box(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
@@ -76,7 +72,9 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 SearchField(
                     value = search,
-                    onValueChange = { search = it },
+                    onValueChange = {
+                        viewModel.updateSearch(it)
+                    },
                     placeholder = "search playlists..."
                 )
             }
@@ -158,29 +156,8 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 Spacer(modifier.height(16.dp))
             }
-            items(weatherPlaylists){ playlist ->
 
-                MusicPlaylistCard(
-                    title = playlist.title,
-                    genre = playlist.genre,
-                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                    songs = "${playlist.songs.size} songs",
-                    duration = "1h 12min",
-                    likes = playlist.likes.toString()
-                )
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-            }
-
-            item {
-                Spacer(modifier.height(16.dp))
-            }
             item {
                 SectionTitle(
                     title = "Music History",
@@ -225,7 +202,7 @@ fun MusicScreen(mainNavController: NavController,
                     ),
                     selectedCategory = selectedGenre,
                     onCategorySelected = {
-                        selectedGenre = it
+                        viewModel.selectGenre(it)
                     }
                 )
 
