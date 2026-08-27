@@ -1,21 +1,17 @@
 package com.emirgasic.forecastfm.data.repository
 
 
-import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.data.model.User
 
-class UserRepository {
+import com.emirgasic.forecastfm.network.user.UserApi
+import com.emirgasic.forecastfm.network.user.UserResponse
 
-    fun getCurrentUser(): User {
-        return User(
-            id = "1",
-            username = "Emir",
-            bio = "Coffee, music & Sarajevo vibes ☕",
-            profileImage = R.drawable.outfit2,
-            favoriteLocation = "Baščaršija",
-            likes = 248,
-            posts = 32,
-            saved = 14
+class UserRepository(
+    private val userApi: UserApi
+) {
+
+    suspend fun getCurrentUser(): UserResponse {
+        return userApi.getUser(
+            "d0bb864c-e207-4b4e-a0a7-102d10322ee3"
         )
     }
 }

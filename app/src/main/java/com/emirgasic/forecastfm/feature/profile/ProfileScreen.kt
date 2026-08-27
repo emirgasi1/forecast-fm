@@ -40,6 +40,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,132 +54,246 @@ import androidx.compose.runtime.getValue
 
 @Composable
 fun ProfileScreen(
-    mainNavController: NavController,
     rootNavController: NavController,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = viewModel()
 ) {
-    val profile by viewModel.profile.collectAsState()
-
-    val profileData = profile ?: return
-
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 20.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
-    ){
-        LazyColumn(modifier=Modifier.fillMaxSize(),verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally){
-            item{
-                Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top){
-                    Text(text="Style",
-                        color= MaterialTheme.colorScheme.onBackground,
-                        style= MaterialTheme.typography.headlineSmall)
-                    Spacer(modifier.weight(1f))
-                    IconButton(
-                        onClick = {
-                            rootNavController.navigate(Routes.Settings)
-                        }
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.cogwheel),
-                            contentDescription = "Settings",
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                top = 20.dp,
+                start = 10.dp,
+                bottom = 10.dp,
+                end = 10.dp
+            )
+    ) {
 
-                }}
-            item{
-                Spacer(modifier.height(18.dp))}
-            item {
-                ProfileHeader(
-                    image = painterResource(profileData.profileImage),
-                    username = profileData.username,
-                    bio = profileData.bio
-                )
-            }
-            item {
-                Spacer(modifier.height(28.dp))
-            }
-            item {
-                ProfileStatsCard(
-                    likes = profileData.likes.toString(),
-                    saved = profileData.saved.toString(),
-                    posts = profileData.posts.toString()
-                )
-            }
-            item {
-                Spacer(modifier.height(28.dp))
-            }
-            item{
-                SectionTitle(
-                    title = "Favorite Playlist"
-                )
-            }
-            item{
-                Spacer(modifier.height(18.dp))
-            }
-            items(profileData.favoritePlaylists) { playlist ->
+        when (val state = uiState) {
 
-                FavoritePlaylistCard(
-                    icon = painterResource(R.drawable.music),
-                    playlist = playlist
-                )
+            ProfileUiState.Loading -> {
 
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            item{
-                Spacer(modifier.height(12.dp))
-            }
-            item {
-                FavoritePlaylistCard(
-                    icon = painterResource(R.drawable.music),
-                    playlist = "Sarajevo Nights"
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
-            item{Spacer(modifier.height(20.dp))
-            }
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
-                    SectionTitle(
-                        title = "Posts"
-                    )
-                    Spacer(modifier.width(4.dp))
-                    IconButton(
-                        onClick = {
-                            rootNavController.navigate(Routes.NewPost)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Photo"
-                        )
-                    }
-                }
-            }
-            item{Spacer(modifier.height(20.dp))
-            }
-            items(profileData.profilePosts.chunked(2)) { rowPosts ->
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+            is ProfileUiState.Error -> {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
 
-                    rowPosts.forEach { post ->
+                    Text(
+                        text = "Couldn't load profile"
+                    )
 
-                        ProfilePostCard(
-                            modifier = Modifier.weight(1f),
-                            title = post.caption,
-                            onClick = { }
-                        )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
 
+                    Text(
+                        text = state.message
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.loadProfile()
+                        }
+                    ) {
+                        Text("Retry")
                     }
-
                 }
             }
 
+            is ProfileUiState.Success -> {
 
+                val profileData = state.profile
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    item {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.Top
+                        ) {
+
+                            Text(
+                                text = "Style",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+
+                            Spacer(
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    rootNavController.navigate(
+                                        Routes.Settings
+                                    )
+                                }
+                            ) {
+
+                                Image(
+                                    painter = painterResource(
+                                        R.drawable.cogwheel
+                                    ),
+                                    contentDescription = "Settings",
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(18.dp)
+                        )
+                    }
+
+                    item {
+
+                        ProfileHeader(
+                            image = painterResource(
+                                profileData.profileImage
+                            ),
+                            username = profileData.username,
+                            bio = profileData.bio
+                        )
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(28.dp)
+                        )
+                    }
+
+                    item {
+
+                        ProfileStatsCard(
+                            likes = profileData.likes.toString(),
+                            saved = profileData.saved.toString(),
+                            posts = profileData.posts.toString()
+                        )
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(28.dp)
+                        )
+                    }
+
+                    item {
+
+                        SectionTitle(
+                            title = "Favorite Playlist"
+                        )
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(18.dp)
+                        )
+                    }
+
+                    items(profileData.favoritePlaylists) { playlist ->
+
+                        FavoritePlaylistCard(
+                            icon = painterResource(
+                                R.drawable.music
+                            ),
+                            playlist = playlist
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+                    }
+
+                    item {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+
+                            SectionTitle(
+                                title = "Posts"
+                            )
+
+                            Spacer(
+                                modifier = Modifier.width(4.dp)
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    rootNavController.navigate(
+                                        Routes.NewPost
+                                    )
+                                }
+                            ) {
+
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add Photo"
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+                    }
+
+                    items(
+                        profileData.profilePosts.chunked(2)
+                    ) { rowPosts ->
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+
+                            rowPosts.forEach { post ->
+
+                                ProfilePostCard(
+                                    modifier = Modifier.weight(1f),
+                                    title = post.caption,
+                                    imageUrl=post.imageUrl,
+                                    onClick = { }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -67,7 +67,7 @@ fun MainScreen(
             composable(Routes.Profile){
 
                 ProfileScreen(
-                    mainNavController = mainNavController,
+
                     rootNavController = rootNavController
                 )
 

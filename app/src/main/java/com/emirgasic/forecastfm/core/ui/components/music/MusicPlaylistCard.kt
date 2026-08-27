@@ -20,7 +20,11 @@ import androidx.compose.ui.res.painterResource
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.IconText
 import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun MusicPlaylistCard(
@@ -30,17 +34,17 @@ fun MusicPlaylistCard(
     songs: String,
     duration: String,
     likes: String,
+    isFavorite: Boolean = false,
     modifier: Modifier = Modifier,
     onPlayClick: () -> Unit = {},
+    onFavoriteClick: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            },
+            ,
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(
             width = 1.dp,
@@ -58,7 +62,9 @@ fun MusicPlaylistCard(
 
             // Playlist name + genre
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    onClick()
+                },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -93,31 +99,45 @@ fun MusicPlaylistCard(
                 second = duration
             )
 
-
-            // Likes + Play
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
 
                 IconText(
                     icon = painterResource(R.drawable.heart),
                     text = likes
                 )
 
-
                 Spacer(
                     modifier = Modifier.weight(1f)
                 )
 
+                IconButton(
+                    onClick = onFavoriteClick
+                ) {
+
+                    Icon(
+                        imageVector =
+                            if (isFavorite) {
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+                        contentDescription =
+                            if (isFavorite) {
+                                "Remove from favorites"
+                            } else {
+                                "Add to favorites"
+                            }
+                    )
+                }
 
                 IconText(
                     icon = painterResource(R.drawable.play),
-                    text = "Play",
+                    text = "Open",
                     onClick = onPlayClick
                 )
-
             }
 
         }

@@ -31,19 +31,22 @@ import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputFiel
 @Composable
 fun CommentsScreen(
     navController: NavController,
+    postId: String,
     modifier: Modifier = Modifier,
     viewModel: CommentsViewModel = viewModel()
-){
+) {
 
     val comments by viewModel.comments.collectAsState()
+
+    LaunchedEffect(postId) {
+        viewModel.loadComments(postId)
+    }
 
     var commentText by remember {
         mutableStateOf("")
     }
 
-
     Scaffold(
-
         modifier = Modifier
             .fillMaxSize()
             .navigationBarsPadding(),
@@ -59,19 +62,19 @@ fun CommentsScreen(
 
                 onSendClick = {
 
-                    viewModel.addComment(commentText)
+                    viewModel.addComment(
+                        postId = postId,
+                        text = commentText
+                    )
 
                     commentText = ""
-
                 },
 
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp)
             )
-
         }
-
     ){ paddingValues ->
 
         LazyColumn(
@@ -87,18 +90,6 @@ fun CommentsScreen(
                 SectionTitle(
                     title = "Comments"
                 )
-            }
-
-            items(comments) { comment ->
-
-                CommentCard(
-                    profileImage = painterResource(comment.user.profileImage),
-                    username = comment.user.username,
-                    time = comment.time,
-                    comment = comment.text,
-                    likes = comment.likes.toString()
-                )
-
             }
 
             items(comments) { comment ->

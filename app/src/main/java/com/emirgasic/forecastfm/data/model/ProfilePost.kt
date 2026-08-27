@@ -2,6 +2,6 @@ package com.emirgasic.forecastfm.data.model
 
 data class ProfilePost(
     val id: String,
-    val image: Int,
+    val imageUrl: String?,
     val caption: String
 )

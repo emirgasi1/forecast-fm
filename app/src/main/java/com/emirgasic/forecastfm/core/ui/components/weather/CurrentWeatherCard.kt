@@ -52,7 +52,7 @@ fun CurrentWeatherCard(
 
             Image(
                 painter = weatherIcon,
-                contentDescription = "Weather icon",
+                contentDescription = "$condition weather",
                 modifier = Modifier.size(90.dp)
             )
 

@@ -1,61 +1,64 @@
 package com.emirgasic.forecastfm.feature.feed
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.data.model.Comment
 import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.repository.FeedRepository
+import com.emirgasic.forecastfm.data.repository.PostRepository
+import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.network.post.PostApi
+import com.emirgasic.forecastfm.network.user.UserApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 
 class FeedViewModel : ViewModel() {
 
+    private val userApi = UserApi()
+    private val userRepository = UserRepository(userApi)
+    private val postApi= PostApi()
+    private val postRepository= PostRepository(postApi)
 
-    private val repository = FeedRepository()
-
-
-
-    private val _posts = MutableStateFlow<List<FeedPost>>(emptyList())
-    val posts: StateFlow<List<FeedPost>> = _posts.asStateFlow()
-
-
-
-    private val _comments = MutableStateFlow<List<Comment>>(emptyList())
-    val comments: StateFlow<List<Comment>> = _comments.asStateFlow()
+    private val repository=
+        FeedRepository(
+            userRepository=userRepository,
+            postRepository=postRepository
+        )
 
 
+    private val _uiState =
+        MutableStateFlow<FeedUiState>(FeedUiState.Loading)
+
+    val uiState: StateFlow<FeedUiState> =
+        _uiState.asStateFlow()
 
     init {
         loadFeed()
     }
 
+    fun loadFeed() {
 
+        viewModelScope.launch {
 
-    private fun loadFeed(){
+            _uiState.value = FeedUiState.Loading
 
-        _posts.value = repository.getPosts()
+            try {
 
+                val posts = repository.getPosts()
+
+                _uiState.value =
+                    FeedUiState.Success(posts)
+
+            } catch (e: Exception) {
+
+                _uiState.value =
+                    FeedUiState.Error(
+                        e.message ?: "Failed to load feed"
+                    )
+            }
+        }
     }
-
-
-
-    fun loadComments(postId: String){
-
-        _comments.value = repository.getComments(postId)
-
-    }
-
-
-
-    fun addComment(comment: Comment){
-
-        val currentComments = _comments.value.toMutableList()
-
-        currentComments.add(comment)
-
-        _comments.value = currentComments
-
-    }
-
 }

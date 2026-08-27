@@ -25,7 +25,7 @@ import com.emirgasic.forecastfm.R
 fun PlaylistCard(
     title: String,
     genre: String,
-    artwork: Int,
+    artwork: String?,
     likes: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}

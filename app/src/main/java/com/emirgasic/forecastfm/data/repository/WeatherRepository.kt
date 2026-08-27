@@ -1,41 +1,84 @@
-package com.emirgasic.forecastfm.data.repository
+package com.emirgasic.forecastfm.repository
 
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.data.model.Forecast
 import com.emirgasic.forecastfm.data.model.Weather
+import com.emirgasic.forecastfm.network.weather.WeatherApi
 
-class WeatherRepository {
 
-    fun getCurrentWeather(): Weather {
-        return Weather(
-            location = "Baščaršija",
-            temperature = "22°C",
-            condition = "Sunny",
-            feelsLike = "24°C",
-            humidity = "55%",
-            wind = "8 km/h",
-            uvIndex = "20UV",
-            airQuality = "20"
+data class WeatherRepository(
+    private val weatherApi: WeatherApi = WeatherApi()
+) {
+
+    suspend fun getWeather(): WeatherData {
+
+        val response = weatherApi.getWeather()
+
+        val weather = Weather(
+            location = response.location,
+            temperature = response.temperature,
+            condition = response.condition,
+            feelsLike = response.feelsLike,
+            humidity = response.humidity,
+            wind = response.wind,
+            uvIndex = response.uvIndex,
+            airQuality = response.airQuality,
+            icon = conditionToIcon(response.condition)
+        )
+
+        val hourly = response.hourly.map { forecast ->
+
+            Forecast(
+                time = forecast.time,
+                icon = conditionToIcon(forecast.condition),
+                temperature = forecast.temperature
+            )
+        }
+
+        val daily = response.daily.map { forecast ->
+
+            Forecast(
+                time = forecast.time,
+                icon = conditionToIcon(forecast.condition),
+                temperature = forecast.temperature
+            )
+        }
+
+        return WeatherData(
+            weather = weather,
+            hourly = hourly,
+            daily = daily
         )
     }
 
-    fun getHourlyForecast(): List<Forecast> {
-        return listOf(
-            Forecast("09:00", R.drawable.sun, "18°C"),
-            Forecast("12:00", R.drawable.sunny_cloudy, "22°C"),
-            Forecast("15:00", R.drawable.sun, "24°C"),
-            Forecast("18:00", R.drawable.sunny_cloudy, "21°C"),
-            Forecast("21:00", R.drawable.heavy_rain, "16°C")
-        )
-    }
 
-    fun getDailyForecast(): List<Forecast> {
-        return listOf(
-            Forecast("Mon", R.drawable.sun, "22°C"),
-            Forecast("Tue", R.drawable.sunny_cloudy, "20°C"),
-            Forecast("Wed", R.drawable.heavy_rain, "17°C"),
-            Forecast("Thu", R.drawable.sun, "24°C"),
-            Forecast("Fri", R.drawable.sunny_cloudy, "19°C")
-        )
+    private fun conditionToIcon(condition: String): Int {
+
+        return when (condition.lowercase()) {
+
+            "sunny",
+            "clear" ->
+                R.drawable.sun
+
+            "partly cloudy",
+            "cloudy",
+            "overcast" ->
+                R.drawable.sunny_cloudy
+
+            "rain",
+            "drizzle",
+            "light rain",
+            "heavy rain" ->
+                R.drawable.heavy_rain
+
+            else ->
+                R.drawable.sun
+        }
     }
 }
+
+data class WeatherData(
+    val weather: Weather,
+    val hourly: List<Forecast>,
+    val daily: List<Forecast>
+)

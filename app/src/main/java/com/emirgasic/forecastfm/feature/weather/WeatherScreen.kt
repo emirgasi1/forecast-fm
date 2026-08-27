@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,15 +39,17 @@ import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 fun WeatherScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel:WeatherViewModel=viewModel()
-){
+    viewModel: WeatherViewModel = viewModel()
+) {
+
     val weather by viewModel.weather.collectAsState()
-
     val hourlyForecast by viewModel.hourlyForecast.collectAsState()
-
     val dailyForecast by viewModel.dailyForecast.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(
@@ -53,138 +58,187 @@ fun WeatherScreen(
                 bottom = 10.dp,
                 end = 10.dp
             )
-    ){
+    ) {
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.Start
-        ){
+        when (uiState) {
 
+            WeatherUiState.LOADING -> {
 
-            item {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
 
-                SectionTitle(
-                    title = "Today's Weather"
-                )
-            }
-
-
-            item {
-                weather?.let{
-                    CurrentWeatherCard(
-                        weatherIcon = painterResource(R.drawable.sun),
-                        temperature = it.temperature,
-                        condition = it.condition,
-                        location = it.location,
-                        updated = "Updated 5 minutes ago"
-                    )
-            }
-            }
-
-
-
-            item {
-
-                weather?.let {
-
-                    WeatherDetailsCard(
-                        feelsLike = it.feelsLike,
-                        humidity = it.humidity,
-                        wind = it.wind,
-                        uvIndex = "Moderate",
-                        airQuality = "Good"
-                    )
-
+                    CircularProgressIndicator()
                 }
-
             }
 
 
+            WeatherUiState.ERROR -> {
 
-            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
 
-                SectionTitle(
-                    title = "Hourly Forecast"
-                )
-            }
-
-
-
-            item {
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline
+                    Text(
+                        text = "Unable to load weather",
+                        style = MaterialTheme.typography.titleMedium
                     )
-                ){
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ){
-                        hourlyForecast.forEach {
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
 
-                            ForecastRowItem(
-                                title = it.time,
-                                icon = painterResource(it.icon),
-                                temperature = it.temperature
-                            )
+                    Text(
+                        text = "Please check your connection and try again.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.loadWeather()
                         }
+                    ) {
 
+                        Text("Retry")
                     }
                 }
             }
 
 
+            WeatherUiState.SUCCESS -> {
 
-            item {
+                weather?.let { currentWeather ->
 
-                SectionTitle(
-                    title = "Next 5 Days"
-                )
-            }
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
 
+                        item {
 
-
-            item {
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline
-                    )
-                ){
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ){
-
-                        dailyForecast.forEach {
-
-                            ForecastRowItem(
-                                title = it.time,
-                                icon = painterResource(it.icon),
-                                temperature = it.temperature
+                            SectionTitle(
+                                title = "Today's Weather"
                             )
+                        }
 
+
+                        item {
+
+                            CurrentWeatherCard(
+                                weatherIcon = painterResource(
+                                    currentWeather.icon
+                                ),
+                                temperature = currentWeather.temperature,
+                                condition = currentWeather.condition,
+                                location = currentWeather.location,
+                                updated = "Updated just now"
+                            )
+                        }
+
+
+                        item {
+
+                            WeatherDetailsCard(
+                                feelsLike = currentWeather.feelsLike,
+                                humidity = currentWeather.humidity,
+                                wind = currentWeather.wind,
+                                uvIndex = currentWeather.uvIndex,
+                                airQuality = currentWeather.airQuality
+                            )
+                        }
+
+
+                        item {
+
+                            SectionTitle(
+                                title = "Hourly Forecast"
+                            )
+                        }
+
+
+                        item {
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline
+                                )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+
+                                    hourlyForecast.forEach {
+
+                                        ForecastRowItem(
+                                            title = it.time,
+                                            icon = painterResource(it.icon),
+                                            temperature = it.temperature
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+
+                        item {
+
+                            SectionTitle(
+                                title = "Next 5 Days"
+                            )
+                        }
+
+
+                        item {
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline
+                                )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+
+                                    dailyForecast.forEach {
+
+                                        ForecastRowItem(
+                                            title = it.time,
+                                            icon = painterResource(it.icon),
+                                            temperature = it.temperature
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

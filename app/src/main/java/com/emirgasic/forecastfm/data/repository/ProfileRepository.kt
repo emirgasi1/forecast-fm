@@ -3,60 +3,50 @@ package com.emirgasic.forecastfm.data.repository
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.data.model.Profile
 import com.emirgasic.forecastfm.data.model.ProfilePost
+import com.emirgasic.forecastfm.network.post.PostApi
+import com.emirgasic.forecastfm.network.profile.ProfileApi
 
-class ProfileRepository {
+class ProfileRepository(
+    private val profileApi: ProfileApi
+) {
 
-    fun getProfile(): Profile {
+    suspend fun getProfile(): Profile {
+
+        val response =
+            profileApi.getProfile(
+                "d0bb864c-e207-4b4e-a0a7-102d10322ee3"
+            )
+
+        val profilePosts =
+            response.posts.map { post ->
+
+                ProfilePost(
+                    id = post.id,
+                    imageUrl = post.imageUrl,
+                    caption = post.caption ?: ""
+                )
+            }
 
         return Profile(
 
-            username = "Emir",
+            username = response.username,
 
-            bio = "Coffee, music & Sarajevo",
+            bio = response.bio ?: "",
 
             profileImage = R.drawable.profile_picture,
 
-            likes = 24,
+            likes = response.likes,
 
-            saved = 19,
+            saved = response.saved,
 
-            posts = 4,
+            posts = response.posts.size,
 
-            favoritePlaylists = listOf(
-                "Chill Pop",
-                "Sarajevo Nights"
-            ),
+            favoritePlaylists =
+                response.favoritePlaylists.map { playlist ->
+                    playlist.title
+                },
 
-            profilePosts = listOf(
-
-                ProfilePost(
-                    id = "1",
-                    image = R.drawable.outfit1,
-                    caption = "Morning coffee"
-                ),
-
-                ProfilePost(
-                    id = "2",
-                    image = R.drawable.outfit2,
-                    caption = "Rainy walk"
-                ),
-
-                ProfilePost(
-                    id = "3",
-                    image = R.drawable.outfit3,
-                    caption = "Night vibes"
-                ),
-
-                ProfilePost(
-                    id = "4",
-                    image = R.drawable.outfit1,
-                    caption = "Sunny afternoon"
-                )
-
-            )
-
+            profilePosts = profilePosts
         )
-
     }
-
 }

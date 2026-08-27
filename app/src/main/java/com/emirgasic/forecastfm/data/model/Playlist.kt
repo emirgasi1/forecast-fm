@@ -5,10 +5,12 @@ data class Playlist(
     val title: String,
     val genre: String,
     val mood: String,
-    val albumImage: Int,
+    val albumImageUrl: String?,
     val weather: String,
     val temperature: String,
     val location: String,
     val songs: List<Music>,
-    val likes: Int
+    val likes: Int,
+    val spotifyUrl: String?,
+    val youtubeUrl: String?
 )

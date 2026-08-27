@@ -10,20 +10,10 @@ import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
 
 
-class FeedRepository {
-
-
-    private val user = User(
-        id = "1",
-        username = "Emir",
-        bio = "Coffee lover",
-        profileImage = R.drawable.outfit3,
-        favoriteLocation = "Baščaršija",
-        likes = 248,
-        posts = 32,
-        saved = 14
-    )
-
+class FeedRepository(
+    private val userRepository: UserRepository,
+    private val postRepository: PostRepository
+) {
 
     private val weather = Weather(
         location = "Baščaršija",
@@ -33,89 +23,79 @@ class FeedRepository {
         humidity = "55%",
         wind = "8 km/h",
         uvIndex = "20UV",
-        airQuality = "Good"
+        airQuality = "Good",
+        icon = R.drawable.sun
     )
-
 
     private val playlist = Playlist(
         id = "1",
         title = "Morning Coffee",
         genre = "Jazz",
         mood = "Relax",
-        albumImage = R.drawable.album1,
+        albumImageUrl = null,
         weather = "Sunny",
         temperature = "22°C",
         location = "Baščaršija",
-
         songs = listOf(
             Music(
                 id = "1",
                 title = "Coffee Time",
                 artist = "Sarajevo Jazz",
                 duration = "3:45",
-                albumImage = R.drawable.album1
+                albumImageUrl = null
             ),
-
             Music(
                 id = "2",
                 title = "Morning Walk",
                 artist = "City Lights",
                 duration = "4:10",
-                albumImage = R.drawable.album1
+                albumImageUrl = null
             )
         ),
-
-        likes = 240
+        likes = 240,
+        spotifyUrl = "https://open.spotify.com/",
+        youtubeUrl = "https://www.youtube.com/"
     )
+    suspend fun getPosts(): List<FeedPost> {
 
 
-    private val comments = listOf(
+        val userResponse = userRepository.getCurrentUser()
 
-        Comment(
-            id = "1",
-            user = user,
-            text = "This outfit fits the vibe perfectly 🔥",
-            time = "5 min ago",
-            likes = 12
-        ),
+        if(userResponse==null){
+            return emptyList()
+        }
 
-        Comment(
-            id = "2",
-            user = user,
-            text = "The playlist choice is amazing ☕",
-            time = "10 min ago",
-            likes = 8
+        val user = User(
+            id = userResponse.id,
+            username = userResponse.username,
+            bio = userResponse.bio ?: "",
+            profileImage = R.drawable.outfit3,
+            favoriteLocation = userResponse.favoriteLocation ?: "",
+            likes = 248,
+            posts = 32,
+            saved = 14
         )
 
-    )
+        val postResponses=postRepository.getPosts()
 
 
-    fun getPosts(): List<FeedPost>{
-
-        return listOf(
+        return postResponses.map{ post->
 
             FeedPost(
-                id = "1",
+                id = post.id,
                 user = user,
                 image = R.drawable.outfit1,
-                caption = "Perfect weather for coffee downtown ☕",
+                caption = post.caption ?: "",
                 weather = weather,
                 playlist = playlist,
-                time = "12 min ago",
+                time = post.createdAt,
                 likes = 128,
                 comments = 24
             )
-
-        )
-
+        }
     }
 
-
-
-    fun getComments(postId: String): List<Comment>{
-
-        return comments
-
+    fun getComments(postId: String): List<Comment> {
+        return emptyList()
     }
-
 }

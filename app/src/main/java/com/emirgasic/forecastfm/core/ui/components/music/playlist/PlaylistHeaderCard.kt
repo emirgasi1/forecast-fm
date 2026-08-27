@@ -5,6 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,11 +17,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 
 @Composable
 fun PlaylistHeaderCard(
-    album: Painter,
+    album: String?,
     title: String,
     genre: String,
     mood: String,
@@ -27,6 +31,8 @@ fun PlaylistHeaderCard(
     temperature: String,
     locationIcon: Painter,
     location: String,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
 
@@ -47,9 +53,8 @@ fun PlaylistHeaderCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ){
-
-            Image(
-                painter = album,
+            AsyncImage(
+                model = album,
                 contentDescription = "Album cover",
                 modifier = Modifier
                     .size(300.dp)
@@ -98,6 +103,7 @@ fun PlaylistHeaderCard(
             }
 
 
+
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -129,6 +135,25 @@ fun PlaylistHeaderCard(
 
                 Text(location)
 
+                Spacer(Modifier.width(18.dp))
+
+                IconButton(
+                    onClick = onFavoriteClick
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) {
+                            Icons.Filled.Favorite
+                        } else {
+                            Icons.Outlined.FavoriteBorder
+                        },
+                        contentDescription = if (isFavorite) {
+                            "Remove from favorites"
+                        } else {
+                            "Add to favorites"
+                        },
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
         }

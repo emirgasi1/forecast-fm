@@ -22,11 +22,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 
 @Composable
 fun MusicRow(
-    image: Painter,
+    image: String?,
     title: String,
     artist: String,
     duration: String,
@@ -53,8 +54,8 @@ fun MusicRow(
             horizontalArrangement = Arrangement.Start
         ) {
 
-            Image(
-                painter = image,
+            AsyncImage(
+                model = image,
                 contentDescription = null,
                 modifier = Modifier
                     .size(56.dp)

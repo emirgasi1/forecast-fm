@@ -17,11 +17,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 @Composable
 fun ProfilePostCard(
     title: String,
+    imageUrl: String?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -57,8 +60,12 @@ fun ProfilePostCard(
                 contentAlignment = Alignment.Center
             ) {
 
-                Text("Post Image")
-
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Post image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
             }
 
             Spacer(

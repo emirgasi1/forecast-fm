@@ -1,5 +1,6 @@
 package com.emirgasic.forecastfm.data.model
 
+
 data class Weather(
     val location: String,
     val temperature: String,
@@ -8,5 +9,6 @@ data class Weather(
     val humidity: String,
     val wind: String,
     val uvIndex: String,
-    val airQuality: String
+    val airQuality: String,
+    val icon: Int
 )

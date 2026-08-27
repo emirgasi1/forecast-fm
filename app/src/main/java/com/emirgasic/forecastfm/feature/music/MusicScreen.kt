@@ -34,22 +34,34 @@ import com.emirgasic.forecastfm.core.ui.components.common.WeatherRecommendationH
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.emirgasic.forecastfm.core.ui.components.music.formatPlaylistDuration
 import com.emirgasic.forecastfm.feature.music.MusicViewModel
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
-fun MusicScreen(mainNavController: NavController,
-                rootNavController: NavController,
-                modifier: Modifier =Modifier,
-                viewModel: MusicViewModel = viewModel()) {
+fun MusicScreen(
+    mainNavController: NavController,
+    rootNavController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: MusicViewModel = viewModel()
+) {
     val playlists by viewModel.playlists.collectAsState()
 
     val weatherPlaylists by viewModel.weatherPlaylists.collectAsState()
 
     val trendingPlaylists by viewModel.trendingPlaylists.collectAsState()
+    val weather by viewModel.weather.collectAsState()
+    val favoritePlaylistIds by viewModel.favoritePlaylistIds.collectAsState()
 
-    val recommendedPlaylist = playlists.firstOrNull()
+    val recommendedPlaylist by viewModel.recommendedPlaylist.collectAsState()
 
     val search by viewModel.search.collectAsState()
     val selectedGenre by viewModel.selectedGenre.collectAsState()
+
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
@@ -84,8 +96,12 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 WeatherRecommendationHeader(
                     title = "For Today's Weather",
-                    subtitle = "Because it's Sunny and 24°C",
-                    icon = painterResource(R.drawable.sun)
+                    subtitle = weather?.let {
+                        "Because it's ${it.condition} and ${it.temperature}"
+                    } ?: "Loading weather...",
+                    icon = painterResource(
+                        weather?.icon ?: R.drawable.sun
+                    )
                 )
             }
             item {
@@ -98,8 +114,37 @@ fun MusicScreen(mainNavController: NavController,
                     genre = playlist.genre,
                     firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
                     songs = "${playlist.songs.size} songs",
-                    duration = "1h 12min",
-                    likes = playlist.likes.toString()
+                    duration = formatPlaylistDuration(playlist.songs),
+                    likes = playlist.likes.toString(),
+
+                    isFavorite = playlist.id in favoritePlaylistIds,
+
+                    onFavoriteClick = {
+                        viewModel.toggleFavorite(playlist.id)
+                    },
+
+                    onClick = {
+                        rootNavController.navigate(
+                            Routes.playlistRoute(playlist.id)
+                        )
+                    },
+                    onPlayClick = {
+                        playlist.spotifyUrl?.let { url ->
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(url)
+                                )
+                            )
+                        } ?: playlist.youtubeUrl?.let { url ->
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(url)
+                                )
+                            )
+                        }
+                    },
                 )
 
                 Spacer(
@@ -109,25 +154,7 @@ fun MusicScreen(mainNavController: NavController,
             item {
                 Spacer(modifier.height(16.dp))
             }
-            items(trendingPlaylists){ playlist ->
 
-                MusicPlaylistCard(
-                    title = playlist.title,
-                    genre = playlist.genre,
-                    firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                    songs = "${playlist.songs.size} songs",
-                    duration = "1h 12min",
-                    likes = playlist.likes.toString()
-                )
-
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-            }
-
-            item {
-                Spacer(modifier.height(36.dp))
-            }
 
             item {
                 SectionTitle(
@@ -145,8 +172,38 @@ fun MusicScreen(mainNavController: NavController,
                     genre = playlist.genre,
                     firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
                     songs = "${playlist.songs.size} songs",
-                    duration = "1h 12min",
-                    likes = playlist.likes.toString()
+                    duration = formatPlaylistDuration(playlist.songs),
+                    likes = playlist.likes.toString(),
+
+                    isFavorite = playlist.id in favoritePlaylistIds,
+
+                    onFavoriteClick = {
+                        viewModel.toggleFavorite(playlist.id)
+                    },
+
+                    onClick = {
+                        rootNavController.navigate(
+                            Routes.playlistRoute(playlist.id)
+                        )
+                    },
+                    onPlayClick = {
+                        playlist.spotifyUrl?.let { url ->
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(url)
+                                )
+                            )
+                        } ?: playlist.youtubeUrl?.let { url ->
+                            context.startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(url)
+                                )
+                            )
+                        }
+                    },
+
                 )
 
                 Spacer(
@@ -193,12 +250,12 @@ fun MusicScreen(mainNavController: NavController,
 
                 CategoryFilterRow(
                     categories = listOf(
-                        "Lo-fi",
+                        "Lo-Fi",
                         "Jazz",
                         "Rock",
                         "Classical",
                         "Pop",
-                        "Hip-Pop"
+                        "Hip-Hop"
                     ),
                     selectedCategory = selectedGenre,
                     onCategorySelected = {
@@ -225,30 +282,18 @@ fun MusicScreen(mainNavController: NavController,
 
                     RecommendedMusicCard(
                         id = playlist.id,
-
-                        image = painterResource(playlist.albumImage),
-
+                        image = playlist.albumImageUrl,
                         title = playlist.title,
-
                         genre = playlist.genre,
-
                         mood = playlist.mood,
-
                         likes = playlist.likes.toString(),
-
-                        onPlayClick = {
-
-                        },
-
+                        onPlayClick = {},
                         onViewPlaylistClick = { id ->
-
                             rootNavController.navigate(
                                 Routes.playlistRoute(id)
                             )
-
                         }
                     )
-
                 }
 
             }

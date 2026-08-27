@@ -39,5 +39,9 @@ object Routes{
 
     const val NewPost="newpost"
     const val Main="main"
-    const val Comments = "comments"
+    const val Comments = "comments/{postId}"
+
+    fun commentsRoute(postId: String): String {
+        return "comments/$postId"
+    }
 }

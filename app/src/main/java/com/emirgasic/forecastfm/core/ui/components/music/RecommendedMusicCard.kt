@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.IconText
 import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
@@ -31,7 +32,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
 @Composable
 fun RecommendedMusicCard(
     id:String,
-    image: Painter,
+    image: String?,
     title: String,
     genre: String,
     mood: String,
@@ -60,8 +61,8 @@ fun RecommendedMusicCard(
         ) {
 
 
-            Image(
-                painter = image,
+            AsyncImage(
+                model = image,
                 contentDescription = "Album cover",
                 modifier = Modifier
                     .size(300.dp)

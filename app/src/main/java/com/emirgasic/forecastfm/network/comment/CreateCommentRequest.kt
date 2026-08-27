@@ -1,0 +1,11 @@
+package com.emirgasic.forecastfm.network.comment
+
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class CreateCommentRequest(
+    val userId: String,
+    val postId: String,
+    val text: String
+)

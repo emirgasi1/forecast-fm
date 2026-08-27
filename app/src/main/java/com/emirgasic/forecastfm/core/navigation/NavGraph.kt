@@ -3,9 +3,11 @@ package com.emirgasic.forecastfm.core.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
@@ -129,8 +131,23 @@ fun NavGraph(modifier: Modifier = Modifier){
             )
         }
 
-        composable(Routes.Comments) {
-            CommentsScreen(navController=navController)
+        composable(
+            route = Routes.Comments,
+            arguments = listOf(
+                navArgument("postId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val postId =
+                backStackEntry.arguments?.getString("postId")
+                    ?: return@composable
+
+            CommentsScreen(
+                navController = navController,
+                postId = postId
+            )
         }
     }
 }

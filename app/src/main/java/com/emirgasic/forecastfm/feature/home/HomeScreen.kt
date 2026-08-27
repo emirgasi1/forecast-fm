@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +39,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.ForecastItem
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
+import kotlin.toString
 
 @Composable
 fun HomeScreen(
@@ -45,170 +48,179 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel()
 ) {
-    val home by viewModel.home.collectAsState()
-    if (home == null) {
-        return
-    }
+    val uiState by viewModel.uiState.collectAsState()
 
-    Box(
-        modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
-    ) {
-        LazyColumn(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top,
-            modifier = modifier.fillMaxSize().padding(10.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(40.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = home!!.greeting,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Image(
-                        painter = painterResource(R.drawable.sun),
-                        contentDescription = "Sunny",
-                        modifier = modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = home!!.weather.location,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                WeatherCard(
-                    temperature = home!!.weather.temperature,
-                    weather = home!!.weather.condition,
-                    feelsLike = home!!.weather.feelsLike,
-                    humidity = home!!.weather.humidity,
-                    wind = home!!.weather.wind
-                )
-                Spacer(modifier.height(26.dp))
-                SectionTitle(
-                    title = "5-day Forecast"
-                )
-                Spacer(modifier.height(38.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
-                                    MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
-                                    MaterialTheme.colorScheme.background
-                                )
-                            )
-                        )
-                        .border(
-                            width = 1.dp,
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                )
-                            ),
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .clickable { rootNavController.navigate(Routes.Weather) }
-                ) {
+    when (val state = uiState) {
 
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(26.dp)
-                    ) {
+        HomeUiState.Loading -> {
 
-                        items(home!!.forecast) { forecast ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
 
-                            ForecastItem(
-                                icon = forecast.icon,
-                                day = forecast.time,
-                                temperature = forecast.temperature
-                            )
+                CircularProgressIndicator()
+            }
+        }
 
-                        }
+        is HomeUiState.Error -> {
 
-                        items(home!!.forecast) { forecast ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
 
-                            ForecastItem(
-                                icon = forecast.icon,
-                                day = forecast.time,
-                                temperature = forecast.temperature
-                            )
-
-                        }
-
-                        items(home!!.forecast) { forecast ->
-
-                            ForecastItem(
-                                icon = forecast.icon,
-                                day = forecast.time,
-                                temperature = forecast.temperature
-                            )
-
-                        }
-
-                        items(home!!.forecast) { forecast ->
-
-                            ForecastItem(
-                                icon = forecast.icon,
-                                day = forecast.time,
-                                temperature = forecast.temperature
-                            )
-
-                        }
-
-                        items(home!!.forecast) { forecast ->
-
-                            ForecastItem(
-                                icon = forecast.icon,
-                                day = forecast.time,
-                                temperature = forecast.temperature
-                            )
-
-                        }
-                    }
-                }
-                Spacer(modifier.height(26.dp))
-                SectionTitle(
-                    title = "Today's Soundtrack"
-                )
-                Spacer(modifier = modifier.height(20.dp))
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    home!!.playlists.forEach { playlist ->
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
 
-                        PlaylistCard(
-                            title = playlist.title,
-                            genre = playlist.genre,
-                            artwork = playlist.albumImage,
-                            likes = playlist.likes.toString(),
-                            onClick = {
-                                rootNavController.navigate(Routes.Playlist)
-                            }
-                        )
-
+                    Button(
+                        onClick = {
+                            viewModel.loadHome()
+                        }
+                    ) {
+                        Text("Retry")
                     }
-
                 }
             }
         }
+
+        is HomeUiState.Success -> {
+
+            val home = state.home
+
+            Box(
+                modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+            ) {
+                LazyColumn(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top,
+                    modifier = modifier.fillMaxSize().padding(10.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(40.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = home!!.greeting,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Image(
+                                painter = painterResource(home.weather.icon),
+                                contentDescription = "${home.weather.condition} weather",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = home!!.weather.location,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        WeatherCard(
+                            temperature = home!!.weather.temperature,
+                            weather = home!!.weather.condition,
+                            feelsLike = home!!.weather.feelsLike,
+                            humidity = home!!.weather.humidity,
+                            wind = home!!.weather.wind
+                        )
+                        Spacer(modifier.height(26.dp))
+                        SectionTitle(
+                            title = "5-day Forecast"
+                        )
+                        Spacer(modifier.height(38.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.surfaceVariant,
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
+                                            MaterialTheme.colorScheme.background
+                                        )
+                                    )
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.background,
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .clickable { rootNavController.navigate(Routes.Weather) }
+                        ) {
+
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(26.dp)
+                            ) {
+
+                                items(home!!.forecast) { forecast ->
+
+                                    ForecastItem(
+                                        icon = forecast.icon,
+                                        day = forecast.time,
+                                        temperature = forecast.temperature
+                                    )
+
+                                }
+
+                            }
+                        }
+                        Spacer(modifier.height(26.dp))
+                        SectionTitle(
+                            title = "Today's Soundtrack"
+                        )
+                        Spacer(modifier = modifier.height(20.dp))
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+
+                            home!!.playlists.forEach { playlist ->
+
+                                PlaylistCard(
+                                    title = playlist.title,
+                                    genre = playlist.genre,
+                                    artwork = playlist.albumImageUrl,
+                                    likes = playlist.likes.toString(),
+                                    onClick = {
+                                        rootNavController.navigate(
+                                            Routes.playlistRoute(playlist.id)
+                                        )
+                                    }
+
+                                )
+
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+
     }
-}
-
-
+    }

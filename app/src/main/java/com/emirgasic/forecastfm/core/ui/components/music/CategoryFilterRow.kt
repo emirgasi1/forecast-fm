@@ -18,7 +18,7 @@ fun CategoryFilterRow(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     modifier: Modifier = Modifier
-) {
+){
 
     LazyRow(
         modifier = modifier.fillMaxWidth(),
