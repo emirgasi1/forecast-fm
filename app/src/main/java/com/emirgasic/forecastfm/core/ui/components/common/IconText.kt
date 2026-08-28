@@ -19,16 +19,12 @@ fun IconText(
     icon: Painter,
     text: String,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: () -> Unit = {}
 ) {
     Row(
-        modifier = modifier.then(
-            if (onClick != null) {
-                Modifier.clickable { onClick() }
-            } else {
-                Modifier
-            }
-        ),
+        modifier = modifier.clickable {
+            onClick()
+        },
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

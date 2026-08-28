@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.data.model.Weather
+import com.emirgasic.forecastfm.data.repository.MusicHistoryRepository
 import com.emirgasic.forecastfm.data.repository.UserRepository
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.network.playlist.PlaylistResponse
@@ -27,7 +28,7 @@ class MusicViewModel : ViewModel() {
     )
     private val weatherRepository = WeatherRepository()
     private val _weather = MutableStateFlow<Weather?>(null)
-
+    private val musicHistoryRepository = MusicHistoryRepository()
     val weather = _weather.asStateFlow()
     private val userRepository = UserRepository(
         userApi = UserApi()
@@ -65,16 +66,35 @@ class MusicViewModel : ViewModel() {
     }
 
     private fun loadPlaylists() {
+
         viewModelScope.launch {
+
             try {
-                val weatherData = weatherRepository.getWeather()
 
-                _weather.value = weatherData.weather
+                println("WEATHER START")
 
-                _playlists.value =
+                val weatherData =
+                    weatherRepository.getWeather()
+
+                println("WEATHER SUCCESS")
+
+                _weather.value =
+                    weatherData.weather
+
+                println("PLAYLIST START")
+
+                val playlists =
                     playlistRepository.getPlaylists()
 
+                println("PLAYLIST SUCCESS: ${playlists.size}")
+
+                _playlists.value =
+                    playlists
+
             } catch (e: Exception) {
+
+                e.printStackTrace()
+
                 println(
                     "MUSIC VIEWMODEL ERROR: ${e.message}"
                 )
@@ -268,6 +288,36 @@ class MusicViewModel : ViewModel() {
                 println(
                     "FAVORITE ERROR: ${e.message}"
                 )
+            }
+        }
+    }
+
+    fun openPlaylist(playlist: Playlist) {
+
+        println("OPEN PLAYLIST CALLED: ${playlist.title}")
+
+        viewModelScope.launch {
+
+            try {
+                println("HISTORY: GETTING USER")
+
+                val user =
+                    userRepository.getCurrentUser()
+
+                println("HISTORY: USER = ${user.id}")
+                println("HISTORY PLAYLIST: ${playlist.id}")
+
+                musicHistoryRepository.addHistory(
+                    userId = user.id,
+                    playlistId = playlist.id
+                )
+
+                println("HISTORY SAVED")
+
+            } catch (e: Exception) {
+
+                println("MUSIC HISTORY ERROR")
+                e.printStackTrace()
             }
         }
     }

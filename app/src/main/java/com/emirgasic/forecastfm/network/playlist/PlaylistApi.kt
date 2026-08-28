@@ -6,14 +6,24 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.statement.bodyAsText
+import kotlinx.serialization.json.Json
 
 class PlaylistApi {
 
     suspend fun getPlaylists(): List<PlaylistResponse> {
 
-        return ApiClient.client
-            .get("${ApiClient.baseUrl()}/api/playlists")
-            .body()
+        val response =
+            ApiClient.client.get(
+                "${ApiClient.baseUrl()}/api/playlists"
+            )
+
+        val body =
+            response.bodyAsText()
+
+        println("PLAYLIST BODY: $body")
+
+        return Json.decodeFromString(body)
     }
 
     suspend fun getPlaylist(
@@ -24,6 +34,7 @@ class PlaylistApi {
             .get("${ApiClient.baseUrl()}/api/playlists/$id")
             .body()
     }
+
     suspend fun favoritePlaylist(
         userId: String,
         playlistId: String

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,41 +40,55 @@ fun MusicHistoryScreen(
 ) {
 
     val history by viewModel.history.collectAsState()
-    val groupedHistory = history.groupBy { it.section }
+
+    val groupedHistory =
+        history.groupBy { it.section }
+
     Box(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
-    )
-    {
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                top = 60.dp,
+                start = 10.dp,
+                bottom = 10.dp,
+                end = 10.dp
+            )
+    ) {
+
+        Text(
+            text = "History count: ${history.size}"
+        )
+
         LazyColumn(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
 
-
             groupedHistory.forEach { (section, entries) ->
 
                 item {
+
                     SectionTitle(
                         title = section
                     )
                 }
 
-
                 items(entries) { entry ->
 
                     MusicHistoryEntryCard(
                         playlist = entry.title,
-                        weatherIcon = painterResource(entry.weatherIcon),
+                        weatherIcon = painterResource(
+                            entry.weatherIcon
+                        ),
                         weather = entry.weather,
                         temperature = entry.temperature,
                         location = entry.location,
                         time = entry.time
                     )
-
                 }
             }
         }
-    }}
+    }
+}

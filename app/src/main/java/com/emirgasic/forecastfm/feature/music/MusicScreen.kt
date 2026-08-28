@@ -129,6 +129,8 @@ fun MusicScreen(
                         )
                     },
                     onPlayClick = {
+                        viewModel.openPlaylist(playlist)
+
                         playlist.spotifyUrl?.let { url ->
                             context.startActivity(
                                 Intent(
@@ -187,6 +189,8 @@ fun MusicScreen(
                         )
                     },
                     onPlayClick = {
+                        viewModel.openPlaylist(playlist)
+
                         playlist.spotifyUrl?.let { url ->
                             context.startActivity(
                                 Intent(
@@ -277,7 +281,6 @@ fun MusicScreen(
                 Spacer(modifier.height(16.dp))
             }
             item {
-
                 recommendedPlaylist?.let { playlist ->
 
                     RecommendedMusicCard(
@@ -287,7 +290,27 @@ fun MusicScreen(
                         genre = playlist.genre,
                         mood = playlist.mood,
                         likes = playlist.likes.toString(),
-                        onPlayClick = {},
+
+                        onPlayClick = {
+                            viewModel.openPlaylist(playlist)
+
+                            playlist.spotifyUrl?.let { url ->
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(url)
+                                    )
+                                )
+                            } ?: playlist.youtubeUrl?.let { url ->
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(url)
+                                    )
+                                )
+                            }
+                        },
+
                         onViewPlaylistClick = { id ->
                             rootNavController.navigate(
                                 Routes.playlistRoute(id)
@@ -295,10 +318,11 @@ fun MusicScreen(
                         }
                     )
                 }
-
+                println("PLAYLISTS: ${playlists.size}")
+                println("WEATHER: $weather")
+                println("RECOMMENDED: $recommendedPlaylist")            }
             }
 
 
         }
     }
-}

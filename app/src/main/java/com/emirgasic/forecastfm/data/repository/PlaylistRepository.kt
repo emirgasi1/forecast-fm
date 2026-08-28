@@ -11,9 +11,13 @@ class PlaylistRepository(
 
     suspend fun getPlaylists(): List<Playlist> {
 
+        println("REPOSITORY: GET PLAYLISTS START")
+
         val responses = playlistApi.getPlaylists()
 
-        return responses.map { response ->
+        println("REPOSITORY: RESPONSES SIZE = ${responses.size}")
+
+        val playlists = responses.map { response ->
 
             Playlist(
                 id = response.id,
@@ -38,6 +42,10 @@ class PlaylistRepository(
                 youtubeUrl = response.youtubeUrl
             )
         }
+
+        println("REPOSITORY: PLAYLISTS MAPPED = ${playlists.size}")
+
+        return playlists
     }
 
     suspend fun getPlaylist(

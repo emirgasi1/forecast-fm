@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,7 +42,7 @@ fun RecommendedMusicCard(
     onPlayClick: () -> Unit,
     onViewPlaylistClick: (String) -> Unit
 ) {
-
+    println("RECOMMENDED CARD: $title")
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -96,11 +97,26 @@ fun RecommendedMusicCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                IconText(
-                    icon = painterResource(R.drawable.music),
-                    text = "Play",
-                    onClick = onPlayClick
-                )
+                Row(
+                    modifier = Modifier.clickable {
+                        println("PLAY ROW CLICKED")
+                        onPlayClick()
+                    },
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.music),
+                        contentDescription = "Play",
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Text(
+                        text = "Play",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
 
 
                 IconText(
