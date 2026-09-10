@@ -29,9 +29,13 @@ import com.emirgasic.forecastfm.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsOptionCard
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsSection
@@ -40,8 +44,16 @@ import com.emirgasic.forecastfm.core.ui.components.settings.SettingsSection
 @Composable
 fun SettingsScreen(
     navController: NavController,
+    tokenManager: TokenManager,
     modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = viewModel()
+    viewModel: SettingsViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return SettingsViewModel(tokenManager) as T
+            }
+        }
+    )
 ) {
 
     val accountOptions by viewModel.accountOptions.collectAsState()
@@ -198,19 +210,27 @@ fun SettingsScreen(
 
 
             item {
-
                 Button(
                     onClick = {
-
-                    }
-                ) {
-
-                    Text(
-                        text = "Logout"
+                        viewModel.logout()
+                        navController.navigate(Routes.Login) {
+                            popUpTo(Routes.Main) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
-
+                ) {
+                    Text(
+                        text = "Logout",
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 }
-
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
 

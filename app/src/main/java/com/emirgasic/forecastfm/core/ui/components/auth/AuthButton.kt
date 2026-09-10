@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.dp
 fun AuthButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ){
 
     Button(
@@ -28,10 +29,11 @@ fun AuthButton(
             .height(54.dp),
 
         shape = RoundedCornerShape(0.dp),
-
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.background
+            contentColor = MaterialTheme.colorScheme.background,
+            disabledContainerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
 
     ){

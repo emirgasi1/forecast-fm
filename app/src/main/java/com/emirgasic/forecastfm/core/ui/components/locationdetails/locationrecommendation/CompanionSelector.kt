@@ -1,11 +1,14 @@
 package com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation
 
-
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,34 +20,25 @@ fun CompanionSelector(
     onCompanionSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
         companions.forEach { companion ->
-
             FilterChip(
                 selected = selectedCompanion == companion,
-
                 onClick = {
                     onCompanionSelected(companion)
                 },
-
                 label = {
-                    androidx.compose.material3.Text(
-                        text = companion
-                    )
+                    Text(text = companion)
                 },
-
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary
                 )
             )
-
         }
-
     }
-
 }

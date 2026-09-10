@@ -69,4 +69,9 @@ class PlaylistApi {
             }
             .body()
     }
+    suspend fun getSavedPlaylists(userId: String): List<PlaylistResponse> {
+        return ApiClient.client.get("${ApiClient.baseUrl()}/api/playlists/saved") {
+            header("User-Id", userId)
+        }.body()
+    }
 }

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.data.model.Forecast
 import com.emirgasic.forecastfm.data.model.Weather
-import com.emirgasic.forecastfm.repository.WeatherRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,19 +35,24 @@ class WeatherViewModel : ViewModel() {
     val uiState: StateFlow<WeatherUiState> =
         _uiState.asStateFlow()
 
-    init {
-        loadWeather()
-    }
 
-    fun loadWeather() {
 
+    fun loadWeather(
+        location: String,
+        latitude: Double,
+        longitude: Double
+    ) {
         viewModelScope.launch {
 
             _uiState.value = WeatherUiState.LOADING
 
             try {
 
-                val weatherData = repository.getWeather()
+                val weatherData = repository.getWeather(
+                    location = location,
+                    latitude = latitude,
+                    longitude = longitude
+                )
 
                 _weather.value = weatherData.weather
                 _hourlyForecast.value = weatherData.hourly

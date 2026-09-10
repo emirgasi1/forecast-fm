@@ -1,67 +1,26 @@
 package com.emirgasic.forecastfm.data.repository
 
-
 import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.data.model.Comment
 import com.emirgasic.forecastfm.data.model.FeedPost
-import com.emirgasic.forecastfm.data.model.Music
-import com.emirgasic.forecastfm.data.model.Playlist
 import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
-
+import com.emirgasic.forecastfm.network.ApiClient
+import com.emirgasic.forecastfm.network.location.LocationApi
+import com.emirgasic.forecastfm.network.weather.WeatherApi
 
 class FeedRepository(
     private val userRepository: UserRepository,
-    private val postRepository: PostRepository
+    private val postRepository: PostRepository,
+    private val locationRepository: LocationRepository = LocationRepository(),
+    private val playlistRepository: PlaylistRepository,
+    private val commentRepository: CommentRepository,
+    private val weatherApi: WeatherApi = WeatherApi()
 ) {
 
-    private val weather = Weather(
-        location = "Baščaršija",
-        temperature = "22°C",
-        condition = "Sunny",
-        feelsLike = "24°C",
-        humidity = "55%",
-        wind = "8 km/h",
-        uvIndex = "20UV",
-        airQuality = "Good",
-        icon = R.drawable.sun
-    )
+    suspend fun getPosts(userId: String): List<FeedPost> {
+        val userResponse = userRepository.getUser(userId)
 
-    private val playlist = Playlist(
-        id = "1",
-        title = "Morning Coffee",
-        genre = "Jazz",
-        mood = "Relax",
-        albumImageUrl = null,
-        weather = "Sunny",
-        temperature = "22°C",
-        location = "Baščaršija",
-        songs = listOf(
-            Music(
-                id = "1",
-                title = "Coffee Time",
-                artist = "Sarajevo Jazz",
-                duration = "3:45",
-                albumImageUrl = null
-            ),
-            Music(
-                id = "2",
-                title = "Morning Walk",
-                artist = "City Lights",
-                duration = "4:10",
-                albumImageUrl = null
-            )
-        ),
-        likes = 240,
-        spotifyUrl = "https://open.spotify.com/",
-        youtubeUrl = "https://www.youtube.com/"
-    )
-    suspend fun getPosts(): List<FeedPost> {
-
-
-        val userResponse = userRepository.getCurrentUser()
-
-        if(userResponse==null){
+        if (userResponse == null) {
             return emptyList()
         }
 
@@ -71,31 +30,93 @@ class FeedRepository(
             bio = userResponse.bio ?: "",
             profileImage = R.drawable.outfit3,
             favoriteLocation = userResponse.favoriteLocation ?: "",
-            likes = 248,
-            posts = 32,
-            saved = 14
+            likes = 0,
+            posts = 0,
+            saved = 0
         )
 
-        val postResponses=postRepository.getPosts()
+        val postResponses = postRepository.getPosts()
 
+        val locations = locationRepository.getLocations()
+        val location = locations.firstOrNull()
+        val allPlaylists = playlistRepository.getPlaylists()
 
-        return postResponses.map{ post->
+        return postResponses.map { post ->
+            val weather = if (location != null) {
+                try {
+                    val weatherData = weatherApi.getWeather(
+                        location = location.name,
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+
+                    Weather(
+                        location = weatherData.location,
+                        temperature = weatherData.temperature,
+                        condition = weatherData.condition,
+                        feelsLike = weatherData.feelsLike,
+                        humidity = weatherData.humidity,
+                        wind = weatherData.wind,
+                        uvIndex = weatherData.uvIndex,
+                        airQuality = weatherData.airQuality,
+                        icon = getWeatherIcon(weatherData.condition)
+                    )
+                } catch (e: Exception) {
+                    getDefaultWeather()
+                }
+            } else {
+                getDefaultWeather()
+            }
+
+            val matchingPlaylist = allPlaylists.find {
+                it.weather.equals(weather.condition, ignoreCase = true)
+            } ?: allPlaylists.firstOrNull()
+
+            val commentCount = try {
+                commentRepository.getComments(post.id).size
+            } catch (e: Exception) {
+                0
+            }
 
             FeedPost(
                 id = post.id,
                 user = user,
-                image = R.drawable.outfit1,
+                image = if (!post.imageUrl.isNullOrBlank()) {
+                    "${ApiClient.baseUrl()}${post.imageUrl}"
+                } else {
+                    "https://picsum.photos/seed/${post.id}/400/400"
+                },
                 caption = post.caption ?: "",
                 weather = weather,
-                playlist = playlist,
+                playlist = matchingPlaylist,
                 time = post.createdAt,
-                likes = 128,
-                comments = 24
+                likes = 0,
+                comments = commentCount
             )
         }
     }
 
-    fun getComments(postId: String): List<Comment> {
-        return emptyList()
+    private fun getDefaultWeather(): Weather {
+        return Weather(
+            location = "Sarajevo",
+            temperature = "22°C",
+            condition = "Sunny",
+            feelsLike = "24°C",
+            humidity = "55%",
+            wind = "8 km/h",
+            uvIndex = "5UV",
+            airQuality = "Good",
+            icon = R.drawable.sun
+        )
+    }
+
+    private fun getWeatherIcon(condition: String): Int {
+        return when (condition.lowercase()) {
+            "sunny", "clear" -> R.drawable.sun
+            "clouds", "cloudy", "partly cloudy" -> R.drawable.sunny_cloudy
+            "rain", "drizzle", "heavy rain" -> R.drawable.heavy_rain
+            "snow" -> R.drawable.snow
+            else -> R.drawable.sun
+        }
     }
 }

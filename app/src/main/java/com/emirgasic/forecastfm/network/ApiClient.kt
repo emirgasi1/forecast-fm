@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 
 object ApiClient {
 
-    private const val BASE_URL = "http://127.0.0.1:8080"
+    private const val BASE_URL = "http://192.168.1.92:8080"
 
     val client = HttpClient(Android) {
 

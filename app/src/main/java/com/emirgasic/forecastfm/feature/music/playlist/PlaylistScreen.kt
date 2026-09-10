@@ -1,46 +1,35 @@
 package com.emirgasic.forecastfm.feature.music.playlist
 
 import android.content.Intent
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.net.Uri
+import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.ExternalMusicLinkCard
@@ -50,13 +39,17 @@ import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCar
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
 
 @Composable
-fun PlaylistScreen(navController: NavController,
-                   playlistId:String?,
-                   modifier: Modifier =Modifier){
-    val viewModel: PlaylistViewModel = viewModel()
+fun PlaylistScreen(
+    navController: NavController,
+    playlistId: String?,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
+    val viewModel: PlaylistViewModel = viewModel()
+
     val uiState by viewModel.uiState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
+
     LaunchedEffect(playlistId) {
         playlistId?.let {
             viewModel.loadPlaylist(it)
@@ -106,7 +99,6 @@ fun PlaylistScreen(navController: NavController,
         }
 
         is PlaylistUiState.Success -> {
-
             val playlist = state.playlist
 
             Box(
@@ -114,7 +106,6 @@ fun PlaylistScreen(navController: NavController,
                     .background(color = MaterialTheme.colorScheme.background)
                     .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
             ) {
-
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top,
@@ -125,7 +116,6 @@ fun PlaylistScreen(navController: NavController,
                     }
 
                     item {
-
                         PlaylistHeaderCard(
                             album = playlist.albumImageUrl,
                             title = playlist.title,
@@ -136,23 +126,19 @@ fun PlaylistScreen(navController: NavController,
                             temperature = playlist.temperature,
                             locationIcon = painterResource(R.drawable.mappin),
                             location = playlist.location,
-
                             isFavorite = isFavorite,
-
                             onFavoriteClick = {
                                 viewModel.toggleFavorite(playlist.id)
                             }
                         )
-
                     }
+
                     item {
                         Spacer(modifier.height(28.dp))
                     }
 
                     item {
-                        SectionTitle(
-                            title = "Songs"
-                        )
+                        SectionTitle(title = "Songs")
                     }
 
                     item {
@@ -160,120 +146,111 @@ fun PlaylistScreen(navController: NavController,
                     }
 
                     items(playlist.songs) { song ->
-
                         MusicRow(
                             title = song.title,
                             artist = song.artist,
                             duration = song.duration,
                             image = song.albumImageUrl
                         )
-
                         Spacer(modifier.height(12.dp))
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(28.dp))
                     }
+
                     item {
-
-                        SectionTitle(
-                            title = "Best For"
-                        )
-
+                        SectionTitle(title = "Best For")
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(12.dp))
                     }
-                    item {
 
+                    item {
                         PlaylistTagCard(
                             icon = painterResource(R.drawable.coffee),
                             title = "Morning Coffee"
                         )
-
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(12.dp))
                     }
-                    item {
 
+                    item {
                         PlaylistTagCard(
                             icon = painterResource(R.drawable.books),
                             title = "Studying"
                         )
-
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(12.dp))
                     }
-                    item {
 
+                    item {
                         PlaylistTagCard(
                             icon = painterResource(R.drawable.moon),
                             title = "Late Night Walk"
                         )
-
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(28.dp))
                     }
 
-                    item{
-                        SectionTitle(
-                            title = "Would You Rather"
-                        )
+                    item {
+                        SectionTitle(title = "Would You Rather")
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(12.dp))
                     }
+
                     item {
                         ExternalMusicLinkCard(
                             icon = painterResource(R.drawable.music),
                             title = "Open in Spotify",
                             onClick = {
                                 playlist.spotifyUrl?.let { url ->
-                                    val intent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(url)
-                                    )
-
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                     context.startActivity(intent)
                                 }
                             }
                         )
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(12.dp))
                     }
+
                     item {
                         ExternalMusicLinkCard(
                             icon = painterResource(R.drawable.play),
                             title = "Open in YouTube",
                             onClick = {
                                 playlist.youtubeUrl?.let { url ->
-                                    val intent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(url)
-                                    )
-
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                                     context.startActivity(intent)
                                 }
                             }
                         )
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(28.dp))
                     }
 
-                    item{
-                        SectionTitle(
-                            title = "Similar Playlists"
-                        )
+                    item {
+                        SectionTitle(title = "Similar Playlists")
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(16.dp))
                     }
-                    item {
 
+                    item {
                         SimilarPlaylistCard(
                             album = painterResource(R.drawable.album2),
                             title = "GoodNight Lovell",
@@ -285,13 +262,13 @@ fun PlaylistScreen(navController: NavController,
                             locationIcon = painterResource(R.drawable.mappin),
                             location = "Otoka"
                         )
-
                     }
-                    item{
+
+                    item {
                         Spacer(modifier.height(16.dp))
                     }
-                    item {
 
+                    item {
                         SimilarPlaylistCard(
                             album = painterResource(R.drawable.album3),
                             title = "Lil Nameless 2k16",
@@ -303,11 +280,9 @@ fun PlaylistScreen(navController: NavController,
                             locationIcon = painterResource(R.drawable.mappin),
                             location = "Dobrinja"
                         )
-
                     }
                 }
             }
-
         }
 
     }

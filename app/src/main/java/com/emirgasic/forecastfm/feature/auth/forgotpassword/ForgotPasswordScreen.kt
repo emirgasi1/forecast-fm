@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
@@ -39,35 +43,97 @@ import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 @Composable
 fun ForgotPasswordScreen(
     navController: NavController,
-    modifier: Modifier = Modifier,
-    viewModel: ForgotPasswordViewModel = viewModel()
-){
-    val email by viewModel.email.collectAsState()
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier=modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-            Image(painter = painterResource(R.drawable.lock,), contentDescription = "Lock Logo",modifier = Modifier.size(100.dp))
-            Spacer(modifier.height(52.dp))
-            Text(text="Reset Your Password",color=MaterialTheme.colorScheme.onPrimary, style=MaterialTheme.typography.headlineLarge,modifier = Modifier.offset(y = (-30).dp))
-            Text(text="Enter your email associated with your account",color=MaterialTheme.colorScheme.onBackground,style=MaterialTheme.typography.titleLarge,modifier=Modifier.width(320.dp))
-            Spacer(modifier=modifier.height(30.dp))
-            Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center, modifier = modifier.width(320.dp)){
-                EmailField(
-                    email = email,
-                    onEmailChange = {
-                        viewModel.updateEmail(it)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier=modifier.height(32.dp))
-                AuthButton(
-                    text = "Reset Password",
-                    onClick = {
-                        viewModel.resetPassword()
+    modifier: Modifier = Modifier
+) {
+    val forgotPasswordViewModel: ForgotPasswordViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return ForgotPasswordViewModel(
+                    onSuccess = {
+                        navController.popBackStack()
                     }
-                )
-                Spacer(modifier.height(32.dp))
-                Text(text="Back to Login",color= MaterialTheme.colorScheme.onSurfaceVariant,style= MaterialTheme.typography.titleSmall,modifier=modifier.clickable{navController.navigate(Routes.Login)})
+                ) as T
             }
         }
+    )
+
+    val email by forgotPasswordViewModel.email.collectAsState()
+    val isLoading by forgotPasswordViewModel.isLoading.collectAsState()
+    val errorMessage by forgotPasswordViewModel.errorMessage.collectAsState()
+    val successMessage by forgotPasswordViewModel.successMessage.collectAsState()
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .background(MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Reset Password",
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Enter your email and we'll send you a reset link",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Show success message
+        if (successMessage != null) {
+            Text(
+                text = successMessage ?: "",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        // Show error message
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage ?: "",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        // Email field
+        OutlinedTextField(
+            value = email,
+            onValueChange = { forgotPasswordViewModel.updateEmail(it) },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            enabled = !isLoading
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Send button
+        Button(
+            onClick = { forgotPasswordViewModel.sendResetLink() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
+        ) {
+            Text(if (isLoading) "Sending..." else "Send Reset Link")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Back to Login",
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable { navController.popBackStack() }
+        )
     }
 }

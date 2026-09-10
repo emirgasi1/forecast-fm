@@ -8,7 +8,33 @@ import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 class PlaylistRepository(
     private val playlistApi: PlaylistApi
 ) {
-
+    suspend fun getFavoritePlaylists(userId: String): List<Playlist> {
+        val responses = playlistApi.getSavedPlaylists(userId)
+        return responses.map { response ->
+            Playlist(
+                id = response.id,
+                title = response.title,
+                genre = response.genre,
+                mood = response.mood,
+                albumImageUrl = response.albumImageUrl,
+                weather = response.weather,
+                temperature = response.temperature,
+                location = response.location,
+                songs = response.songs.map { song ->
+                    Music(
+                        id = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        duration = song.duration,
+                        albumImageUrl = song.albumImageUrl
+                    )
+                },
+                likes = response.likes,
+                spotifyUrl = response.spotifyUrl,
+                youtubeUrl = response.youtubeUrl
+            )
+        }
+    }
     suspend fun getPlaylists(): List<Playlist> {
 
         println("REPOSITORY: GET PLAYLISTS START")
@@ -107,4 +133,38 @@ class PlaylistRepository(
             userId=userId
         )
     }
+
+    suspend fun getRecommendedPlaylist(
+        location: String,
+        weather: String
+    ): Playlist? {
+
+        val playlists = getPlaylists()
+
+        val weatherMatch =
+            playlists.firstOrNull { playlist ->
+
+                playlist.location.equals(
+                    location,
+                    ignoreCase = true
+                ) && playlist.weather.equals(
+                    weather,
+                    ignoreCase = true
+                )
+            }
+
+        if (weatherMatch != null) {
+            return weatherMatch
+        }
+
+
+        return playlists.firstOrNull { playlist ->
+
+            playlist.location.equals(
+                location,
+                ignoreCase = true
+            )
+        }
+    }
+
 }

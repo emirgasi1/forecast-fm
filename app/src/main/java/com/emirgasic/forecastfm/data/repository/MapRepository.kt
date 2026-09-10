@@ -12,6 +12,8 @@ class MapRepository {
         return listOf(
             MapRecommendation(
                 location = "Baščaršija",
+                latitude = 43.8599,
+                longitude = 18.4317,
                 temperature = "22°C",
                 weather = "Sunny",
                 weatherIcon = R.drawable.sun,
@@ -21,6 +23,8 @@ class MapRepository {
 
             MapRecommendation(
                 location = "Ilidža",
+                latitude = 43.8337,
+                longitude = 18.3006,
                 temperature = "21°C",
                 weather = "Cloudy",
                 weatherIcon = R.drawable.sunny_cloudy,

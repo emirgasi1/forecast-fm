@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfilePostCard(
@@ -28,7 +28,6 @@ fun ProfilePostCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -43,7 +42,6 @@ fun ProfilePostCard(
         ),
         onClick = onClick
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -51,7 +49,6 @@ fun ProfilePostCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -59,13 +56,20 @@ fun ProfilePostCard(
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
-
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = "Post image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (!imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Post image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = "📷",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                }
             }
 
             Spacer(
@@ -77,9 +81,6 @@ fun ProfilePostCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium
             )
-
         }
-
     }
-
 }

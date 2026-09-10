@@ -9,9 +9,11 @@ class ProfileApi {
     suspend fun getProfile(
         userId: String
     ): ProfileResponse {
-
-        return ApiClient.client.get(
+        println("📥 Fetching profile for userId: $userId")
+        val response: ProfileResponse = ApiClient.client.get(
             "${ApiClient.baseUrl()}/api/users/$userId/profile"
         ).body()
+        println("📥 Profile response: posts count = ${response.posts.size}")
+        return response
     }
 }

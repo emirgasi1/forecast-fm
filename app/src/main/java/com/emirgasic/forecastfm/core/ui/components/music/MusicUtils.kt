@@ -6,13 +6,7 @@ fun formatPlaylistDuration(songs: List<Music>): String {
     var totalSeconds = 0
 
     songs.forEach { song ->
-        val parts = song.duration.split(":")
-        if (parts.size == 2) {
-            val minutes = parts[0].toIntOrNull() ?: 0
-            val seconds = parts[1].toIntOrNull() ?: 0
-
-            totalSeconds += minutes * 60 + seconds
-        }
+        totalSeconds += song.duration
     }
 
     val hours = totalSeconds / 3600
@@ -22,5 +16,16 @@ fun formatPlaylistDuration(songs: List<Music>): String {
         "${hours}h ${minutes}min"
     } else {
         "${minutes}min"
+    }
+}
+
+
+fun formatSongDuration(seconds: Int): String {
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return if (remainingSeconds > 0) {
+        "$minutes:${remainingSeconds.toString().padStart(2, '0')}"
+    } else {
+        "$minutes:00"
     }
 }

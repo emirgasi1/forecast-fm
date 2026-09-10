@@ -31,6 +31,22 @@ object Routes{
 
     }
     const val PlaceRecommendation = "place_recommendation"
+
+    const val PlaceRecommendationDetail = "place_recommendation_detail/{id}"
+    const val PlaceDetail = "place_detail/{id}"
+    const val SavedHub = "saved_hub"
+    const val SavedPosts = "saved_posts"
+    const val SavedPlaylists = "saved_playlists"
+    const val SavedStyles = "saved_styles"
+
+    const val StyleDetail = "style_detail/{outfitId}"
+
+    fun styleDetailRoute(id: String): String {
+        return "style_detail/$id"
+    }
+    fun placeRecommendationDetailRoute(id: String): String {
+        return "place_recommendation_detail/$id"
+    }
     const val Feed="feed"
 
     const val Weather="weather"

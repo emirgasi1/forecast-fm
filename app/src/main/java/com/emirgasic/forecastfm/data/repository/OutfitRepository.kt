@@ -1,33 +1,63 @@
 package com.emirgasic.forecastfm.data.repository
 
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.data.model.Outfit
+import com.emirgasic.forecastfm.network.ApiClient
+import com.emirgasic.forecastfm.network.outfit.OutfitApi
 
-class OutfitRepository {
+class OutfitRepository(
+    private val outfitApi: OutfitApi = OutfitApi()
+) {
 
-    fun getOutfits(): List<Outfit> {
-        return listOf(
+    suspend fun getTrendingOutfits(): List<Outfit> {
+        val responses = outfitApi.getTrendingOutfits()
+        return responses.map { response ->
             Outfit(
-                id = "1",
-                image = R.drawable.outfit1,
-                title = "Coffee Walk",
-                weatherCondition = "Sunny",
-                season = "Spring"
-            ),
-            Outfit(
-                id = "2",
-                image = R.drawable.outfit2,
-                title = "Rainy Day",
-                weatherCondition = "Rain",
-                season = "Autumn"
-            ),
-            Outfit(
-                id = "3",
-                image = R.drawable.outfit3,
-                title = "Winter Cozy",
-                weatherCondition = "Snow",
-                season = "Winter"
+                id = response.id,
+                imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
+                title = response.title,
+                weatherCondition = response.weatherCondition,
+                season = response.season,
+                likes = response.likes,
+                storeName = response.storeName,
+                storeAddress = response.storeAddress,
+                price = response.price
             )
+        }
+    }
+
+    suspend fun getOutfitsByWeather(weather: String): List<Outfit> {
+        val responses = outfitApi.getOutfitsByWeather(weather)
+        return responses.map { response ->
+            Outfit(
+                id = response.id,
+                imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
+                title = response.title,
+                weatherCondition = response.weatherCondition,
+                season = response.season,
+                likes = response.likes,
+                storeName = response.storeName,
+                storeAddress = response.storeAddress,
+                price = response.price
+            )
+        }
+    }
+
+    suspend fun getOutfitById(id: String): Outfit {
+        val response = outfitApi.getOutfitById(id)
+        return Outfit(
+            id = response.id,
+            imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
+            title = response.title,
+            weatherCondition = response.weatherCondition,
+            season = response.season,
+            likes = response.likes,
+            storeName = response.storeName,
+            storeAddress = response.storeAddress,
+            price = response.price
         )
+    }
+
+    suspend fun likeOutfit(outfitId: String) {
+        outfitApi.likeOutfit(outfitId)
     }
 }

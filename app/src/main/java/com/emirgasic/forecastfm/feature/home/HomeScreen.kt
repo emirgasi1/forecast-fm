@@ -31,9 +31,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.ForecastItem
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
@@ -45,8 +48,16 @@ import kotlin.toString
 fun HomeScreen(
     mainNavController: NavController,
     rootNavController: NavController,
+    tokenManager: TokenManager,  // ← Add this
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return HomeViewModel(tokenManager) as T
+            }
+        }
+    )
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -198,7 +209,6 @@ fun HomeScreen(
                         ) {
 
                             home!!.playlists.forEach { playlist ->
-
                                 PlaylistCard(
                                     title = playlist.title,
                                     genre = playlist.genre,
@@ -209,9 +219,7 @@ fun HomeScreen(
                                             Routes.playlistRoute(playlist.id)
                                         )
                                     }
-
                                 )
-
                             }
 
                         }

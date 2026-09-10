@@ -2,6 +2,8 @@ package com.emirgasic.forecastfm.data.model
 
 data class MapRecommendation(
     val location: String,
+    val latitude: Double,
+    val longitude: Double,
     val weatherIcon: Int,
     val temperature: String,
     val weather: String,

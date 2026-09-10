@@ -1,6 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,38 +12,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfileHeader(
-    image: Painter,
+    image: String,
     username: String,
     bio: String,
     modifier: Modifier = Modifier
 ) {
-
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape),
             contentAlignment = Alignment.Center
         ) {
-
-            Image(
-                painter = image,
+            AsyncImage(
+                model = image,
                 contentDescription = "Profile picture",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-
         }
 
         Text(
@@ -58,7 +53,5 @@ fun ProfileHeader(
             color = MaterialTheme.colorScheme.onPrimary,
             style = MaterialTheme.typography.headlineSmall
         )
-
     }
-
 }

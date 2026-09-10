@@ -1,4 +1,4 @@
-package com.emirgasic.forecastfm.repository
+package com.emirgasic.forecastfm.data.repository
 
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.data.model.Forecast
@@ -10,10 +10,17 @@ data class WeatherRepository(
     private val weatherApi: WeatherApi = WeatherApi()
 ) {
 
-    suspend fun getWeather(): WeatherData {
+    suspend fun getWeather(
+        location: String,
+        latitude: Double,
+        longitude: Double
+    ): WeatherData {
 
-        val response = weatherApi.getWeather()
-
+        val response = weatherApi.getWeather(
+            location = location,
+            latitude = latitude,
+            longitude = longitude
+        )
         val weather = Weather(
             location = response.location,
             temperature = response.temperature,

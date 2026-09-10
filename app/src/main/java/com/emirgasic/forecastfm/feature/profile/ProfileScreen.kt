@@ -51,12 +51,23 @@ import com.emirgasic.forecastfm.core.ui.components.profile.ProfileHeader
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfilePostCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileStatsCard
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 
 @Composable
 fun ProfileScreen(
     rootNavController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = viewModel()
+    tokenManager: TokenManager,
+    viewModel: ProfileViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return ProfileViewModel(tokenManager) as T  // ← Pass TokenManager
+            }
+        }
+    )
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -136,7 +147,7 @@ fun ProfileScreen(
                         ) {
 
                             Text(
-                                text = "Style",
+                                text = "Profile",
                                 color = MaterialTheme.colorScheme.onBackground,
                                 style = MaterialTheme.typography.headlineSmall
                             )
@@ -173,9 +184,7 @@ fun ProfileScreen(
                     item {
 
                         ProfileHeader(
-                            image = painterResource(
-                                profileData.profileImage
-                            ),
+                            image = profileData.profileImage,  // ← Now passing String URL
                             username = profileData.username,
                             bio = profileData.bio
                         )

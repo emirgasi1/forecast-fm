@@ -21,151 +21,74 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlaceDiscoveryCard(
-
     location: String,
-
     weatherIcon: Painter,
-
     weather: String,
-
     temperature: String,
-
     playlist: String,
-
     outfit: String,
-
     onChooseClick: () -> Unit,
-
     modifier: Modifier = Modifier
-
 ) {
-
-
     Card(
-
         modifier = modifier.fillMaxWidth(),
-
         shape = MaterialTheme.shapes.medium,
-
         border = BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outline
         )
-
     ) {
-
-
         Column(
-
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant
-                )
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(16.dp),
-
             verticalArrangement = Arrangement.spacedBy(16.dp)
-
         ) {
-
-
             Text(
-
                 text = location,
-
                 style = MaterialTheme.typography.headlineSmall,
-
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-
             )
 
-
             Row(
-
                 verticalAlignment = Alignment.CenterVertically,
-
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
-
             ) {
-
-
                 Icon(
-
                     painter = weatherIcon,
-
                     contentDescription = "Weather",
-
                     modifier = Modifier.size(24.dp)
-
                 )
-
-
                 Text(
-
                     text = weather,
-
                     style = MaterialTheme.typography.titleMedium
-
                 )
-
-
                 Text(
-
                     text = temperature,
-
                     style = MaterialTheme.typography.titleMedium
-
                 )
-
-
             }
-
 
             Column(
-
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-
             ) {
-
-
                 Text(
-
                     text = "🎵 $playlist",
-
                     style = MaterialTheme.typography.bodyLarge
-
                 )
-
-
                 Text(
-
                     text = "👕 $outfit",
-
                     style = MaterialTheme.typography.bodyLarge
-
                 )
-
             }
-
-
 
             Button(
-
                 modifier = Modifier.fillMaxWidth(),
-
                 onClick = onChooseClick
-
             ) {
-
-                Text(
-                    text = "Choose on your own"
-                )
-
+                Text("Choose on your own")
             }
-
-
         }
-
     }
-
 }

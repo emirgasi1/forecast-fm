@@ -12,39 +12,36 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CommentInputField(
-    value: String,modifier:Modifier,
+    value: String,
+    modifier: Modifier,
     onValueChange: (String) -> Unit,
     onSendClick: () -> Unit
-){
-
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-
         placeholder = {
             Text("Add a comment...")
         },
-
         trailingIcon = {
-
             IconButton(
-                onClick = onSendClick
-            ){
+                onClick = {
+                    println("🔵 IconButton clicked! value: '$value'")
+                    onSendClick()
+                }
+            ) {
                 Text(
                     text = ">",
                     style = MaterialTheme.typography.headlineSmall
                 )
             }
-
         },
-
         modifier = Modifier
             .fillMaxWidth()
             .padding(
                 horizontal = 10.dp,
                 vertical = 8.dp
             ),
-
         singleLine = true
     )
 }

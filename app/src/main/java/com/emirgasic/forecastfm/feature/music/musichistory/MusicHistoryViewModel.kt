@@ -1,102 +1,65 @@
 package com.emirgasic.forecastfm.feature.music.musichistory
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.model.MusicHistory
 import com.emirgasic.forecastfm.data.repository.MusicHistoryRepository
-import com.emirgasic.forecastfm.data.repository.UserRepository
-import com.emirgasic.forecastfm.network.user.UserApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import android.content.Intent
-import android.net.Uri
 
-class MusicHistoryViewModel : ViewModel() {
+class MusicHistoryViewModel(
+    private val tokenManager: TokenManager
+) : ViewModel() {
 
-    private val repository =
-        MusicHistoryRepository()
+    private val repository = MusicHistoryRepository()
 
-    private val userRepository =
-        UserRepository(
-            userApi = UserApi()
-        )
-    private val musicHistoryRepository =
-        MusicHistoryRepository()
-    private val _history =
-        MutableStateFlow<List<MusicHistory>>(emptyList())
+    private val _history = MutableStateFlow<List<MusicHistory>>(emptyList())
+    val history: StateFlow<List<MusicHistory>> = _history.asStateFlow()
 
-    val history: StateFlow<List<MusicHistory>> =
-        _history.asStateFlow()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
         loadHistory()
     }
 
-    private fun loadHistory() {
-
+    fun loadHistory() {
         viewModelScope.launch {
-
+            _isLoading.value = true
             try {
-
-                val user =
-                    userRepository.getCurrentUser()
-
-                if (user == null) {
-                    return@launch
+                val userId = tokenManager.getUserId().first()
+                if (userId != null) {
+                    val historyData = repository.getMusicHistory(userId)
+                    _history.value = historyData
                 }
-
-                _history.value =
-                    repository.getMusicHistory(
-                        userId = user.id
-                    )
-
             } catch (e: Exception) {
-
                 e.printStackTrace()
-
-                println(
-                    "MUSIC HISTORY ERROR: ${e.message}"
-                )
             }
+            _isLoading.value = false
         }
     }
 
-    fun openPlaylist(
-        playlistId: String,
-        url: String?,
-        context: Context
-    ) {
-
+    fun openPlaylist(playlistId: String, url: String?, context: Context) {
         viewModelScope.launch {
-
             try {
-
-                val user =
-                    userRepository.getCurrentUser()
-
-                musicHistoryRepository.addHistory(
-                    userId = user.id,
-                    playlistId = playlistId
-                )
-
+                val userId = tokenManager.getUserId().first()
+                if (userId != null) {
+                    repository.addHistory(userId, playlistId)
+                    loadHistory() // Refresh history
+                }
                 if (!url.isNullOrBlank()) {
-
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(url)
-                    )
-
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     context.startActivity(intent)
                 }
-
             } catch (e: Exception) {
-
-                println(
-                    "OPEN PLAYLIST ERROR: ${e.message}"
-                )
+                e.printStackTrace()
             }
         }
     }

@@ -3,6 +3,7 @@ package com.emirgasic.forecastfm.network.weather
 import com.emirgasic.forecastfm.network.ApiClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
@@ -10,14 +11,20 @@ import kotlinx.serialization.json.Json
 
 class WeatherApi {
 
-    suspend fun getWeather(): WeatherResponse {
+    suspend fun getWeather(
+        location: String,
+        latitude: Double,
+        longitude: Double
+    ): WeatherResponse {
 
-        val response = ApiClient.client.get(
-            "${ApiClient.baseUrl()}/api/weather"
-        )
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/weather") {
 
-        val body = response.bodyAsText()
+                parameter("location", location)
+                parameter("latitude", latitude)
+                parameter("longitude", longitude)
 
-        return Json.decodeFromString<WeatherResponse>(body)
+            }
+            .body()
     }
 }

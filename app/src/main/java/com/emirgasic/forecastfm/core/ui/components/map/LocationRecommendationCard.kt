@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -102,15 +103,18 @@ fun LocationRecommendationCard(
             )
 
             Button(
-                onClick = onViewDetailsClick
+                onClick = onViewDetailsClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary  // ← Add this
+                )
             ) {
-
-                Text("View Details")
-
+                Text(
+                    text = "View Details",
+                    color = MaterialTheme.colorScheme.onPrimary  // ← Force text color
+                )
             }
-
         }
-
     }
-
 }

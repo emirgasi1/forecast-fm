@@ -8,7 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
 
 
@@ -16,30 +19,28 @@ import androidx.compose.ui.unit.dp
 fun PostActionButtons(
     onPostClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
-){
-
+) {
     Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         Button(
-            onClick = onPostClick
-        ){
-            Text("Post")
+            onClick = onPostClick,
+            modifier = Modifier.weight(1f),
+            enabled = !isLoading
+        ) {
+            Text(if (isLoading) "Posting..." else "Post")
         }
 
-
-        Spacer(
-            modifier = Modifier.width(10.dp)
-        )
-
-
         Button(
-            onClick = onDeleteClick
-        ){
+            onClick = onDeleteClick,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error
+            )
+        ) {
             Text("Delete")
         }
     }

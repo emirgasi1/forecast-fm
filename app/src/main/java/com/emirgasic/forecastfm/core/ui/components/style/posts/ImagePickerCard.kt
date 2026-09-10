@@ -17,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @Composable
 fun ImagePickerCard(
@@ -27,7 +29,6 @@ fun ImagePickerCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -39,50 +40,37 @@ fun ImagePickerCard(
             color = MaterialTheme.colorScheme.outline
         )
     ) {
-
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-
             if (image != null) {
-
-                // Temporary until we add AsyncImage
-                Text(
-                    text = "Image selected",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.titleMedium
+                AsyncImage(
+                    model = image,
+                    contentDescription = "Selected image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
-
             } else {
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-
                     Text(
                         text = text,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.titleMedium
                     )
-
                     Spacer(
                         modifier = Modifier.height(8.dp)
                     )
-
                     Image(
                         painter = icon,
                         contentDescription = text,
                         modifier = Modifier.size(20.dp)
                     )
-
                 }
-
             }
-
         }
-
     }
-
 }

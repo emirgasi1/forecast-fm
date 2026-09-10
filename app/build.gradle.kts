@@ -5,6 +5,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Read API key outside android block
+val youtubeApiKey: String = project.rootProject.file("local.properties")
+    .takeIf { it.exists() }
+    ?.readLines()
+    ?.find { it.startsWith("YOUTUBE_API_KEY=") }
+    ?.substringAfter("=")
+    ?: ""
+
 android {
     namespace = "com.emirgasic.forecastfm"
     compileSdk = 36
@@ -15,6 +23,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,10 +47,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+
 
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
@@ -62,8 +74,15 @@ dependencies {
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil:2.4.0")
     implementation(libs.kotlinx.serialization.json)
-
+    implementation(libs.maplibre.compose)
+    implementation(libs.play.services.location)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -31,16 +31,37 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.core.ui.components.feed.SaveOptionsBottomSheet
+import androidx.compose.runtime.setValue
 
 @Composable
 fun FeedScreen(
     mainNavController: NavController,
     rootNavController: NavController,
+    tokenManager: TokenManager,  // ← Add this
     modifier: Modifier = Modifier,
-    viewModel: FeedViewModel = viewModel()
-) {
+    viewModel: FeedViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return FeedViewModel(tokenManager) as T
+            }
+        }
+    )
+){
 
     val uiState by viewModel.uiState.collectAsState()
+    val likedPosts by viewModel.likedPosts.collectAsState()
+
+    val savedPosts by viewModel.savedPosts.collectAsState()
+
+    var showSaveSheet by remember { mutableStateOf(false) }
+    var selectedPostId by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = modifier
@@ -86,49 +107,37 @@ fun FeedScreen(
                 is FeedUiState.Success -> {
 
                     items(state.posts) { post ->
+                        val isLiked = post.id in likedPosts
+                        val isSaved = post.id in savedPosts
 
                         FeedPostCard(
-
-                            profileImage = painterResource(
-                                post.user.profileImage
-                            ),
-
+                            profileImage = painterResource(post.user.profileImage),
                             username = post.user.username,
-
                             time = post.time,
-
-                            weatherIcon = painterResource(
-                                R.drawable.sun
-                            ),
-
+                            weatherIcon = painterResource(R.drawable.sun),
                             weather = post.weather.condition,
-
                             temperature = post.weather.temperature,
-
                             location = post.weather.location,
-
-                            postImage = painterResource(
-                                post.image
-                            ),
-
-                            playlist = post.playlist.title,
-
+                            postImage = post.image,
+                            playlist = post.playlist?.title ?: "No playlist",
                             caption = post.caption,
-
                             likes = post.likes.toString(),
-
                             comments = post.comments.toString(),
-
+                            isLiked = isLiked,
+                            isSaved = isSaved,
+                            onLikeClick = {
+                                viewModel.toggleLike(post.id)
+                            },
                             onCommentClick = {
-                                rootNavController.navigate(
-                                    Routes.commentsRoute(post.id)
-                                )
+                                rootNavController.navigate(Routes.commentsRoute(post.id))
+                            },
+                            onSaveClick = {
+                                selectedPostId = post.id
+                                showSaveSheet = true
                             }
                         )
 
-                        Spacer(
-                            modifier = Modifier.height(20.dp)
-                        )
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 
@@ -170,6 +179,29 @@ fun FeedScreen(
                     }
                 }
             }
+        }
+        if (showSaveSheet && selectedPostId != null) {
+            SaveOptionsBottomSheet(
+                onDismiss = {
+                    showSaveSheet = false
+                    selectedPostId = null
+                },
+                onSavePost = {
+                    selectedPostId?.let { postId ->
+                        viewModel.savePost(postId)
+                    }
+                },
+                onSavePlaylist = {
+                    selectedPostId?.let { postId ->
+                        viewModel.savePlaylistFromPost(postId)
+                    }
+                },
+                onSaveStyle = {
+                    selectedPostId?.let { postId ->
+                        viewModel.saveStyleFromPost(postId)
+                    }
+                }
+            )
         }
     }
 }

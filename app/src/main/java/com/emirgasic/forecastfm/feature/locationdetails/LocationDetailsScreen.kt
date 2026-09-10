@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,26 +24,25 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationMusic
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationOutfitCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.PlaceDiscoveryCard
+
 @Composable
 fun LocationDetailsScreen(
     navController: NavController,
-    location: String?,
+    locationId: String?,
     modifier: Modifier = Modifier,
     viewModel: LocationDetailsViewModel = viewModel()
 ) {
 
-    val details by viewModel.locationDetails.collectAsState()
+    val locationDetails by viewModel.locationDetails.collectAsState()
+    val outfits by viewModel.outfits.collectAsState()
 
-    LaunchedEffect(location) {
-
-        location?.let {
+    LaunchedEffect(locationId) {
+        locationId?.let {
             viewModel.loadLocation(it)
         }
-
     }
 
-    val locationDetails = details ?: return
-
+    val details = locationDetails ?: return
 
     Box(
         modifier = modifier
@@ -56,94 +56,75 @@ fun LocationDetailsScreen(
             )
     ) {
 
-
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-
             item {
-
                 LocationHeader(
-                    location = locationDetails.location,
-                    description = locationDetails.description
+                    location = details.location.name,
+                    description = details.location.description
                 )
-
             }
 
-
             item {
-
-                PlaceDiscoveryCard(
-
-                    location = locationDetails.location,
-
-                    weatherIcon = painterResource(
-                        locationDetails.weatherIcon
-                    ),
-
-                    weather = locationDetails.condition,
-
-                    temperature = locationDetails.temperature,
-
-                    playlist = locationDetails.playlistTitle,
-
-                    outfit = locationDetails.outfitDescription,
-
-                    onChooseClick = {
-
-                        navController.navigate(
-                            Routes.PlaceRecommendation
-                        )
-
-                    }
-
-                )
-
-            }
-
-
-            item {
-
                 LocationWeatherCard(
-                    weatherIcon = painterResource(
-                        locationDetails.weatherIcon
-                    ),
-
-                    condition = locationDetails.condition,
-
-                    temperature = locationDetails.temperature,
-
-                    humidity = locationDetails.humidity,
-
-                    wind = locationDetails.wind
+                    weatherIcon = painterResource(details.weather.icon),
+                    condition = details.weather.condition,
+                    temperature = details.weather.temperature,
+                    humidity = details.weather.humidity,
+                    wind = details.weather.wind
                 )
-
             }
 
-
             item {
-
-                LocationMusicCard(
-                    playlistTitle = locationDetails.playlistTitle,
-                    songs = locationDetails.songs
-                )
-
+                if (details.playlist == null) {
+                    Text(
+                        text = "No playlist found",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                } else {
+                    LocationMusicCard(
+                        playlistTitle = details.playlist.title,
+                        songs = details.playlist.songs.map { song ->
+                            "${song.title} - ${song.artist}"
+                        }
+                    )
+                }
             }
 
-
+            // Outfits Section
             item {
+                Text(
+                    text = "Outfits for this weather",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
 
+            items(outfits) { outfit ->
                 LocationOutfitCard(
-                    outfitTitle = locationDetails.outfitTitle,
-                    description = locationDetails.outfitDescription
+                    imageUrl = outfit.imageUrl,
+                    title = outfit.title,
+                    weatherCondition = outfit.weatherCondition,
+                    season = outfit.season
                 )
-
             }
 
-
+            // Place Discovery Button
+            item {
+                PlaceDiscoveryCard(
+                    location = details.location.name,
+                    weatherIcon = painterResource(details.weather.icon),
+                    weather = details.weather.condition,
+                    temperature = details.weather.temperature,
+                    playlist = details.playlist?.title ?: "No playlist",
+                    outfit = outfits.firstOrNull()?.title ?: "No outfit",
+                    onChooseClick = {
+                        navController.navigate(Routes.PlaceRecommendation)
+                    }
+                )
+            }
         }
-
     }
-
 }

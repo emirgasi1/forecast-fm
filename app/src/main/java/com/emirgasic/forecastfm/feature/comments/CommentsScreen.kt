@@ -19,9 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.BottomBar
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
@@ -32,44 +35,45 @@ import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputFiel
 fun CommentsScreen(
     navController: NavController,
     postId: String,
+    tokenManager: TokenManager,  // ← Add this
     modifier: Modifier = Modifier,
-    viewModel: CommentsViewModel = viewModel()
+    viewModel: CommentsViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return CommentsViewModel(tokenManager) as T
+            }
+        }
+    )
 ) {
-
     val comments by viewModel.comments.collectAsState()
+    var commentText by remember { mutableStateOf("") }
 
     LaunchedEffect(postId) {
         viewModel.loadComments(postId)
-    }
-
-    var commentText by remember {
-        mutableStateOf("")
     }
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .navigationBarsPadding(),
-
         bottomBar = {
-
             CommentInputField(
                 value = commentText,
-
                 onValueChange = {
                     commentText = it
                 },
-
                 onSendClick = {
-
-                    viewModel.addComment(
-                        postId = postId,
-                        text = commentText
-                    )
-
-                    commentText = ""
+                    println("🔵 Send button clicked! text: '$commentText'")
+                    if (commentText.isNotBlank()) {
+                        println("🔵 Calling viewModel.addComment...")
+                        viewModel.addComment(
+                            postId = postId,
+                            text = commentText
+                        )
+                        commentText = ""
+                    }
                 },
-
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp)

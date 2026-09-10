@@ -1,4 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.feed
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -11,9 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -24,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
 
 @Composable
@@ -39,14 +40,17 @@ fun FeedPostCard(
     weather: String,
     temperature: String,
     location: String,
-    postImage: Painter,
+    postImage: String,
     playlist: String,
     caption: String,
     likes: String,
     comments: String,
+    isLiked: Boolean = false,
+    isSaved: Boolean = false,
     modifier: Modifier = Modifier,
     onLikeClick: () -> Unit = {},
-    onCommentClick: () -> Unit = {}
+    onCommentClick: () -> Unit = {},
+    onSaveClick: () -> Unit = {}
 ) {
 
     Card(
@@ -65,7 +69,6 @@ fun FeedPostCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -125,24 +128,22 @@ fun FeedPostCard(
                 )
             }
 
-
-            Image(
-                painter = postImage,
+            AsyncImage(
+                model = postImage,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(320.dp)
                     .clip(MaterialTheme.shapes.medium),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                error = painterResource(R.drawable.placeholder)
             )
-
 
             Text(
                 text = playlist,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
 
             Text(
                 text = caption,
@@ -151,16 +152,23 @@ fun FeedPostCard(
             )
 
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
+                // Like button
                 IconButton(
                     onClick = onLikeClick
                 ) {
-
                     Icon(
-                        painter = painterResource(R.drawable.heart),
-                        contentDescription = "Like",modifier = Modifier.size(30.dp)
+                        painter = if (isLiked) {
+                            painterResource(R.drawable.heart_filled)
+                        } else {
+                            painterResource(R.drawable.heart)
+                        },
+                        contentDescription = if (isLiked) "Unlike" else "Like",
+                        modifier = Modifier.size(30.dp),
+                        tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onBackground
                     )
                 }
 
@@ -169,10 +177,9 @@ fun FeedPostCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-
                 Spacer(Modifier.width(20.dp))
 
-
+                // Comment button
                 Row(
                     modifier = Modifier.clickable {
                         onCommentClick()
@@ -182,7 +189,8 @@ fun FeedPostCard(
 
                     Icon(
                         painter = painterResource(R.drawable.comment),
-                        contentDescription = "Comment",modifier = Modifier.size(30.dp)
+                        contentDescription = "Comment",
+                        modifier = Modifier.size(30.dp)
                     )
 
                     Spacer(Modifier.width(4.dp))
@@ -190,6 +198,24 @@ fun FeedPostCard(
                     Text(
                         text = comments,
                         style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                // Save button
+                IconButton(
+                    onClick = onSaveClick
+                ) {
+                    Icon(
+                        painter = if (isSaved) {
+                            painterResource(R.drawable.bookmark_filled)
+                        } else {
+                            painterResource(R.drawable.bookmark)
+                        },
+                        contentDescription = if (isSaved) "Saved" else "Save",
+                        modifier = Modifier.size(30.dp),
+                        tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
