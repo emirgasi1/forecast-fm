@@ -1,7 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.music
 
-import android.R.attr.id
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,19 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.IconText
 import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
 
 @Composable
 fun RecommendedMusicCard(
-    id:String,
+    id: String,
     image: String?,
     title: String,
     genre: String,
@@ -42,14 +41,9 @@ fun RecommendedMusicCard(
     onPlayClick: () -> Unit,
     onViewPlaylistClick: (String) -> Unit
 ) {
-    println("RECOMMENDED CARD: $title")
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline
-        )
+        shape = MaterialTheme.shapes.medium
     ) {
 
         Column(
@@ -61,20 +55,20 @@ fun RecommendedMusicCard(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-
             AsyncImage(
                 model = image,
                 contentDescription = "Album cover",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(300.dp)
-                    .clip(MaterialTheme.shapes.medium)
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
                     .border(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                         shape = MaterialTheme.shapes.medium
                     )
+                    .clip(MaterialTheme.shapes.medium)
             )
-
 
             Text(
                 text = title,
@@ -85,12 +79,10 @@ fun RecommendedMusicCard(
                 style = MaterialTheme.typography.titleLarge
             )
 
-
             InfoRow(
                 first = genre,
                 second = mood
             )
-
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(56.dp),
@@ -99,7 +91,6 @@ fun RecommendedMusicCard(
 
                 Row(
                     modifier = Modifier.clickable {
-                        println("PLAY ROW CLICKED")
                         onPlayClick()
                     },
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -118,30 +109,23 @@ fun RecommendedMusicCard(
                     )
                 }
 
-
                 IconText(
                     icon = painterResource(R.drawable.heart),
                     text = likes
                 )
-
             }
-
 
             TextButton(
                 onClick = {
-                    onViewPlaylistClick(id.toString())
+                    onViewPlaylistClick(id)
                 }
             ) {
-
                 Text(
                     text = "View Playlist",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyLarge
                 )
-
             }
-
         }
-
     }
 }

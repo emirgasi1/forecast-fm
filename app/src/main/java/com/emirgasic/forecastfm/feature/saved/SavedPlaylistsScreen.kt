@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,18 +18,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.music.MusicPlaylistCard
-import com.emirgasic.forecastfm.core.ui.components.music.formatPlaylistDuration
 
 @Composable
 fun SavedPlaylistsScreen(
@@ -109,9 +104,10 @@ fun SavedPlaylistsScreen(
                         MusicPlaylistCard(
                             title = playlist.title,
                             genre = playlist.genre,
-                            firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                            songs = "${playlist.songs.size} songs",
-                            duration = formatPlaylistDuration(playlist.songs),
+                            mood = playlist.mood,
+                            weather = "",
+                            temperature = "",
+                            location = "",
                             likes = playlist.likes.toString(),
                             isFavorite = playlist.id in favoritePlaylistIds,
                             onFavoriteClick = {

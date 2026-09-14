@@ -38,4 +38,9 @@ class YouTubeApi {
             throw e
         }
     }
+    suspend fun getPlaylistItems(playlistId: String): List<YouTubeEnrichedItem> {
+        return ApiClient.client.get(
+            "${ApiClient.baseUrl()}/api/youtube/playlist/$playlistId"
+        ).body()
+    }
 }

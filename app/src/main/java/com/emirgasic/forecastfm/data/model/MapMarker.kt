@@ -5,6 +5,7 @@ data class MapMarker(
     val name: String,
     val latitude: Double,
     val longitude: Double,
-    val type: String, // "venue" or "place"
+    val type: String,
+    val category: String = "",
     val isSelected: Boolean = false
 )

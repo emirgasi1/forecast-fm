@@ -14,11 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-
+import coil.compose.AsyncImage
 
 @Composable
 fun PlaylistHeaderCard(
@@ -35,6 +35,7 @@ fun PlaylistHeaderCard(
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    println("PLAYLIST HEADER: album URL = $album")
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -53,17 +54,20 @@ fun PlaylistHeaderCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ){
+
             AsyncImage(
                 model = album,
                 contentDescription = "Album cover",
                 modifier = Modifier
-                    .size(300.dp)
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
                     .clip(MaterialTheme.shapes.medium)
                     .border(
                         1.dp,
                         MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                         MaterialTheme.shapes.medium
-                    )
+                    ),
+                contentScale = ContentScale.Fit
             )
 
 

@@ -22,7 +22,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,9 +44,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.WeatherRecommendationH
 import com.emirgasic.forecastfm.core.ui.components.music.MusicHistoryCard
 import com.emirgasic.forecastfm.core.ui.components.music.MusicPlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.music.RecommendedMusicCard
-import com.emirgasic.forecastfm.core.ui.components.music.formatPlaylistDuration
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.MusicRow
-import kotlinx.coroutines.flow.firstOrNull
 
 @Composable
 fun MusicScreen(
@@ -78,29 +75,15 @@ fun MusicScreen(
 
     val context = LocalContext.current
     val scrollState = rememberScrollState()
-    val youtubeUrl by viewModel.youtubeUrl.collectAsState()
     val musicHistory by viewModel.musicHistory.collectAsState()
     val lastPlayed = musicHistory.firstOrNull()?.title ?: "No history"
 
-    LaunchedEffect(youtubeUrl) {
-        youtubeUrl?.let { url ->
-            context.startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(url)
-                )
-            )
-            // Reset after opening
-            viewModel.clearYoutubeUrl()
-        }
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
             .padding(top = 20.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
     ) {
-        // Fixed Top Section
         ScreenTitle(
             icon = painterResource(R.drawable.music),
             title = "Music"
@@ -108,7 +91,6 @@ fun MusicScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Search Bar
         SearchField(
             value = search,
             onValueChange = {
@@ -117,7 +99,6 @@ fun MusicScreen(
             placeholder = "Search songs..."
         )
 
-        // Search Results - Show only when searching
         if (search.isNotBlank()) {
             Box(
                 modifier = Modifier
@@ -176,14 +157,12 @@ fun MusicScreen(
             }
         }
 
-        // Scrollable Content - HIDDEN when searching
         if (search.isBlank()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
             ) {
-                // Weather Header
                 Spacer(modifier = Modifier.height(30.dp))
 
                 WeatherRecommendationHeader(
@@ -194,7 +173,6 @@ fun MusicScreen(
                     icon = painterResource(weather?.icon ?: R.drawable.sun)
                 )
 
-                // Weather Match Playlist (1 card under weather header)
                 Spacer(modifier = Modifier.height(20.dp))
 
                 if (weatherPlaylists.isNotEmpty()) {
@@ -203,9 +181,10 @@ fun MusicScreen(
                         MusicPlaylistCard(
                             title = playlist.title,
                             genre = playlist.genre,
-                            firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                            songs = "${playlist.songs.size} songs",
-                            duration = formatPlaylistDuration(playlist.songs),
+                            mood = playlist.mood,
+                            weather = weather?.condition ?: playlist.weather,
+                            temperature = weather?.temperature ?: playlist.temperature,
+                            location = playlist.location,
                             likes = playlist.likes.toString(),
                             isFavorite = playlist.id in favoritePlaylistIds,
                             onFavoriteClick = {
@@ -218,14 +197,16 @@ fun MusicScreen(
                             },
                             onPlayClick = {
                                 viewModel.openPlaylist(playlist)
-                                // Search YouTube for the playlist title and open first result
-                                viewModel.searchAndOpenYouTube(playlist.title)
+                                playlist.youtubeUrl?.let { url ->
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    )
+                                }
                             }
                         )
                     }
                 }
 
-                // Weather Playlists Section (2 cards)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SectionTitle(
@@ -240,9 +221,10 @@ fun MusicScreen(
                     MusicPlaylistCard(
                         title = playlist.title,
                         genre = playlist.genre,
-                        firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                        songs = "${playlist.songs.size} songs",
-                        duration = formatPlaylistDuration(playlist.songs),
+                        mood = playlist.mood,
+                        weather = weather?.condition ?: playlist.weather,
+                        temperature = weather?.temperature ?: playlist.temperature,
+                        location = playlist.location,
                         likes = playlist.likes.toString(),
                         isFavorite = playlist.id in favoritePlaylistIds,
                         onFavoriteClick = {
@@ -255,14 +237,16 @@ fun MusicScreen(
                         },
                         onPlayClick = {
                             viewModel.openPlaylist(playlist)
-                            // Search YouTube for the playlist title and open first result
-                            viewModel.searchAndOpenYouTube(playlist.title)
+                            playlist.youtubeUrl?.let { url ->
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                )
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Trending Section (2 cards)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SectionTitle(
@@ -277,9 +261,10 @@ fun MusicScreen(
                     MusicPlaylistCard(
                         title = playlist.title,
                         genre = playlist.genre,
-                        firstSong = playlist.songs.firstOrNull()?.title ?: "Unknown",
-                        songs = "${playlist.songs.size} songs",
-                        duration = formatPlaylistDuration(playlist.songs),
+                        mood = playlist.mood,
+                        weather = weather?.condition ?: playlist.weather,
+                        temperature = weather?.temperature ?: playlist.temperature,
+                        location = playlist.location,
                         likes = playlist.likes.toString(),
                         isFavorite = playlist.id in favoritePlaylistIds,
                         onFavoriteClick = {
@@ -292,14 +277,16 @@ fun MusicScreen(
                         },
                         onPlayClick = {
                             viewModel.openPlaylist(playlist)
-                            // Search YouTube for the playlist title and open first result
-                            viewModel.searchAndOpenYouTube(playlist.title)
+                            playlist.youtubeUrl?.let { url ->
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                )
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Music History
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SectionTitle(
@@ -309,7 +296,6 @@ fun MusicScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
                 MusicHistoryCard(
                     lastPlayed = lastPlayed,
                     onClick = {
@@ -317,7 +303,6 @@ fun MusicScreen(
                     }
                 )
 
-                // Recommended For You
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SectionTitle(
@@ -337,8 +322,11 @@ fun MusicScreen(
                         likes = playlist.likes.toString(),
                         onPlayClick = {
                             viewModel.openPlaylist(playlist)
-                            // Search YouTube for the playlist title and open first result
-                            viewModel.searchAndOpenYouTube(playlist.title)
+                            playlist.youtubeUrl?.let { url ->
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                )
+                            }
                         },
                         onViewPlaylistClick = { id ->
                             rootNavController.navigate(

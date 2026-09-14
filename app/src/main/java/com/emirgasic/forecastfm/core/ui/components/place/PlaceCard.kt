@@ -73,12 +73,11 @@ fun PlaceCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
                 Text(
-                    text = "View Place",
-                    color = MaterialTheme.colorScheme.onPrimary
+                    text = "View Place"
                 )
             }
         }

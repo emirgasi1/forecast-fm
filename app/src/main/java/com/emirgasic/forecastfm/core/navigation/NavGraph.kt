@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.feature.admin.AdminScreen
 import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
@@ -19,6 +20,7 @@ import com.emirgasic.forecastfm.feature.locationdetails.LocationDetailsScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationDetailScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
+import com.emirgasic.forecastfm.feature.map.route.RouteScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.music.musichistory.MusicHistoryScreen
 import com.emirgasic.forecastfm.feature.music.playlist.PlaylistScreen
@@ -232,6 +234,37 @@ fun NavGraph(
                 navController = navController,
                 postId = postId,
                 tokenManager = tokenManager
+            )
+        }
+
+        // Admin
+        composable(Routes.Admin) {
+            AdminScreen(
+                navController = navController,
+                tokenManager = tokenManager
+            )
+        }
+
+        composable(
+            route = Routes.Route,
+            arguments = listOf(
+                navArgument("destLat") { type = NavType.StringType },
+                navArgument("destLng") { type = NavType.StringType },
+                navArgument("originLat") { type = NavType.StringType },
+                navArgument("originLng") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val destLat = backStackEntry.arguments?.getString("destLat")?.toDoubleOrNull() ?: 0.0
+            val destLng = backStackEntry.arguments?.getString("destLng")?.toDoubleOrNull() ?: 0.0
+            val originLat = backStackEntry.arguments?.getString("originLat")?.toDoubleOrNull() ?: 0.0
+            val originLng = backStackEntry.arguments?.getString("originLng")?.toDoubleOrNull() ?: 0.0
+
+            RouteScreen(
+                navController = navController,
+                destinationLat = destLat,
+                destinationLng = destLng,
+                originLat = originLat,
+                originLng = originLng
             )
         }
     }

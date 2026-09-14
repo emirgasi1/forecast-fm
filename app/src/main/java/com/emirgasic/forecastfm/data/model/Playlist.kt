@@ -12,5 +12,6 @@ data class Playlist(
     val songs: List<Music>,
     val likes: Int,
     val spotifyUrl: String?,
-    val youtubeUrl: String?
+    val youtubeUrl: String?,
+    val bestFor: List<String> = emptyList()
 )

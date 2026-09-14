@@ -30,9 +30,10 @@ import androidx.compose.material3.IconButton
 fun MusicPlaylistCard(
     title: String,
     genre: String,
-    firstSong: String,
-    songs: String,
-    duration: String,
+    mood: String,
+    weather: String,
+    temperature: String,
+    location: String,
     likes: String,
     isFavorite: Boolean = false,
     modifier: Modifier = Modifier,
@@ -43,8 +44,7 @@ fun MusicPlaylistCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            ,
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(
             width = 1.dp,
@@ -59,12 +59,12 @@ fun MusicPlaylistCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-
-            // Playlist name + genre
             Row(
-                modifier = Modifier.fillMaxWidth().clickable {
-                    onClick()
-                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onClick()
+                    },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -75,29 +75,25 @@ fun MusicPlaylistCard(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-
                 Text(
                     text = genre,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.titleMedium
                 )
-
             }
 
-
-            // First song
             Text(
-                text = "First song: $firstSong",
+                text = "Mood: $mood",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium
             )
 
-
-            // Songs + duration
-            InfoRow(
-                first = songs,
-                second = duration
-            )
+            if (weather.isNotBlank() && location.isNotBlank()) {
+                InfoRow(
+                    first = "$weather $temperature".trim(),
+                    second = location
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -139,9 +135,6 @@ fun MusicPlaylistCard(
                     onClick = onPlayClick
                 )
             }
-
         }
-
     }
-
 }

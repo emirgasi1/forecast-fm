@@ -32,11 +32,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.security.AdminConfig
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsOptionCard
 import com.emirgasic.forecastfm.core.ui.components.settings.SettingsSection
 
@@ -59,7 +63,7 @@ fun SettingsScreen(
     val accountOptions by viewModel.accountOptions.collectAsState()
     val preferenceOptions by viewModel.preferenceOptions.collectAsState()
     val aboutOptions by viewModel.aboutOptions.collectAsState()
-
+    var showAdminPin by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -157,6 +161,11 @@ fun SettingsScreen(
 
                     }
 
+                    SettingsOptionCard(
+                        title = "Admin",
+                        onClick = { showAdminPin = true }
+                    )
+
                 }
 
             }
@@ -234,6 +243,20 @@ fun SettingsScreen(
             }
 
 
+        }
+
+        if (showAdminPin) {
+            AdminPinDialog(
+                onDismiss = { showAdminPin = false },
+                onSubmit = { entered ->
+                    if (entered == AdminConfig.PIN) {
+                        navController.navigate(Routes.Admin)
+                        true
+                    } else {
+                        false
+                    }
+                }
+            )
         }
 
     }

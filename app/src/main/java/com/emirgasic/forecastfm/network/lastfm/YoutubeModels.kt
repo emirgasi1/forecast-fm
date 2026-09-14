@@ -37,3 +37,30 @@ data class YouTubeThumbnails(
 data class YouTubeThumbnail(
     val url: String = ""
 )
+
+@Serializable
+data class YouTubePlaylistItem(
+    val snippet: YouTubePlaylistSnippet? = null
+)
+
+@Serializable
+data class YouTubePlaylistSnippet(
+    val title: String = "",
+    val videoOwnerChannelTitle: String? = null,
+    val resourceId: YouTubeResourceId? = null,
+    val thumbnails: YouTubeThumbnails? = null
+)
+
+@Serializable
+data class YouTubeResourceId(
+    val videoId: String = ""
+)
+
+@Serializable
+data class YouTubeEnrichedItem(
+    val videoId: String,
+    val title: String,
+    val artist: String,
+    val duration: Int,
+    val thumbnailUrl: String
+)

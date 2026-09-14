@@ -168,16 +168,11 @@ fun HomeScreen(
                                 )
                                 .border(
                                     width = 1.dp,
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.background,
-                                            MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                    ),
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                                     shape = MaterialTheme.shapes.medium
                                 )
                                 .clickable { rootNavController.navigate(Routes.Weather) }
-                        ) {
+                        )  {
 
                             LazyRow(
                                 modifier = Modifier

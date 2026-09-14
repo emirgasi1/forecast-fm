@@ -1,12 +1,15 @@
 package com.emirgasic.forecastfm.feature.music.playlist
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,29 +29,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import android.net.Uri
-import androidx.compose.runtime.remember
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.ExternalMusicLinkCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.MusicRow
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistHeaderCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
+import com.emirgasic.forecastfm.utils.TagIconMapper
 
 @Composable
 fun PlaylistScreen(
     navController: NavController,
     playlistId: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    weatherViewModel: WeatherViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val viewModel: PlaylistViewModel = viewModel()
 
     val uiState by viewModel.uiState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
+    val similarPlaylists by viewModel.similarPlaylists.collectAsState()
+    val weather by weatherViewModel.weather.collectAsState()
+
+    val locationRepository = LocationRepository()
 
     LaunchedEffect(playlistId) {
         playlistId?.let {
@@ -101,6 +109,41 @@ fun PlaylistScreen(
         is PlaylistUiState.Success -> {
             val playlist = state.playlist
 
+            LaunchedEffect(playlist.location) {
+                try {
+                    val locations = locationRepository.getLocations()
+
+                    var location = locations.firstOrNull { it.name == playlist.location }
+
+                    if (location == null) {
+                        location = locations.firstOrNull {
+                            it.name.equals(playlist.location, ignoreCase = true)
+                        }
+                    }
+
+                    if (location == null) {
+                        location = locations.firstOrNull {
+                            it.name.contains(playlist.location, ignoreCase = true) ||
+                                    playlist.location.contains(it.name, ignoreCase = true)
+                        }
+                    }
+
+                    if (location == null) {
+                        location = locations.firstOrNull()
+                    }
+
+                    location?.let {
+                        weatherViewModel.loadWeather(
+                            location = it.name,
+                            latitude = it.latitude,
+                            longitude = it.longitude
+                        )
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
@@ -121,9 +164,9 @@ fun PlaylistScreen(
                             title = playlist.title,
                             genre = playlist.genre,
                             mood = playlist.mood,
-                            weatherIcon = painterResource(R.drawable.sun),
-                            weather = playlist.weather,
-                            temperature = playlist.temperature,
+                            weatherIcon = painterResource(weather?.icon ?: R.drawable.sun),
+                            weather = weather?.condition ?: playlist.weather,
+                            temperature = weather?.temperature ?: playlist.temperature,
                             locationIcon = painterResource(R.drawable.mappin),
                             location = playlist.location,
                             isFavorite = isFavorite,
@@ -145,13 +188,23 @@ fun PlaylistScreen(
                         Spacer(modifier.height(12.dp))
                     }
 
-                    items(playlist.songs) { song ->
-                        MusicRow(
-                            title = song.title,
-                            artist = song.artist,
-                            duration = song.duration,
-                            image = song.albumImageUrl
-                        )
+                    items(playlist.songs.take(3)) { song ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val url = "https://www.youtube.com/watch?v=${song.id}"
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    context.startActivity(intent)
+                                }
+                        ) {
+                            MusicRow(
+                                title = song.title,
+                                artist = song.artist,
+                                duration = song.duration,
+                                image = song.albumImageUrl
+                            )
+                        }
                         Spacer(modifier.height(12.dp))
                     }
 
@@ -159,41 +212,22 @@ fun PlaylistScreen(
                         Spacer(modifier.height(28.dp))
                     }
 
-                    item {
-                        SectionTitle(title = "Best For")
-                    }
+                    if (playlist.bestFor.isNotEmpty()) {
+                        item {
+                            SectionTitle(title = "Best For")
+                        }
 
-                    item {
-                        Spacer(modifier.height(12.dp))
-                    }
+                        item {
+                            Spacer(modifier.height(12.dp))
+                        }
 
-                    item {
-                        PlaylistTagCard(
-                            icon = painterResource(R.drawable.coffee),
-                            title = "Morning Coffee"
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier.height(12.dp))
-                    }
-
-                    item {
-                        PlaylistTagCard(
-                            icon = painterResource(R.drawable.books),
-                            title = "Studying"
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier.height(12.dp))
-                    }
-
-                    item {
-                        PlaylistTagCard(
-                            icon = painterResource(R.drawable.moon),
-                            title = "Late Night Walk"
-                        )
+                        items(playlist.bestFor) { tag ->
+                            PlaylistTagCard(
+                                icon = painterResource(TagIconMapper.getIconForTag(tag)),
+                                title = tag
+                            )
+                            Spacer(modifier.height(12.dp))
+                        }
                     }
 
                     item {
@@ -242,48 +276,34 @@ fun PlaylistScreen(
                         Spacer(modifier.height(28.dp))
                     }
 
-                    item {
-                        SectionTitle(title = "Similar Playlists")
-                    }
+                    if (similarPlaylists.isNotEmpty()) {
+                        item {
+                            SectionTitle(title = "Similar Playlists")
+                        }
 
-                    item {
-                        Spacer(modifier.height(16.dp))
-                    }
+                        item {
+                            Spacer(modifier.height(16.dp))
+                        }
 
-                    item {
-                        SimilarPlaylistCard(
-                            album = painterResource(R.drawable.album2),
-                            title = "GoodNight Lovell",
-                            genre = "Lo-fi",
-                            mood = "Cozy Night",
-                            weatherIcon = painterResource(R.drawable.heavy_rain),
-                            weather = "Rainy",
-                            temperature = "-4°C",
-                            locationIcon = painterResource(R.drawable.mappin),
-                            location = "Otoka"
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier.height(16.dp))
-                    }
-
-                    item {
-                        SimilarPlaylistCard(
-                            album = painterResource(R.drawable.album3),
-                            title = "Lil Nameless 2k16",
-                            genre = "Lo-fi",
-                            mood = "Cozy Night",
-                            weatherIcon = painterResource(R.drawable.sunny_cloudy),
-                            weather = "Sunny",
-                            temperature = "22°C",
-                            locationIcon = painterResource(R.drawable.mappin),
-                            location = "Dobrinja"
-                        )
+                        items(similarPlaylists) { similarPlaylist ->
+                            SimilarPlaylistCard(
+                                albumUrl = similarPlaylist.albumImageUrl,
+                                title = similarPlaylist.title,
+                                genre = similarPlaylist.genre,
+                                mood = similarPlaylist.mood,
+                                locationIcon = painterResource(R.drawable.mappin),
+                                location = similarPlaylist.location,
+                                onClick = {
+                                    navController.navigate(
+                                        Routes.playlistRoute(similarPlaylist.id)
+                                    )
+                                }
+                            )
+                            Spacer(modifier.height(16.dp))
+                        }
                     }
                 }
             }
         }
-
     }
-    }
+}

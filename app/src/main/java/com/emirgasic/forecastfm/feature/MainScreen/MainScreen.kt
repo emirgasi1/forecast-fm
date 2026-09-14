@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
+import com.emirgasic.forecastfm.feature.map.FullMapScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
@@ -99,6 +100,11 @@ fun MainScreen(
                     mainNavController = mainNavController,
                     rootNavController = rootNavController,
                     tokenManager = tokenManager
+                )
+            }
+            composable(Routes.FullMap) {
+                FullMapScreen(
+                    navController = rootNavController
                 )
             }
         }

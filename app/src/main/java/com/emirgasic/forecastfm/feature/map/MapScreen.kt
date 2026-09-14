@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,8 +44,17 @@ import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
+import com.emirgasic.forecastfm.core.ui.components.map.ExpandMapButton
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 import com.emirgasic.forecastfm.core.ui.components.map.LocationRecommendationCard
+import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheet
+import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheetTabs
+import com.emirgasic.forecastfm.core.ui.components.map.MapTab
+import com.emirgasic.forecastfm.core.ui.components.map.tabs.FiltersTabContent
+import com.emirgasic.forecastfm.core.ui.components.map.tabs.LayersTabContent
+import com.emirgasic.forecastfm.core.ui.components.map.tabs.LegendTabContent
+import com.emirgasic.forecastfm.core.ui.components.map.tabs.PlaceDetailSlider
+import com.emirgasic.forecastfm.core.ui.components.map.tabs.SearchTabContent
 import com.emirgasic.forecastfm.core.ui.components.place.PlaceCard
 import com.emirgasic.forecastfm.data.model.Place
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
@@ -66,6 +76,7 @@ fun MapScreen(
     rootNavController: NavController,
     modifier: Modifier = Modifier,
     viewModel: MapViewModel = viewModel(),
+    searchViewModel: PlaceSearchViewModel = viewModel(),
     weatherViewModel: WeatherViewModel = viewModel()
 ) {
     var userLocation by remember {
@@ -73,6 +84,11 @@ fun MapScreen(
     }
     val context = LocalContext.current
     val weather by weatherViewModel.weather.collectAsState()
+    val styleJson = remember {
+        context.resources.openRawResource(R.raw.map_style_morning)
+            .bufferedReader()
+            .use { it.readText() }
+    }
 
     var hasLocationPermission by remember {
         mutableStateOf(
@@ -97,6 +113,14 @@ fun MapScreen(
     val selectedPlace by viewModel.selectedPlace.collectAsState()
     val markers by viewModel.markers.collectAsState()
     val playlistMap by viewModel.playlistMap.collectAsState()
+
+    val searchQuery by searchViewModel.query.collectAsState()
+    val searchResults by searchViewModel.results.collectAsState()
+    val isSearching by searchViewModel.isLoading.collectAsState()
+    val searchError by searchViewModel.error.collectAsState()
+
+    var selectedSearchResult by remember { mutableStateOf<Place?>(null) }
+    var selectedTab by remember { mutableStateOf(MapTab.Search) }
 
     var expanded by remember { mutableStateOf(false) }
     var placesExpanded by remember { mutableStateOf(false) }
@@ -225,54 +249,20 @@ fun MapScreen(
 
             Spacer(modifier.height(16.dp))
 
-            MaplibreMap(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp),
-                cameraState = cameraState,
-                baseStyle = BaseStyle.Uri(
-                    "https://tiles.openfreemap.org/styles/liberty"
-                )
+                    .height(250.dp)
             ) {
-                userLocation?.let { location ->
-                    val locationJson = """
-                        {
-                            "type": "FeatureCollection",
-                            "features": [
-                                {
-                                    "type": "Feature",
-                                    "geometry": {
-                                        "type": "Point",
-                                        "coordinates": [
-                                            ${location.longitude},
-                                            ${location.latitude}
-                                        ]
-                                    },
-                                    "properties": {}
-                                }
-                            ]
-                        }
-                    """.trimIndent()
-
-                    val userLocationSource = rememberGeoJsonSource(
-                        data = GeoJsonData.JsonString(locationJson)
-                    )
-
-                    CircleLayer(
-                        id = "user-location-marker",
-                        source = userLocationSource,
-                        radius = const(8.dp),
-                        color = const(Color.Blue),
-                        strokeWidth = const(3.dp),
-                        strokeColor = const(Color.White),
-                        strokeOpacity = const(1f)
-                    )
-                }
-
-                // Individual markers for venues and places
-                markers.forEach { marker ->
-                    key(marker.id) {
-                        val markerJson = """
+                MaplibreMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    cameraState = cameraState,
+                    baseStyle = BaseStyle.Json(styleJson)
+                ) {
+                    userLocation?.let { location ->
+                        val locationJson = """
                             {
                                 "type": "FeatureCollection",
                                 "features": [
@@ -281,63 +271,109 @@ fun MapScreen(
                                         "geometry": {
                                             "type": "Point",
                                             "coordinates": [
-                                                ${marker.longitude},
-                                                ${marker.latitude}
+                                                ${location.longitude},
+                                                ${location.latitude}
                                             ]
                                         },
-                                        "properties": {
-                                            "id": "${marker.id}",
-                                            "name": "${marker.name}",
-                                            "type": "${marker.type}"
-                                        }
+                                        "properties": {}
                                     }
                                 ]
                             }
                         """.trimIndent()
 
-                        val markerSource = rememberGeoJsonSource(
-                            data = GeoJsonData.JsonString(markerJson)
+                        val userLocationSource = rememberGeoJsonSource(
+                            data = GeoJsonData.JsonString(locationJson)
                         )
-
-                        val markerColor = if (marker.isSelected) {
-                            Color(0xFF4CAF50) // Green for selected
-                        } else {
-                            Color(0xFF9C27B0) // Purple for unselected
-                        }
 
                         CircleLayer(
-                            id = "marker-${marker.id}",
-                            source = markerSource,
-                            radius = const(if (marker.isSelected) 12.dp else 9.dp),
-                            color = const(markerColor),
+                            id = "user-location-marker",
+                            source = userLocationSource,
+                            radius = const(8.dp),
+                            color = const(Color.Blue),
                             strokeWidth = const(3.dp),
                             strokeColor = const(Color.White),
-                            strokeOpacity = const(1f),
-                            onClick = { features ->
-                                val markerName = features
-                                    .firstOrNull()
-                                    ?.properties
-                                    ?.get("name")
-                                    ?.toString()
-                                    ?.removeSurrounding("\"")
-
-                                if (markerName != null) {
-                                    locations.firstOrNull { it.name == markerName }?.let {
-                                        viewModel.selectLocation(it)
-                                    } ?: places.firstOrNull { it.name == markerName }?.let {
-                                        viewModel.selectPlace(it)
-                                    }
-                                }
-                                ClickResult.Pass
-                            }
+                            strokeOpacity = const(1f)
                         )
                     }
+
+                    markers.forEach { marker ->
+                        key(marker.id) {
+                            val markerJson = """
+                                {
+                                    "type": "FeatureCollection",
+                                    "features": [
+                                        {
+                                            "type": "Feature",
+                                            "geometry": {
+                                                "type": "Point",
+                                                "coordinates": [
+                                                    ${marker.longitude},
+                                                    ${marker.latitude}
+                                                ]
+                                            },
+                                            "properties": {
+                                                "id": "${marker.id}",
+                                                "name": "${marker.name}",
+                                                "type": "${marker.type}"
+                                            }
+                                        }
+                                    ]
+                                }
+                            """.trimIndent()
+
+                            val markerSource = rememberGeoJsonSource(
+                                data = GeoJsonData.JsonString(markerJson)
+                            )
+
+                            val markerColor = if (marker.isSelected) {
+                                Color(0xFF4CAF50)
+                            } else {
+                                Color(0xFF9C27B0)
+                            }
+
+                            CircleLayer(
+                                id = "marker-${marker.id}",
+                                source = markerSource,
+                                radius = const(if (marker.isSelected) 12.dp else 9.dp),
+                                color = const(markerColor),
+                                strokeWidth = const(3.dp),
+                                strokeColor = const(Color.White),
+                                strokeOpacity = const(1f),
+                                onClick = { features ->
+                                    val markerName = features
+                                        .firstOrNull()
+                                        ?.properties
+                                        ?.get("name")
+                                        ?.toString()
+                                        ?.removeSurrounding("\"")
+
+                                    if (markerName != null) {
+                                        locations.firstOrNull { it.name == markerName }?.let {
+                                            viewModel.selectLocation(it)
+                                        } ?: places.firstOrNull { it.name == markerName }?.let {
+                                            viewModel.selectPlace(it)
+                                        }
+                                    }
+                                    ClickResult.Pass
+                                }
+                            )
+                        }
+                    }
                 }
+                ExpandMapButton(
+                    icon = Icons.Default.Fullscreen,
+                    contentDescription = "Expand map",
+                    onClick = {
+                        mainNavController.navigate(Routes.FullMap)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(12.dp)
+                )
             }
 
             Spacer(modifier.height(16.dp))
 
-            // Location Dropdown (Venues)
             LocationDropdown(
                 selectedLocation = selectedLocation?.name ?: "",
                 locations = locationNames,
@@ -351,7 +387,6 @@ fun MapScreen(
                 }
             )
 
-            // Places Dropdown
             if (places.isNotEmpty()) {
                 Spacer(modifier.height(12.dp))
                 LocationDropdown(
@@ -404,6 +439,69 @@ fun MapScreen(
                     }
                 )
             }
+
+            Spacer(modifier.height(16.dp))
+
+            MapBottomSheet(
+                modifier = Modifier.fillMaxWidth(),
+                content = {
+                    val detail = selectedSearchResult
+                    if (detail != null) {
+                        PlaceDetailSlider(
+                            place = detail,
+                            onGetDirectionsClick = {
+                                val originLat = userLocation?.latitude ?: 0.0
+                                val originLng = userLocation?.longitude ?: 0.0
+                                rootNavController.navigate(
+                                    Routes.routeRoute(
+                                        destLat = detail.latitude,
+                                        destLng = detail.longitude,
+                                        originLat = originLat,
+                                        originLng = originLng
+                                    )
+                                )
+                            }
+                        )
+                    } else {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MapBottomSheetTabs(
+                                selectedTab = selectedTab,
+                                onTabSelected = { selectedTab = it }
+                            )
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                when (selectedTab) {
+                                    MapTab.Search -> SearchTabContent(
+                                        query = searchQuery,
+                                        onQueryChange = { searchViewModel.updateQuery(it) },
+                                        results = searchResults,
+                                        isLoading = isSearching,
+                                        error = searchError,
+                                        onPlaceClick = { place ->
+                                            selectedSearchResult = place
+                                        }
+                                    )
+                                    MapTab.Filters -> FiltersTabContent(
+                                        selectedFilters = viewModel.selectedFilters.collectAsState().value,
+                                        onFilterToggle = { viewModel.toggleFilter(it) }
+                                    )
+                                    MapTab.Legend -> LegendTabContent()
+                                    MapTab.Layers -> LayersTabContent(
+                                        enabledLayers = viewModel.enabledLayers.collectAsState().value,
+                                        onLayerToggle = { viewModel.toggleLayer(it) }
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }

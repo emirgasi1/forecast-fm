@@ -75,7 +75,8 @@ class LoginViewModel(
                     tokenManager.saveTokens(
                         token = authResponse.token,
                         refreshToken = authResponse.refreshToken,
-                        userId = authResponse.user.id
+                        userId = authResponse.user.id,
+                        email = authResponse.user.email
                     )
 
                     _isLoading.value = false

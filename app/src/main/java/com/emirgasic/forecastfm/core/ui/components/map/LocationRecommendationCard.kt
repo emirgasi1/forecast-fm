@@ -107,12 +107,11 @@ fun LocationRecommendationCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary  // ← Add this
+                    contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
                 Text(
-                    text = "View Details",
-                    color = MaterialTheme.colorScheme.onPrimary  // ← Force text color
+                    text = "View Details"
                 )
             }
         }

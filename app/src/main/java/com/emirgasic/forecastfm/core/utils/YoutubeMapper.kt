@@ -2,6 +2,8 @@ package com.emirgasic.forecastfm.core.utils
 
 import com.emirgasic.forecastfm.data.model.Music
 import com.emirgasic.forecastfm.data.model.Playlist
+import com.emirgasic.forecastfm.network.youtube.YouTubeEnrichedItem
+import com.emirgasic.forecastfm.network.youtube.YouTubePlaylistItem
 import com.emirgasic.forecastfm.network.youtube.YouTubeVideo
 
 object YouTubeMapper {
@@ -41,5 +43,21 @@ object YouTubeMapper {
             spotifyUrl = null,
             youtubeUrl = null
         )
+    }
+
+    fun playlistItemsToMusic(items: List<YouTubeEnrichedItem>): List<Music> {
+        return items.mapNotNull { item ->
+            if (item.title == "Deleted video" || item.title == "Private video") {
+                return@mapNotNull null
+            }
+
+            Music(
+                id = item.videoId,
+                title = item.title,
+                artist = item.artist.ifBlank { "Unknown Artist" },
+                duration = item.duration,
+                albumImageUrl = item.thumbnailUrl.ifBlank { null }
+            )
+        }
     }
 }

@@ -49,4 +49,24 @@ class PlaceRepository(
             null
         }
     }
+
+    suspend fun searchPlaces(query: String): List<Place> {
+        val responses = placeApi.searchPlaces(query)
+        return responses.map { response ->
+            Place(
+                id = response.id,
+                name = response.name,
+                category = response.category,
+                venueId = response.venueId,
+                address = response.address,
+                latitude = response.latitude,
+                longitude = response.longitude,
+                description = response.description,
+                imageUrl = if (response.imageUrl != null) {
+                    "${ApiClient.baseUrl()}${response.imageUrl}"
+                } else null,
+                rating = response.rating
+            )
+        }
+    }
 }

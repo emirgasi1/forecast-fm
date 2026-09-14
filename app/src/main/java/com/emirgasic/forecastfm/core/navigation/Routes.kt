@@ -53,11 +53,20 @@ object Routes{
     const val Map="map"
     const val Style="style"
 
+    const val Admin = "admin"
     const val NewPost="newpost"
     const val Main="main"
     const val Comments = "comments/{postId}"
-
+    const val FullMap = "full_map"
     fun commentsRoute(postId: String): String {
         return "comments/$postId"
     }
+    const val Route = "route/{destLat}/{destLng}/{originLat}/{originLng}"
+
+    fun routeRoute(
+        destLat: Double,
+        destLng: Double,
+        originLat: Double,
+        originLng: Double
+    ): String = "route/$destLat/$destLng/$originLat/$originLng"
 }

@@ -4,8 +4,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.emirgasic.forecastfm.core.theme.AppTheme
 
-private val MorningColorScheme = lightColorScheme(
+val MorningColorScheme = lightColorScheme(
     primary = MorningPrimary,
     onPrimary = MorningTitle,
 
@@ -36,7 +37,7 @@ private val MorningColorScheme = lightColorScheme(
     scrim = MorningBorder
 )
 
-private val AfternoonColorScheme = lightColorScheme(
+val AfternoonColorScheme = lightColorScheme(
     primary = AfternoonPrimary,
     onPrimary = AfternoonTitle,
 
@@ -67,7 +68,7 @@ private val AfternoonColorScheme = lightColorScheme(
     scrim = AfternoonBorder
 )
 
-private val NightColorScheme = darkColorScheme(
+val NightColorScheme = darkColorScheme(
     primary = NightPrimary,
     onPrimary = NightTitle,
 
@@ -97,6 +98,15 @@ private val NightColorScheme = darkColorScheme(
 
     scrim = NightBorder
 )
+
+fun colorSchemeFor(theme: AppTheme): androidx.compose.material3.ColorScheme {
+    return when (theme) {
+        AppTheme.MORNING -> MorningColorScheme
+        AppTheme.AFTERNOON -> AfternoonColorScheme
+        AppTheme.NIGHT -> NightColorScheme
+        AppTheme.AUTO -> MorningColorScheme
+    }
+}
 
 @Composable
 fun ForecastfmTheme(

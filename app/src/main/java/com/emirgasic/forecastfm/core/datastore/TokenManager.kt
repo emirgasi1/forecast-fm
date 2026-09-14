@@ -15,13 +15,20 @@ class TokenManager(private val context: Context) {
         private val TOKEN_KEY = stringPreferencesKey("auth_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         private val USER_ID_KEY = stringPreferencesKey("user_id")
+        private val EMAIL_KEY = stringPreferencesKey("user_email")
     }
 
-    suspend fun saveTokens(token: String, refreshToken: String, userId: String) {
+    suspend fun saveTokens(
+        token: String,
+        refreshToken: String,
+        userId: String,
+        email: String
+    ) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
             preferences[REFRESH_TOKEN_KEY] = refreshToken
             preferences[USER_ID_KEY] = userId
+            preferences[EMAIL_KEY] = email
         }
     }
 
@@ -30,6 +37,7 @@ class TokenManager(private val context: Context) {
             preferences.remove(TOKEN_KEY)
             preferences.remove(REFRESH_TOKEN_KEY)
             preferences.remove(USER_ID_KEY)
+            preferences.remove(EMAIL_KEY)
         }
     }
 
@@ -48,6 +56,12 @@ class TokenManager(private val context: Context) {
     fun getUserId(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
             preferences[USER_ID_KEY]
+        }
+    }
+
+    fun getUserEmail(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[EMAIL_KEY]
         }
     }
 

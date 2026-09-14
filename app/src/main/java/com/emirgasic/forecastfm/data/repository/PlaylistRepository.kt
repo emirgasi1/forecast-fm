@@ -31,10 +31,12 @@ class PlaylistRepository(
                 },
                 likes = response.likes,
                 spotifyUrl = response.spotifyUrl,
-                youtubeUrl = response.youtubeUrl
+                youtubeUrl = response.youtubeUrl,
+                bestFor = response.bestFor
             )
         }
     }
+
     suspend fun getPlaylists(): List<Playlist> {
 
         println("REPOSITORY: GET PLAYLISTS START")
@@ -60,12 +62,13 @@ class PlaylistRepository(
                         title = song.title,
                         artist = song.artist,
                         duration = song.duration,
-                        albumImageUrl = response.albumImageUrl
+                        albumImageUrl = song.albumImageUrl
                     )
                 },
                 likes = response.likes,
                 spotifyUrl = response.spotifyUrl,
-                youtubeUrl = response.youtubeUrl
+                youtubeUrl = response.youtubeUrl,
+                bestFor = response.bestFor
             )
         }
 
@@ -96,12 +99,13 @@ class PlaylistRepository(
                     title = song.title,
                     artist = song.artist,
                     duration = song.duration,
-                    albumImageUrl = response.albumImageUrl
+                    albumImageUrl = song.albumImageUrl
                 )
             },
             likes = response.likes,
-            spotifyUrl=response.spotifyUrl,
-            youtubeUrl=response.youtubeUrl
+            spotifyUrl = response.spotifyUrl,
+            youtubeUrl = response.youtubeUrl,
+            bestFor = response.bestFor
         )
     }
 
@@ -127,10 +131,10 @@ class PlaylistRepository(
 
     suspend fun getFavoritePlaylistIds(
         userId: String
-    ):List<String>{
+    ): List<String> {
 
         return playlistApi.getFavoritePlaylistIds(
-            userId=userId
+            userId = userId
         )
     }
 
@@ -166,5 +170,4 @@ class PlaylistRepository(
             )
         }
     }
-
 }

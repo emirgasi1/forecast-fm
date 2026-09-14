@@ -41,8 +41,10 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
         userApi = UserApi()
     )
     private val youTubeRepository = YouTubeRepository()
+
     private val _musicHistory = MutableStateFlow<List<MusicHistory>>(emptyList())
     val musicHistory: StateFlow<List<MusicHistory>> = _musicHistory.asStateFlow()
+
     private val _weather = MutableStateFlow<Weather?>(null)
     val weather = _weather.asStateFlow()
 
@@ -69,8 +71,7 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
 
     private val searchQuery = MutableStateFlow("")
     private val debounceTime = 500L
-    private val _youtubeUrl = MutableStateFlow<String?>(null)
-    val youtubeUrl: StateFlow<String?> = _youtubeUrl.asStateFlow()
+
     init {
         loadPlaylists()
         loadFavoritePlaylists()
@@ -88,8 +89,6 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
                 }
         }
     }
-
-
 
     private fun loadPlaylists() {
         viewModelScope.launch {
@@ -236,30 +235,6 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
             _isLoading.value = false
         }
     }
-    fun clearYoutubeUrl() {
-        _youtubeUrl.value = null
-    }
-    fun searchAndOpenYouTube(query: String) {
-        // Use fallback directly since YouTube API quota is exceeded
-        _youtubeUrl.value = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    }
-    /*
-    fun searchAndOpenYouTube(query: String) {
-        viewModelScope.launch {
-            try {
-                val results = youTubeRepository.searchVideos(query)
-                val firstVideo = results.firstOrNull()
-                if (firstVideo != null) {
-                    val videoId = firstVideo.id?.videoId
-                    if (videoId != null) {
-                        _youtubeUrl.value = "https://www.youtube.com/watch?v=$videoId"
-                    }
-                }
-            } catch (e: Exception) {
-                _youtubeUrl.value = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            }
-        }
-    } */
 
     fun loadMusicHistory() {
         viewModelScope.launch {
@@ -274,6 +249,7 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
             }
         }
     }
+
     fun toggleFavorite(playlistId: String) {
         viewModelScope.launch {
             try {
@@ -328,13 +304,11 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
     fun updateSearch(value: String) {
         _search.value = value
 
-        // Cancel previous search
         searchJob?.cancel()
 
         if (value.isNotBlank()) {
-            // Add small delay before searching
             searchJob = viewModelScope.launch {
-                delay(300) // Wait 300ms before searching
+                delay(300)
                 searchYouTube(value)
             }
         } else {
@@ -343,17 +317,6 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
             searchJob?.cancel()
         }
     }
-
-    private fun getWeatherPlaylist(condition: String): String {
-        return when (condition.lowercase()) {
-            "sunny", "clear" -> "Sunny Vibes"
-            "rain", "drizzle", "light rain", "heavy rain" -> "Rainy Day"
-            "cloudy", "overcast", "partly cloudy" -> "Cloudy Chill"
-            "snow", "sleet" -> "Winter Wonderland"
-            else -> "Mixed Weather"
-        }
-    }
-
 
     fun selectGenre(value: String) {
         _selectedGenre.value = value

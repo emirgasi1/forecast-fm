@@ -43,6 +43,8 @@ import com.emirgasic.forecastfm.core.ui.components.common.DetailRow
 import com.emirgasic.forecastfm.core.ui.components.common.TagChip
 import androidx.compose.ui.platform.LocalContext
 import android.net.Uri
+import androidx.compose.material3.ButtonDefaults
+
 @Composable
 fun PlaceRecommendationDetailScreen(
     navController: NavController,
@@ -239,7 +241,11 @@ fun PlaceRecommendationDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.background
+                        )
                     ) {
                         Text(
                             text = "Get Directions",
