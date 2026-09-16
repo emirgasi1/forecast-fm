@@ -43,6 +43,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.theme.AppTheme
+import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.map.ExpandMapButton
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
@@ -84,8 +86,23 @@ fun MapScreen(
     }
     val context = LocalContext.current
     val weather by weatherViewModel.weather.collectAsState()
-    val styleJson = remember {
-        context.resources.openRawResource(R.raw.map_style_morning)
+    val selectedTheme by ThemeManager.selectedTheme.collectAsState()
+
+    val styleJson = remember(selectedTheme) {
+        val resolved = if (selectedTheme == AppTheme.AUTO) {
+            ThemeManager.resolveTheme()
+        } else {
+            selectedTheme
+        }
+
+        val resId = when (resolved) {
+            AppTheme.MORNING -> R.raw.map_style_morning
+            AppTheme.AFTERNOON -> R.raw.map_style_afternoon
+            AppTheme.NIGHT -> R.raw.map_style_night
+            AppTheme.AUTO -> R.raw.map_style_morning
+        }
+
+        context.resources.openRawResource(resId)
             .bufferedReader()
             .use { it.readText() }
     }
@@ -439,69 +456,6 @@ fun MapScreen(
                     }
                 )
             }
-
-            Spacer(modifier.height(16.dp))
-
-            MapBottomSheet(
-                modifier = Modifier.fillMaxWidth(),
-                content = {
-                    val detail = selectedSearchResult
-                    if (detail != null) {
-                        PlaceDetailSlider(
-                            place = detail,
-                            onGetDirectionsClick = {
-                                val originLat = userLocation?.latitude ?: 0.0
-                                val originLng = userLocation?.longitude ?: 0.0
-                                rootNavController.navigate(
-                                    Routes.routeRoute(
-                                        destLat = detail.latitude,
-                                        destLng = detail.longitude,
-                                        originLat = originLat,
-                                        originLng = originLng
-                                    )
-                                )
-                            }
-                        )
-                    } else {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            MapBottomSheetTabs(
-                                selectedTab = selectedTab,
-                                onTabSelected = { selectedTab = it }
-                            )
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .verticalScroll(rememberScrollState())
-                            ) {
-                                when (selectedTab) {
-                                    MapTab.Search -> SearchTabContent(
-                                        query = searchQuery,
-                                        onQueryChange = { searchViewModel.updateQuery(it) },
-                                        results = searchResults,
-                                        isLoading = isSearching,
-                                        error = searchError,
-                                        onPlaceClick = { place ->
-                                            selectedSearchResult = place
-                                        }
-                                    )
-                                    MapTab.Filters -> FiltersTabContent(
-                                        selectedFilters = viewModel.selectedFilters.collectAsState().value,
-                                        onFilterToggle = { viewModel.toggleFilter(it) }
-                                    )
-                                    MapTab.Legend -> LegendTabContent()
-                                    MapTab.Layers -> LayersTabContent(
-                                        enabledLayers = viewModel.enabledLayers.collectAsState().value,
-                                        onLayerToggle = { viewModel.toggleLayer(it) }
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
-                        }
-                    }
-                }
-            )
         }
     }
 }

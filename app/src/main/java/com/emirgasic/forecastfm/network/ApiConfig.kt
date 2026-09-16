@@ -6,7 +6,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object ApiConfig {
 
-    private const val DEFAULT_BASE_URL = "http://192.168.1.8:8080"
+
+    private const val DEFAULT_BASE_URL = "https://forecastfm-backend.onrender.com"
 
     private val _baseUrl = MutableStateFlow(DEFAULT_BASE_URL)
     val baseUrl: StateFlow<String> = _baseUrl.asStateFlow()

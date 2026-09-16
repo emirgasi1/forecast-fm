@@ -111,7 +111,7 @@ fun FeedScreen(
                         val isSaved = post.id in savedPosts
 
                         FeedPostCard(
-                            profileImage = painterResource(post.user.profileImage),
+                            profileImage = post.user.profileImage,
                             username = post.user.username,
                             time = post.time,
                             weatherIcon = painterResource(R.drawable.sun),

@@ -32,13 +32,12 @@ class SettingsViewModel(
     private val _preferenceOptions = MutableStateFlow(
         listOf(
             SettingsOption(
-                title = "Default Location"
+                title = "Default Location",
+                route = Routes.DefaultLocation
             ),
             SettingsOption(
-                title = "Theme"
-            ),
-            SettingsOption(
-                title = "Notifications"
+                title = "Notifications",
+                route = Routes.Notifications
             )
         )
     )
@@ -47,10 +46,12 @@ class SettingsViewModel(
     private val _aboutOptions = MutableStateFlow(
         listOf(
             SettingsOption(
-                title = "Privacy Policy"
+                title = "Privacy Policy",
+                route = Routes.PrivacyPolicy
             ),
             SettingsOption(
-                title = "About App"
+                title = "About App",
+                route = Routes.AboutApp
             )
         )
     )
@@ -61,4 +62,5 @@ class SettingsViewModel(
             tokenManager.clearTokens()
         }
     }
+
 }

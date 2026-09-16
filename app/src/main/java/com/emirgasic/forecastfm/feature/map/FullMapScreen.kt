@@ -49,6 +49,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.theme.AppTheme
+import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheet
 import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheetTabs
 import com.emirgasic.forecastfm.core.ui.components.map.MapTab
@@ -162,8 +164,23 @@ fun FullMapScreen(
         }
     }
 
-    val styleJson = remember {
-        context.resources.openRawResource(R.raw.map_style_morning)
+    val selectedTheme by ThemeManager.selectedTheme.collectAsState()
+
+    val styleJson = remember(selectedTheme) {
+        val resolved = if (selectedTheme == AppTheme.AUTO) {
+            ThemeManager.resolveTheme()
+        } else {
+            selectedTheme
+        }
+
+        val resId = when (resolved) {
+            AppTheme.MORNING -> R.raw.map_style_morning
+            AppTheme.AFTERNOON -> R.raw.map_style_afternoon
+            AppTheme.NIGHT -> R.raw.map_style_night
+            AppTheme.AUTO -> R.raw.map_style_morning
+        }
+
+        context.resources.openRawResource(resId)
             .bufferedReader()
             .use { it.readText() }
     }

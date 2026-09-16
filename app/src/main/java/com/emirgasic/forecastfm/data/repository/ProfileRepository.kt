@@ -1,10 +1,11 @@
 package com.emirgasic.forecastfm.data.repository
 
-import com.emirgasic.forecastfm.R
+import android.content.ContentResolver
 import com.emirgasic.forecastfm.data.model.Profile
 import com.emirgasic.forecastfm.data.model.ProfilePost
 import com.emirgasic.forecastfm.network.ApiClient
 import com.emirgasic.forecastfm.network.profile.ProfileApi
+import com.emirgasic.forecastfm.network.profile.UpdateProfileRequest
 
 class ProfileRepository(
     private val profileApi: ProfileApi
@@ -28,7 +29,11 @@ class ProfileRepository(
         return Profile(
             username = response.username,
             bio = response.bio ?: "",
-            profileImage = response.profileImageUrl ?: "",
+            profileImage = if (!response.profileImageUrl.isNullOrBlank()) {
+                "${ApiClient.baseUrl()}${response.profileImageUrl}"
+            } else {
+                "https://picsum.photos/seed/${response.username}/400/400"
+            },
             likes = response.likes,
             saved = response.saved,
             posts = response.posts.size,
@@ -37,5 +42,27 @@ class ProfileRepository(
             },
             profilePosts = profilePosts
         )
+    }
+
+    suspend fun updateProfile(
+        userId: String,
+        username: String,
+        bio: String,
+        favoriteLocation: String
+    ): Boolean {
+        val request = UpdateProfileRequest(
+            username = username,
+            bio = bio,
+            favoriteLocation = favoriteLocation
+        )
+        return profileApi.updateProfile(userId, request)
+    }
+
+    suspend fun uploadProfileImage(
+        userId: String,
+        contentResolver: ContentResolver,
+        imageUri: String
+    ): String? {
+        return profileApi.uploadProfileImage(userId, contentResolver, imageUri)
     }
 }

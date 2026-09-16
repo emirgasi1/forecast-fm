@@ -46,6 +46,7 @@ fun CommentsScreen(
         }
     )
 ) {
+    val likedComments by viewModel.likedComments.collectAsState()
     val comments by viewModel.comments.collectAsState()
     var commentText by remember { mutableStateOf("") }
 
@@ -99,11 +100,15 @@ fun CommentsScreen(
             items(comments) { comment ->
 
                 CommentCard(
-                    profileImage = painterResource(comment.user.profileImage),
+                    profileImage = comment.user.profileImage,
                     username = comment.user.username,
                     time = comment.time,
                     comment = comment.text,
-                    likes = comment.likes.toString()
+                    likes = comment.likes.toString(),
+                    isLiked = comment.id in likedComments,
+                    onLikeClick = {
+                        viewModel.toggleLike(comment.id)
+                    }
                 )
 
             }

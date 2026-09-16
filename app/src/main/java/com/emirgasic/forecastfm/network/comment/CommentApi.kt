@@ -3,7 +3,9 @@ package com.emirgasic.forecastfm.network.comment
 import android.util.Log
 import com.emirgasic.forecastfm.network.ApiClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -42,5 +44,24 @@ class CommentApi {
 
         Log.d("CommentApi", "📥 Response: $response")
         return response
+    }
+    suspend fun likeComment(commentId: String, userId: String): Int {
+        val response = ApiClient.client.post(
+            "${ApiClient.baseUrl()}/api/comments/$commentId/like"
+        ) {
+            header("User-Id", userId)
+        }
+        val body: Map<String, Int> = response.body()
+        return body["likes"] ?: 0
+    }
+
+    suspend fun unlikeComment(commentId: String, userId: String): Int {
+        val response = ApiClient.client.delete(
+            "${ApiClient.baseUrl()}/api/comments/$commentId/like"
+        ) {
+            header("User-Id", userId)
+        }
+        val body: Map<String, Int> = response.body()
+        return body["likes"] ?: 0
     }
 }

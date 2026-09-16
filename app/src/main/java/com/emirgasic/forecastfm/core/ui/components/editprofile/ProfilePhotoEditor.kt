@@ -1,6 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.editprofile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,13 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfilePhotoEditor(
-    image: Painter,
+    image: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -40,8 +39,8 @@ fun ProfilePhotoEditor(
             contentAlignment = Alignment.Center
         ) {
 
-            Image(
-                painter = image,
+            AsyncImage(
+                model = image,
                 contentDescription = "Profile picture",
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop

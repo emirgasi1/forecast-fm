@@ -7,6 +7,12 @@ import io.ktor.client.request.parameter
 
 class PlaceApi {
 
+    suspend fun getAllPlaces(): List<PlaceResponse> {
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/places")
+            .body()
+    }
+
     suspend fun getPlacesByVenue(venueId: String): List<PlaceResponse> {
         return ApiClient.client
             .get("${ApiClient.baseUrl()}/api/places/venue/$venueId")

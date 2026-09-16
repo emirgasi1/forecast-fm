@@ -1,12 +1,14 @@
 package com.emirgasic.forecastfm.core.ui.components.map
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,14 +29,14 @@ fun LocationDropdown(
         onExpandedChange = {
             onExpandedChange(!expanded)
         },
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+        modifier = modifier
     ) {
 
         OutlinedTextField(
             value = selectedLocation,
             onValueChange = {},
             readOnly = true,
-            label = {
+            placeholder = {
                 Text("Location")
             },
             trailingIcon = {
@@ -42,14 +44,25 @@ fun LocationDropdown(
                     expanded = expanded
                 )
             },
-            modifier = Modifier.menuAnchor()
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = {
                 onExpandedChange(false)
-            }
+            },
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
 
             locations.forEach { location ->

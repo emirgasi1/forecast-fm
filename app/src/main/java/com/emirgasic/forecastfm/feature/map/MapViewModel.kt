@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+
 class MapViewModel : ViewModel() {
 
     private val repository = LocationRepository()
@@ -53,7 +54,6 @@ class MapViewModel : ViewModel() {
     private val _markers = MutableStateFlow<List<MapMarker>>(emptyList())
     val markers: StateFlow<List<MapMarker>> = _markers.asStateFlow()
 
-
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -61,14 +61,14 @@ class MapViewModel : ViewModel() {
     val selectedFilters: StateFlow<Set<String>> = _selectedFilters.asStateFlow()
 
     private val _enabledLayers = MutableStateFlow(setOf("Venues", "Places", "Bus Stops"))
-
     val enabledLayers: StateFlow<Set<String>> = _enabledLayers.asStateFlow()
-
 
     private val _busStations = MutableStateFlow<List<BusStation>>(emptyList())
     val busStations: StateFlow<List<BusStation>> = _busStations.asStateFlow()
+
     init {
         loadLocations()
+        loadAllPlaces()
         loadBusStations()
     }
 
@@ -78,9 +78,19 @@ class MapViewModel : ViewModel() {
                 val locations = repository.getLocations()
                 _locations.value = locations
                 _selectedLocation.value = locations.firstOrNull()
-                _selectedLocation.value?.let {
-                    loadPlacesForVenue(it.id)
-                }
+                updateMarkers()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun loadAllPlaces() {
+        viewModelScope.launch {
+            try {
+                val allPlaces = placeRepository.getAllPlaces()
+                _places.value = allPlaces
+                _selectedPlace.value = allPlaces.firstOrNull()
                 updateMarkers()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -103,7 +113,6 @@ class MapViewModel : ViewModel() {
 
     fun selectLocation(location: LocationResponse) {
         _selectedLocation.value = location
-        loadPlacesForVenue(location.id)
         updateMarkers()
     }
 
@@ -139,6 +148,7 @@ class MapViewModel : ViewModel() {
             }
         }
     }
+
     private fun updateMarkers() {
         val currentLocations = _locations.value
         val currentPlaces = _places.value
@@ -204,6 +214,7 @@ class MapViewModel : ViewModel() {
             _enabledLayers.value + layer
         }
     }
+
     val filteredMarkers = combine(
         _markers,
         _searchQuery,
@@ -235,6 +246,7 @@ class MapViewModel : ViewModel() {
         SharingStarted.WhileSubscribed(5_000),
         emptyList()
     )
+
     private fun loadBusStations() {
         viewModelScope.launch {
             try {

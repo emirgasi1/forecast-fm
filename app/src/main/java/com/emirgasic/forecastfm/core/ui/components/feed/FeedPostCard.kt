@@ -33,7 +33,7 @@ import com.emirgasic.forecastfm.R
 
 @Composable
 fun FeedPostCard(
-    profileImage: Painter,
+    profileImage: String,
     username: String,
     time: String,
     weatherIcon: Painter,
@@ -75,13 +75,14 @@ fun FeedPostCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Image(
-                    painter = profileImage,
+                AsyncImage(
+                    model = profileImage,
                     contentDescription = null,
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(R.drawable.profile_picture)
                 )
 
                 Spacer(Modifier.width(12.dp))
@@ -156,7 +157,6 @@ fun FeedPostCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                // Like button
                 IconButton(
                     onClick = onLikeClick
                 ) {
@@ -179,7 +179,6 @@ fun FeedPostCard(
 
                 Spacer(Modifier.width(20.dp))
 
-                // Comment button
                 Row(
                     modifier = Modifier.clickable {
                         onCommentClick()
@@ -203,7 +202,6 @@ fun FeedPostCard(
 
                 Spacer(Modifier.weight(1f))
 
-                // Save button
                 IconButton(
                     onClick = onSaveClick
                 ) {

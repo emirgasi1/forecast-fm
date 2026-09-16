@@ -28,7 +28,11 @@ class FeedRepository(
             id = userResponse.id,
             username = userResponse.username,
             bio = userResponse.bio ?: "",
-            profileImage = R.drawable.outfit3,
+            profileImage = if (!userResponse.profileImageUrl.isNullOrBlank()) {
+                "${ApiClient.baseUrl()}${userResponse.profileImageUrl}"
+            } else {
+                "https://picsum.photos/seed/${userResponse.username}/200/200"
+            },
             favoriteLocation = userResponse.favoriteLocation ?: "",
             likes = 0,
             posts = 0,
@@ -89,7 +93,7 @@ class FeedRepository(
                 caption = post.caption ?: "",
                 weather = weather,
                 playlist = matchingPlaylist,
-                time = post.createdAt,
+                time = formatDate(post.createdAt),
                 likes = 0,
                 comments = commentCount
             )
@@ -117,6 +121,17 @@ class FeedRepository(
             "rain", "drizzle", "heavy rain" -> R.drawable.heavy_rain
             "snow" -> R.drawable.snow
             else -> R.drawable.sun
+        }
+    }
+    private fun formatDate(iso: String): String {
+        return try {
+            val instant = java.time.Instant.parse(iso)
+            java.time.format.DateTimeFormatter
+                .ofPattern("d MMM yyyy")
+                .withZone(java.time.ZoneId.systemDefault())
+                .format(instant)
+        } catch (e: Exception) {
+            iso
         }
     }
 }

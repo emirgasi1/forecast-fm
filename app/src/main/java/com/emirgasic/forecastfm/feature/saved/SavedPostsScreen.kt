@@ -106,7 +106,7 @@ fun SavedPostsScreen(
                 } else {
                     items(savedPosts) { post ->
                         FeedPostCard(
-                            profileImage = painterResource(R.drawable.profile_picture),
+                            profileImage = "https://picsum.photos/seed/saved/200/200",
                             username = "User",
                             time = post.createdAt,
                             weatherIcon = painterResource(R.drawable.sun),

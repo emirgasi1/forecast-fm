@@ -31,6 +31,10 @@ import com.emirgasic.forecastfm.feature.saved.SavedPostsScreen
 import com.emirgasic.forecastfm.feature.saved.SavedStylesScreen
 import com.emirgasic.forecastfm.feature.settings.SettingsScreen
 import com.emirgasic.forecastfm.feature.settings.edit_profile.EditProfileScreen
+import com.emirgasic.forecastfm.feature.settings.info.AboutAppScreen
+import com.emirgasic.forecastfm.feature.settings.info.PrivacyPolicyScreen
+import com.emirgasic.forecastfm.feature.settings.location.DefaultLocationScreen
+import com.emirgasic.forecastfm.feature.settings.notifications.NotificationsScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
@@ -162,7 +166,8 @@ fun NavGraph(
         }
         composable(Routes.EditProfile) {
             EditProfileScreen(
-                navController = navController
+                navController = navController,
+                tokenManager = tokenManager
             )
         }
 
@@ -175,6 +180,21 @@ fun NavGraph(
                 navController = navController,
                 playlistId = playlistId
             )
+        }
+        composable(Routes.Notifications) {
+            NotificationsScreen()
+        }
+
+        composable(Routes.DefaultLocation) {
+            DefaultLocationScreen()
+        }
+
+        composable(Routes.PrivacyPolicy) {
+            PrivacyPolicyScreen()
+        }
+
+        composable(Routes.AboutApp) {
+            AboutAppScreen()
         }
 
         // Location Details

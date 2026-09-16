@@ -44,4 +44,29 @@ class CommentRepository(
             text = text
         )
     }
+
+    suspend fun getUserForComment(userId: String): com.emirgasic.forecastfm.network.user.UserResponse? {
+        return try {
+            userRepository.getUser(userId)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    suspend fun likeComment(commentId: String, userId: String): Int {
+        return try {
+            commentApi.likeComment(commentId, userId)
+        } catch (e: Exception) {
+            Log.e("CommentRepo", "❌ likeComment failed: ${e.message}", e)
+            0
+        }
+    }
+
+    suspend fun unlikeComment(commentId: String, userId: String): Int {
+        return try {
+            commentApi.unlikeComment(commentId, userId)
+        } catch (e: Exception) {
+            Log.e("CommentRepo", "❌ unlikeComment failed: ${e.message}", e)
+            0
+        }
+    }
 }

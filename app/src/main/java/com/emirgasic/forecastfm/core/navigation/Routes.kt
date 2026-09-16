@@ -18,6 +18,14 @@ object Routes{
 
     const val Music="music"
 
+    const val Notifications = "notifications"
+
+    const val DefaultLocation = "default_location"
+
+    const val PrivacyPolicy = "privacy_policy"
+
+    const val AboutApp = "about_app"
+
     const val Playlist = "playlist/{playlistId}"
 
     fun playlistRoute(id:String):String {

@@ -154,7 +154,9 @@ fun SettingsScreen(
                             title = option.title,
 
                             onClick = {
-                                // Add navigation later
+                                option.route?.let { route ->
+                                    navController.navigate(route)
+                                }
                             }
 
                         )
@@ -195,7 +197,9 @@ fun SettingsScreen(
                             title = option.title,
 
                             onClick = {
-                                // Add navigation later
+                                option.route?.let { route ->
+                                    navController.navigate(route)
+                                }
                             }
 
                         )

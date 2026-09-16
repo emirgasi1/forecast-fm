@@ -4,7 +4,7 @@ data class User(
     val id: String,
     val username: String,
     val bio: String,
-    val profileImage: Int,
+    val profileImage: String,
     val favoriteLocation: String,
     val likes: Int,
     val posts: Int,

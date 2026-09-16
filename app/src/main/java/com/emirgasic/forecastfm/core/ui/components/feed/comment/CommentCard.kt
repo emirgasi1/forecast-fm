@@ -1,4 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.feed.comment
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -19,17 +20,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
+
 @Composable
 fun CommentCard(
-    profileImage: Painter,
+    profileImage: String,
     username: String,
     time: String,
     comment: String,
     likes: String,
+    isLiked: Boolean = false,
     modifier: Modifier = Modifier,
     onLikeClick: () -> Unit = {}
 ) {
@@ -56,12 +60,14 @@ fun CommentCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Image(
-                    painter = profileImage,
+                AsyncImage(
+                    model = profileImage,
                     contentDescription = null,
                     modifier = Modifier
                         .size(42.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(R.drawable.profile_picture)
                 )
 
                 Spacer(Modifier.width(12.dp))
@@ -95,8 +101,12 @@ fun CommentCard(
             ) {
 
                 Image(
-                    painter = painterResource(R.drawable.heart),
-                    contentDescription = "Like",
+                    painter = if (isLiked) {
+                        painterResource(R.drawable.heart_filled)
+                    } else {
+                        painterResource(R.drawable.heart)
+                    },
+                    contentDescription = if (isLiked) "Unlike" else "Like",
                     modifier = Modifier.size(18.dp)
                 )
 

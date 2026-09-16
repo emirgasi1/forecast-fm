@@ -8,6 +8,26 @@ class PlaceRepository(
     private val placeApi: PlaceApi = PlaceApi()
 ) {
 
+    suspend fun getAllPlaces(): List<Place> {
+        val responses = placeApi.getAllPlaces()
+        return responses.map { response ->
+            Place(
+                id = response.id,
+                name = response.name,
+                category = response.category,
+                venueId = response.venueId,
+                address = response.address,
+                latitude = response.latitude,
+                longitude = response.longitude,
+                description = response.description,
+                imageUrl = if (response.imageUrl != null) {
+                    "${ApiClient.baseUrl()}${response.imageUrl}"
+                } else null,
+                rating = response.rating
+            )
+        }
+    }
+
     suspend fun getPlacesByVenue(venueId: String): List<Place> {
         val responses = placeApi.getPlacesByVenue(venueId)
         return responses.map { response ->
