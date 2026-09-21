@@ -32,4 +32,13 @@ class PlaceApi {
             }
             .body()
     }
+
+    suspend fun getPlacesCountByVenue(venueId: String): Int {
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/places/count") {
+                parameter("venueId", venueId)
+            }
+            .body<PlaceCountResponse>()
+            .count
+    }
 }

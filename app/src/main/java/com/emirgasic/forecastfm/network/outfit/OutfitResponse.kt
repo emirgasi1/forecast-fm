@@ -14,5 +14,7 @@ data class OutfitResponse(
     val storeName: String? = null,
     val storeAddress: String? = null,
     val price: String? = null,
+    val storePhone: String? = null,
+    val productUrl: String? = null,
     val createdAt: String
 )

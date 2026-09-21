@@ -6,6 +6,7 @@ import com.emirgasic.forecastfm.data.model.LocationDetailsUi
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
+import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
@@ -20,12 +21,16 @@ class LocationDetailsViewModel : ViewModel() {
     private val weatherRepository = WeatherRepository()
     private val playlistRepository = PlaylistRepository(PlaylistApi())
     private val outfitRepository = OutfitRepository()
+    private val placeRepository = PlaceRepository()
 
     private val _locationDetails = MutableStateFlow<LocationDetailsUi?>(null)
     val locationDetails = _locationDetails.asStateFlow()
 
     private val _outfits = MutableStateFlow<List<Outfit>>(emptyList())
     val outfits = _outfits.asStateFlow()
+
+    private val _placesCount = MutableStateFlow(0)
+    val placesCount = _placesCount.asStateFlow()
 
     fun loadLocation(locationId: String) {
         viewModelScope.launch {
@@ -45,7 +50,6 @@ class LocationDetailsViewModel : ViewModel() {
                     weather = weatherData.weather.condition
                 )
 
-                // Fetch outfits based on weather
                 val outfits = outfitRepository.getOutfitsByWeather(weatherData.weather.condition)
 
                 _locationDetails.value = LocationDetailsUi(
@@ -54,6 +58,8 @@ class LocationDetailsViewModel : ViewModel() {
                     playlist = playlist
                 )
                 _outfits.value = outfits
+
+                _placesCount.value = placeRepository.getPlacesCountByVenue(location.id)
 
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -5,9 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,16 +12,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.NavGraph
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.theme.AppTheme
 import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.ui.theme.ForecastfmTheme
 import com.emirgasic.forecastfm.ui.theme.colorSchemeFor
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 class MainActivity : ComponentActivity() {
 
@@ -62,31 +61,36 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ForecastFMApp(tokenManager: TokenManager) {
     var isLoggedIn by remember { mutableStateOf(false) }
+    var hasCompletedOnboarding by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val onboardingPrefs = remember { OnboardingPreferences(context) }
+
     LaunchedEffect(Unit) {
-        tokenManager.isLoggedIn().collect { loggedIn ->
-            isLoggedIn = loggedIn
-            isLoading = false
-        }
+        val minimumSplash = async { delay(2000) }
+
+        isLoggedIn = tokenManager.isLoggedIn().first()
+        hasCompletedOnboarding = onboardingPrefs.isCompleted()
+
+        minimumSplash.await()
+        isLoading = false
     }
 
     if (isLoading) {
         SplashScreen()
+
+
     } else {
+        val start = when {
+            !isLoggedIn -> Routes.Login
+            !hasCompletedOnboarding -> Routes.Onboarding
+            else -> Routes.Main
+        }
+
         NavGraph(
-            startDestination = if (isLoggedIn) Routes.Main else Routes.Login,
+            startDestination = start,
             tokenManager = tokenManager
         )
-    }
-}
-
-@Composable
-fun SplashScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Loading...")
     }
 }

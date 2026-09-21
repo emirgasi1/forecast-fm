@@ -6,6 +6,7 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
+import com.emirgasic.forecastfm.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,13 +37,27 @@ class SavedStylesViewModel(
                 if (userId != null) {
                     val responses = savedOutfitRepository.getSavedOutfits(userId)
                     _savedStyles.value = responses.map { response ->
+                        val fullImageUrl = if (
+                            response.imageUrl.startsWith("http://") ||
+                            response.imageUrl.startsWith("https://")
+                        ) {
+                            response.imageUrl
+                        } else {
+                            "${ApiClient.baseUrl()}${response.imageUrl}"
+                        }
+
                         Outfit(
                             id = response.id,
-                            imageUrl = "${com.emirgasic.forecastfm.network.ApiClient.baseUrl()}${response.imageUrl}",
+                            imageUrl = fullImageUrl,
                             title = response.title,
                             weatherCondition = response.weatherCondition,
                             season = response.season,
-                            likes = response.likes
+                            likes = response.likes,
+                            storeName = response.storeName,
+                            storeAddress = response.storeAddress,
+                            price = response.price,
+                            storePhone = response.storePhone,
+                            productUrl = response.productUrl
                         )
                     }
                 }

@@ -3,16 +3,15 @@ package com.emirgasic.forecastfm.feature.locationdetails.placerecommendation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.AgeGroupSelector
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.CompanionSelector
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.PlaceCategorySelector
@@ -30,6 +30,7 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecom
 @Composable
 fun PlaceRecommendationScreen(
     navController: NavController,
+    venueId: String?,
     modifier: Modifier = Modifier,
     viewModel: PlaceRecommendationViewModel = viewModel()
 ) {
@@ -40,6 +41,10 @@ fun PlaceRecommendationScreen(
     val selectedAgeGroup by viewModel.selectedAgeGroup.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    LaunchedEffect(venueId) {
+        venueId?.let { viewModel.loadForVenue(it) }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -48,7 +53,7 @@ fun PlaceRecommendationScreen(
                 top = 60.dp,
                 start = 10.dp,
                 end = 10.dp,
-                bottom = 10.dp
+                bottom = 0.dp
             )
     ) {
         if (isLoading) {
@@ -56,11 +61,12 @@ fun PlaceRecommendationScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                LoadingScreen()
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 160.dp)
             ) {
                 item {
                     Text(
@@ -146,7 +152,7 @@ fun PlaceRecommendationScreen(
                         imageUrl = place.imageUrl,
                         rating = place.rating,
                         onClick = {
-                            navController.navigate(Routes.placeRecommendationDetailRoute(place.id))
+                            navController.navigate(Routes.placeInfoRoute(place.id))
                         }
                     )
                 }

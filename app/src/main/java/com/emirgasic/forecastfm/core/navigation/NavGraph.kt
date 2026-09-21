@@ -24,6 +24,8 @@ import com.emirgasic.forecastfm.feature.map.route.RouteScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.music.musichistory.MusicHistoryScreen
 import com.emirgasic.forecastfm.feature.music.playlist.PlaylistScreen
+import com.emirgasic.forecastfm.feature.onboarding.OnboardingScreen
+import com.emirgasic.forecastfm.feature.place.PlaceInfoScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
 import com.emirgasic.forecastfm.feature.saved.SavedHubScreen
 import com.emirgasic.forecastfm.feature.saved.SavedPlaylistsScreen
@@ -37,6 +39,7 @@ import com.emirgasic.forecastfm.feature.settings.location.DefaultLocationScreen
 import com.emirgasic.forecastfm.feature.settings.notifications.NotificationsScreen
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
+import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
 import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
 import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
 import com.emirgasic.forecastfm.feature.weather.WeatherScreen
@@ -51,14 +54,24 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
-        // Auth Screens
-        composable(Routes.Splash) {
-            SplashScreen(navController)
-        }
+
 
         composable(Routes.Login) {
             LoginScreen(
                 navController = navController,
+                tokenManager = tokenManager
+            )
+        }
+        composable(
+            route = Routes.PlaceInfo,
+            arguments = listOf(
+                navArgument("placeId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId")
+            PlaceInfoScreen(
+                navController = navController,
+                placeId = placeId,
                 tokenManager = tokenManager
             )
         }
@@ -197,20 +210,44 @@ fun NavGraph(
             AboutAppScreen()
         }
 
+
+        composable(Routes.Onboarding) {
+            OnboardingScreen(
+                navController = navController,
+                onFinish = {
+                    navController.navigate(Routes.Main) {
+                        popUpTo(Routes.Onboarding) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+
+        // Location Details
         // Location Details
         composable(
-            route = Routes.LocationDetails
+            route = Routes.LocationDetails,
+            arguments = listOf(
+                navArgument("locationId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
-            val locationId = backStackEntry.arguments?.getString("location")
+            val locationId = backStackEntry.arguments?.getString("locationId")
             LocationDetailsScreen(
                 navController = navController,
                 locationId = locationId
             )
         }
 
-        composable(Routes.PlaceRecommendation) {
+        composable(
+            route = Routes.PlaceRecommendation,
+            arguments = listOf(
+                navArgument("venueId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val venueId = backStackEntry.arguments?.getString("venueId")
             PlaceRecommendationScreen(
-                navController = navController
+                navController = navController,
+                venueId = venueId
             )
         }
 

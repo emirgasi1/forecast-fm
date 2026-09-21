@@ -24,21 +24,27 @@ object Routes{
 
     const val PrivacyPolicy = "privacy_policy"
 
+    const val Onboarding = "onboarding"
+
+    const val AddOutfit = "add_outfit"
     const val AboutApp = "about_app"
 
     const val Playlist = "playlist/{playlistId}"
 
+    const val PlaceInfo = "place_info/{placeId}"
+
+    fun placeInfoRoute(placeId: String): String = "place_info/$placeId"
     fun playlistRoute(id:String):String {
         return "playlist/$id"
     }    const val MusicHistory="musichistory"
 
-    const val LocationDetails = "locationDetails/{location}"
-    fun locationDetailsRoute(location: String): String {
-
-        return "locationDetails/$location"
-
+    const val LocationDetails = "locationDetails/{locationId}"
+    fun locationDetailsRoute(locationId: String): String {
+        return "locationDetails/$locationId"
     }
-    const val PlaceRecommendation = "place_recommendation"
+    const val PlaceRecommendation = "placeRecommendation/{venueId}"
+
+    fun placeRecommendationRoute(venueId: String) = "placeRecommendation/$venueId"
 
     const val PlaceRecommendationDetail = "place_recommendation_detail/{id}"
     const val PlaceDetail = "place_detail/{id}"

@@ -32,15 +32,16 @@ class PlaceRecommendationViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        loadRecommendations()
-    }
+    private var loadedVenueId: String? = null
 
-    fun loadRecommendations() {
+    fun loadForVenue(venueId: String) {
+        if (loadedVenueId == venueId) return
+        loadedVenueId = venueId
+
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val results = repository.getRecommendations()
+                val results = repository.getRecommendationsByVenue(venueId)
                 _allRecommendations.value = results
                 _recommendations.value = results
             } catch (e: Exception) {

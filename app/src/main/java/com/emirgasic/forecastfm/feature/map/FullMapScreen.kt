@@ -45,10 +45,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.theme.AppTheme
 import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheet
@@ -77,15 +80,23 @@ import org.maplibre.spatialk.geojson.Position
 fun FullMapScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: MapViewModel = viewModel(),
     searchViewModel: PlaceSearchViewModel = viewModel(),
     weatherViewModel: WeatherViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
+    val viewModel: MapViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return MapViewModel(OnboardingPreferences(context)) as T
+            }
+        }
+    )
 
     var userLocation by remember {
         mutableStateOf<Location?>(null)
     }
-    val context = LocalContext.current
 
     var hasLocationPermission by remember {
         mutableStateOf(
@@ -105,8 +116,7 @@ fun FullMapScreen(
     }
 
     val locations by viewModel.locations.collectAsState()
-    val places by viewModel.places.collectAsState()
-
+    val places by viewModel.visiblePlaces.collectAsState()
     val selectedFilters by viewModel.selectedFilters.collectAsState()
     val enabledLayers by viewModel.enabledLayers.collectAsState()
     val filteredMarkers by viewModel.filteredMarkers.collectAsState()

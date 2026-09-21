@@ -2,6 +2,7 @@ package com.emirgasic.forecastfm.data.model
 
 data class PlaceRecommendation(
     val id: String,
+    val placeId: String,
     val name: String,
     val category: String,
     val location: String,

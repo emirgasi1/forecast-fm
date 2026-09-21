@@ -1,8 +1,10 @@
 package com.emirgasic.forecastfm.feature.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.data.model.Home
 import com.emirgasic.forecastfm.data.repository.HomeRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
@@ -16,7 +18,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val onboardingPrefs: OnboardingPreferences
 ) : ViewModel() {
 
     private val homeRepository = HomeRepository()
@@ -41,8 +44,6 @@ class HomeViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                android.util.Log.d("HomeViewModel", "Loading home for user: $userId")
-
                 val locations = locationRepository.getLocations()
                 val location = locations.firstOrNull()
                     ?: throw Exception("No locations available")
@@ -55,16 +56,39 @@ class HomeViewModel(
 
                 val allPlaylists = playlistRepository.getPlaylists()
 
-                // Get trending playlists (first 3 sorted by likes or just first 3)
-                val trendingPlaylists = allPlaylists
-                    .sortedByDescending { it.likes }
+                val userGenres = onboardingPrefs.musicGenres.first()
+                val userMoods = onboardingPrefs.moods.first()
+                val userWeather = onboardingPrefs.weatherPrefs.first()
+
+                val scoredPlaylists = allPlaylists
+                    .map { playlist ->
+                        val score = scorePlaylist(
+                            playlist = playlist,
+                            userGenres = userGenres,
+                            userMoods = userMoods,
+                            userWeather = userWeather,
+                            currentWeather = weatherData.weather.condition
+                        )
+                        playlist to score
+                    }
+                    .sortedWith(
+                        compareByDescending<Pair<com.emirgasic.forecastfm.data.model.Playlist, Int>> { it.second }
+                            .thenByDescending { it.first.likes }
+                    )
                     .take(3)
+                    .map { it.first }
+
+                val finalPlaylists = if (scoredPlaylists.isEmpty()) {
+                    allPlaylists.sortedByDescending { it.likes }.take(3)
+                } else {
+                    scoredPlaylists
+                }
 
                 val home = Home(
                     greeting = homeRepository.getGreeting(),
                     weather = weatherData.weather,
                     forecast = weatherData.daily,
-                    playlists = trendingPlaylists  // ← Only first 3 trending
+                    playlists = finalPlaylists
                 )
 
                 _uiState.value = HomeUiState.Success(home)
@@ -75,6 +99,86 @@ class HomeViewModel(
                     "Unable to load home data: ${e.message}"
                 )
             }
+        }
+    }
+
+    private fun scorePlaylist(
+        playlist: com.emirgasic.forecastfm.data.model.Playlist,
+        userGenres: Set<String>,
+        userMoods: Set<String>,
+        userWeather: Set<String>,
+        currentWeather: String
+    ): Int {
+        var score = 0
+
+        if (userGenres.isNotEmpty() && userGenres.any { genreMatches(it, playlist.genre) }) {
+            score += 10
+        }
+
+        if (userMoods.isNotEmpty() && userMoods.any { moodMatches(it, playlist.mood) }) {
+            score += 6
+        }
+
+        if (userWeather.isNotEmpty() && userWeather.any { weatherMatches(it, currentWeather) }) {
+            score += 8
+        } else if (playlist.weather.equals(currentWeather, ignoreCase = true)) {
+            score += 4
+        }
+
+        score += (playlist.likes / 20)
+
+        return score
+    }
+
+    private fun genreMatches(userPick: String, dbGenre: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val genre = dbGenre.lowercase().trim()
+
+        if (genre.contains(pick) || pick.contains(genre)) return true
+
+        return when (pick) {
+            "indie / alternative" -> genre.contains("indie")
+            "r&b / soul" -> genre.contains("r&b") || genre.contains("soul")
+            "sevdah / traditional" -> genre.contains("sevdah") || genre.contains("traditional")
+            "hip-hop" -> genre.contains("hip-hop") || genre.contains("hip hop")
+            "electronic" -> genre.contains("electronic") || genre.contains("edm")
+            "jazz / blues" -> genre.contains("jazz") || genre.contains("blues")
+            else -> false
+        }
+    }
+
+    private fun moodMatches(userPick: String, dbMood: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val mood = dbMood.lowercase().trim()
+
+        if (mood.contains(pick) || pick.contains(mood)) return true
+
+        return when (pick) {
+            "chill & cozy" -> mood.contains("chill") || mood.contains("cozy")
+            "energetic & social" -> mood.contains("energetic") || mood.contains("party") || mood.contains("social")
+            "romantic" -> mood.contains("romantic") || mood.contains("date")
+            "focused & productive" -> mood.contains("focus") || mood.contains("work")
+            "adventurous" -> mood.contains("adventure") || mood.contains("outdoor")
+            "feels good / sunny" -> mood.contains("feel good") || mood.contains("sunny")
+            else -> false
+        }
+    }
+
+    private fun weatherMatches(userPick: String, currentWeather: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val weather = currentWeather.lowercase().trim()
+
+        if (weather.contains(pick) || pick.contains(weather)) return true
+
+        return when (pick) {
+            "sunny & clear" -> weather.contains("sunny") || weather.contains("clear")
+            "partly cloudy" -> weather.contains("cloud") || weather.contains("partly")
+            "rainy" -> weather.contains("rain") || weather.contains("drizzle")
+            "snowy" -> weather.contains("snow")
+            "cool & crisp" -> weather.contains("cold") || weather.contains("cool")
+            "hot days" -> weather.contains("hot")
+            "mild weather" -> weather.contains("mild") || weather.contains("clear")
+            else -> false
         }
     }
 }

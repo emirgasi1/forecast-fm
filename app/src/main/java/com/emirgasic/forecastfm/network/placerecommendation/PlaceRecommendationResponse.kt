@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlaceRecommendationResponse(
     val id: String,
+    val placeId: String,
     val name: String,
     val category: String,
     val location: String,

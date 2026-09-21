@@ -37,6 +37,8 @@ import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.common.SearchField
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
@@ -51,16 +53,20 @@ fun MusicScreen(
     mainNavController: NavController,
     rootNavController: NavController,
     tokenManager: TokenManager,
-    modifier: Modifier = Modifier,
-    viewModel: MusicViewModel = viewModel(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val viewModel: MusicViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return MusicViewModel(tokenManager) as T
+                return MusicViewModel(
+                    tokenManager,
+                    OnboardingPreferences(context)
+                ) as T
             }
         }
     )
-) {
     val tracks by viewModel.tracks.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -73,7 +79,6 @@ fun MusicScreen(
     val recommendedPlaylist by viewModel.recommendedPlaylist.collectAsState()
     val selectedGenre by viewModel.selectedGenre.collectAsState()
 
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val musicHistory by viewModel.musicHistory.collectAsState()
     val lastPlayed = musicHistory.firstOrNull()?.title ?: "No history"
@@ -120,7 +125,7 @@ fun MusicScreen(
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        LoadingScreen()
                     }
                 } else if (error != null) {
                     Text(

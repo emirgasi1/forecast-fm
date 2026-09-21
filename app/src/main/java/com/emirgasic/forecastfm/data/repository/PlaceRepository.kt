@@ -89,4 +89,12 @@ class PlaceRepository(
             )
         }
     }
+
+    suspend fun getPlacesCountByVenue(venueId: String): Int {
+        return try {
+            placeApi.getPlacesCountByVenue(venueId)
+        } catch (e: Exception) {
+            0
+        }
+    }
 }

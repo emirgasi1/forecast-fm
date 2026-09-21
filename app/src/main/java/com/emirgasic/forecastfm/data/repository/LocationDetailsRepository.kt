@@ -10,4 +10,12 @@ class LocationRepository(
     suspend fun getLocations(): List<LocationResponse> {
         return api.getLocations()
     }
+
+    suspend fun getLocationById(id: String): LocationResponse? {
+        return try {
+            api.getLocations().firstOrNull { it.id == id }
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

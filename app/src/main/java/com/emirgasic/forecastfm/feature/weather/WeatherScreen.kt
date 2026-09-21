@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import com.emirgasic.forecastfm.network.location.LocationResponse
@@ -99,7 +100,7 @@ fun WeatherScreen(
                     contentAlignment = Alignment.Center
                 ) {
 
-                    CircularProgressIndicator()
+                    LoadingScreen()
                 }
             }
 

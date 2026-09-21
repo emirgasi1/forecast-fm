@@ -35,7 +35,30 @@ class PlaceRecommendationRepository(
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                address = response.address
+                address = response.address,
+                placeId = response.placeId,
+            )
+        }
+    }
+
+    suspend fun getRecommendationsByVenue(venueId: String): List<PlaceRecommendation> {
+        val places = api.getRecommendationsByVenue(venueId)
+        return places.map { place ->
+            PlaceRecommendation(
+                id = place.id,
+                placeId = place.id,
+                name = place.name,
+                category = place.category,
+                location = place.venueId ?: "",
+                description = place.description,
+                suitableFor = emptyList(),
+                weatherCondition = "Any",
+                ageGroup = listOf("All Ages"),
+                rating = place.rating,
+                imageUrl = if (place.imageUrl != null) {
+                    "${ApiClient.baseUrl()}${place.imageUrl}"
+                } else null,
+                address = place.address
             )
         }
     }
@@ -53,6 +76,7 @@ class PlaceRecommendationRepository(
                 weatherCondition = response.weatherCondition,
                 ageGroup = response.ageGroup,
                 rating = response.rating,
+                placeId = response.placeId,
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null

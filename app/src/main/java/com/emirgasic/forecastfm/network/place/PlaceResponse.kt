@@ -7,7 +7,7 @@ data class PlaceResponse(
     val id: String,
     val name: String,
     val category: String,
-    val venueId: String,
+    val venueId: String?,
     val address: String,
     val latitude: Double,
     val longitude: Double,
@@ -16,3 +16,7 @@ data class PlaceResponse(
     val rating: Double = 0.0,
     val createdAt: String
 )
+
+
+@Serializable
+data class PlaceCountResponse(val count: Int)

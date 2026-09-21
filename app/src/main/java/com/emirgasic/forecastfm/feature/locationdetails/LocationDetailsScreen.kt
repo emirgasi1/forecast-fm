@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +36,7 @@ fun LocationDetailsScreen(
 
     val locationDetails by viewModel.locationDetails.collectAsState()
     val outfits by viewModel.outfits.collectAsState()
+    val placesCount by viewModel.placesCount.collectAsState()
 
     LaunchedEffect(locationId) {
         locationId?.let {
@@ -57,7 +59,8 @@ fun LocationDetailsScreen(
     ) {
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.navigationBarsPadding()
         ) {
 
             item {
@@ -93,7 +96,6 @@ fun LocationDetailsScreen(
                 }
             }
 
-            // Outfits Section
             item {
                 Text(
                     text = "Outfits for this weather",
@@ -111,7 +113,6 @@ fun LocationDetailsScreen(
                 )
             }
 
-            // Place Discovery Button
             item {
                 PlaceDiscoveryCard(
                     location = details.location.name,
@@ -120,8 +121,9 @@ fun LocationDetailsScreen(
                     temperature = details.weather.temperature,
                     playlist = details.playlist?.title ?: "No playlist",
                     outfit = outfits.firstOrNull()?.title ?: "No outfit",
+                    placesCount = placesCount,
                     onChooseClick = {
-                        navController.navigate(Routes.PlaceRecommendation)
+                        navController.navigate(Routes.placeRecommendationRoute(details.location.id))
                     }
                 )
             }

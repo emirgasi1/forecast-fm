@@ -1,13 +1,10 @@
 package com.emirgasic.forecastfm.network.placerecommendation
 
 import com.emirgasic.forecastfm.network.ApiClient
+import com.emirgasic.forecastfm.network.place.PlaceResponse
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 
 class PlaceRecommendationApi {
 
@@ -27,5 +24,11 @@ class PlaceRecommendationApi {
 
     suspend fun getRecommendationById(id: String): PlaceRecommendationResponse {
         return ApiClient.client.get("${ApiClient.baseUrl()}/api/place-recommendations/$id").body()
+    }
+
+    suspend fun getRecommendationsByVenue(venueId: String): List<PlaceResponse> {
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/places/venue/$venueId/recommendations")
+            .body()
     }
 }

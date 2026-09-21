@@ -34,11 +34,15 @@ class RouteViewModel(
     private val _mode = MutableStateFlow(TravelMode.WALKING)
     val mode: StateFlow<TravelMode> = _mode.asStateFlow()
 
+    private val _actualOrigin = MutableStateFlow<Pair<Double, Double>?>(null)
+    val actualOrigin: StateFlow<Pair<Double, Double>?> = _actualOrigin.asStateFlow()
+
     private var currentDestination: Pair<Double, Double>? = null
     private var lastKnownOrigin: Pair<Double, Double>? = null
 
     fun setOrigin(lat: Double, lng: Double) {
         lastKnownOrigin = lat to lng
+        _actualOrigin.value = lat to lng
     }
 
     fun setMode(newMode: TravelMode, context: Context) {
@@ -65,6 +69,8 @@ class RouteViewModel(
                 lastKnownOrigin = pair
                 pair
             }
+
+            _actualOrigin.value = origin
 
             val request = RouteRequest(
                 fromLat = origin.first,

@@ -49,14 +49,6 @@ import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.map.ExpandMapButton
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 import com.emirgasic.forecastfm.core.ui.components.map.LocationRecommendationCard
-import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheet
-import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheetTabs
-import com.emirgasic.forecastfm.core.ui.components.map.MapTab
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.FiltersTabContent
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.LayersTabContent
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.LegendTabContent
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.PlaceDetailSlider
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.SearchTabContent
 import com.emirgasic.forecastfm.core.ui.components.place.PlaceCard
 import com.emirgasic.forecastfm.data.model.Place
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
@@ -77,14 +69,22 @@ fun MapScreen(
     mainNavController: NavController,
     rootNavController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: MapViewModel = viewModel(),
     searchViewModel: PlaceSearchViewModel = viewModel(),
     weatherViewModel: WeatherViewModel = viewModel()
 ) {
-    var userLocation by remember {
-        mutableStateOf<Location?>(null)
-    }
     val context = LocalContext.current
+    val viewModel: MapViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return MapViewModel(
+                    com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences(context)
+                ) as T
+            }
+        }
+    )
+
+    var userLocation by remember { mutableStateOf<Location?>(null) }
     val weather by weatherViewModel.weather.collectAsState()
     val selectedTheme by ThemeManager.selectedTheme.collectAsState()
 
@@ -119,14 +119,12 @@ fun MapScreen(
                     ) == PackageManager.PERMISSION_GRANTED
         )
     }
-    val locationManager = remember {
-        LocationManager(context)
-    }
+    val locationManager = remember { LocationManager(context) }
 
     val outfits by viewModel.outfits.collectAsState()
     val locations by viewModel.locations.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
-    val places by viewModel.places.collectAsState()
+    val places by viewModel.visiblePlaces.collectAsState()
     val selectedPlace by viewModel.selectedPlace.collectAsState()
     val markers by viewModel.markers.collectAsState()
     val playlistMap by viewModel.playlistMap.collectAsState()
@@ -137,7 +135,6 @@ fun MapScreen(
     val searchError by searchViewModel.error.collectAsState()
 
     var selectedSearchResult by remember { mutableStateOf<Place?>(null) }
-    var selectedTab by remember { mutableStateOf(MapTab.Search) }
 
     var expanded by remember { mutableStateOf(false) }
     var placesExpanded by remember { mutableStateOf(false) }
@@ -188,14 +185,16 @@ fun MapScreen(
         if (hasLocationPermission) {
             val location = locationManager.getCurrentLocation()
             location?.let {
-                userLocation = it
-                cameraState.position = CameraPosition(
-                    target = Position(
-                        latitude = it.latitude,
-                        longitude = it.longitude
-                    ),
-                    zoom = 14.0
-                )
+                if (it.latitude != 0.0 && it.longitude != 0.0) {
+                    userLocation = it
+                    cameraState.position = CameraPosition(
+                        target = Position(
+                            latitude = it.latitude,
+                            longitude = it.longitude
+                        ),
+                        zoom = 14.0
+                    )
+                }
             }
         }
     }
@@ -223,13 +222,30 @@ fun MapScreen(
         }
     }
 
+    LaunchedEffect(selectedPlace) {
+        selectedPlace?.let { place ->
+            cameraState.animateTo(
+                CameraPosition(
+                    target = Position(
+                        longitude = place.longitude,
+                        latitude = place.latitude
+                    ),
+                    zoom = 15.0
+                )
+            )
+        }
+    }
+
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
             .padding(top = 20.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -264,7 +280,7 @@ fun MapScreen(
                 }
             }
 
-            Spacer(modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(
                 modifier = Modifier
@@ -279,38 +295,40 @@ fun MapScreen(
                     baseStyle = BaseStyle.Json(styleJson)
                 ) {
                     userLocation?.let { location ->
-                        val locationJson = """
-                            {
-                                "type": "FeatureCollection",
-                                "features": [
-                                    {
-                                        "type": "Feature",
-                                        "geometry": {
-                                            "type": "Point",
-                                            "coordinates": [
-                                                ${location.longitude},
-                                                ${location.latitude}
-                                            ]
-                                        },
-                                        "properties": {}
-                                    }
-                                ]
-                            }
-                        """.trimIndent()
+                        key(location.latitude, location.longitude) {
+                            val locationJson = """
+                                {
+                                    "type": "FeatureCollection",
+                                    "features": [
+                                        {
+                                            "type": "Feature",
+                                            "geometry": {
+                                                "type": "Point",
+                                                "coordinates": [
+                                                    ${location.longitude},
+                                                    ${location.latitude}
+                                                ]
+                                            },
+                                            "properties": {}
+                                        }
+                                    ]
+                                }
+                            """.trimIndent()
 
-                        val userLocationSource = rememberGeoJsonSource(
-                            data = GeoJsonData.JsonString(locationJson)
-                        )
+                            val userLocationSource = rememberGeoJsonSource(
+                                data = GeoJsonData.JsonString(locationJson)
+                            )
 
-                        CircleLayer(
-                            id = "user-location-marker",
-                            source = userLocationSource,
-                            radius = const(8.dp),
-                            color = const(Color.Blue),
-                            strokeWidth = const(3.dp),
-                            strokeColor = const(Color.White),
-                            strokeOpacity = const(1f)
-                        )
+                            CircleLayer(
+                                id = "user-location-marker",
+                                source = userLocationSource,
+                                radius = const(8.dp),
+                                color = const(Color.Blue),
+                                strokeWidth = const(3.dp),
+                                strokeColor = const(Color.White),
+                                strokeOpacity = const(1f)
+                            )
+                        }
                     }
 
                     markers.forEach { marker ->
@@ -377,6 +395,7 @@ fun MapScreen(
                         }
                     }
                 }
+
                 ExpandMapButton(
                     icon = Icons.Default.Fullscreen,
                     contentDescription = "Expand map",
@@ -389,7 +408,7 @@ fun MapScreen(
                 )
             }
 
-            Spacer(modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             LocationDropdown(
                 selectedLocation = selectedLocation?.name ?: "",
@@ -405,7 +424,7 @@ fun MapScreen(
             )
 
             if (places.isNotEmpty()) {
-                Spacer(modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 LocationDropdown(
                     selectedLocation = selectedPlace?.name ?: "",
                     locations = placeNames,
@@ -420,7 +439,7 @@ fun MapScreen(
                 )
             }
 
-            Spacer(modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             selectedLocation?.let { location ->
                 weather?.let { weatherData ->
@@ -445,14 +464,13 @@ fun MapScreen(
             }
 
             selectedPlace?.let { place ->
-                Spacer(modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 PlaceCard(
                     name = place.name,
                     category = place.category,
                     rating = place.rating,
                     onViewPlaceClick = {
-                        val recommendationId = place.id.replace("place-", "rec-")
-                        rootNavController.navigate(Routes.placeRecommendationDetailRoute(recommendationId))
+                        rootNavController.navigate(Routes.placeInfoRoute(place.id))
                     }
                 )
             }

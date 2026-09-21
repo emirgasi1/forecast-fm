@@ -36,7 +36,7 @@ fun RouteMap(
                 latitude = (originLat + destinationLat) / 2,
                 longitude = (originLng + destinationLng) / 2
             ),
-            zoom = 14.0
+            zoom = 12.5
         )
     )
 
@@ -50,13 +50,17 @@ fun RouteMap(
             val minLng = lngs.minOrNull() ?: 18.41
             val maxLng = lngs.maxOrNull() ?: 18.43
 
+            val centerLat = (minLat + maxLat) / 2
+            val centerLng = (minLng + maxLng) / 2
+            val latSpan = maxLat - minLat
+
             cameraState.animateTo(
                 CameraPosition(
                     target = Position(
-                        latitude = (minLat + maxLat) / 2,
-                        longitude = (minLng + maxLng) / 2
+                        latitude = centerLat + latSpan * 0.25,
+                        longitude = centerLng
                     ),
-                    zoom = RouteZoomCalculator.calculateZoom(minLat, maxLat, minLng, maxLng)
+                    zoom = RouteZoomCalculator.calculateZoom(minLat, maxLat, minLng, maxLng) - 0.8
                 )
             )
         }

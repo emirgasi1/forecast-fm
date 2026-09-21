@@ -2,6 +2,7 @@ package com.emirgasic.forecastfm.data.model
 
 data class Outfit(
     val id: String,
+    val userId: String = "",
     val imageUrl: String,
     val title: String,
     val weatherCondition: String,
@@ -9,9 +10,11 @@ data class Outfit(
     val likes: Int = 0,
     val storeName: String? = null,
     val storeAddress: String? = null,
-    val price: String? = null
+    val price: String? = null,
+    val storePhone: String? = null,
+    val productUrl: String? = null,
+    val createdAt: String = ""
 )
-
 data class Style(
     val outfits: List<Outfit>
 )

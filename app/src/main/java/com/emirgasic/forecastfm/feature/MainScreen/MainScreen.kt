@@ -20,6 +20,7 @@ import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
+import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
 
 @Composable
 fun MainScreen(
@@ -68,6 +69,12 @@ fun MainScreen(
 
             composable(Routes.Style) {
                 StyleScreen(
+                    navController = mainNavController,
+                    tokenManager = tokenManager
+                )
+            }
+            composable(Routes.AddOutfit) {
+                AddOutfitScreen(
                     navController = mainNavController,
                     tokenManager = tokenManager
                 )

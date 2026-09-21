@@ -38,6 +38,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.feed.SaveOptionsBottomSheet
 import androidx.compose.runtime.setValue
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 
 @Composable
 fun FeedScreen(
@@ -68,7 +69,7 @@ fun FeedScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(
-                top = 60.dp,
+                top = 20.dp,
                 start = 10.dp,
                 end = 10.dp,
                 bottom = 10.dp
@@ -96,11 +97,7 @@ fun FeedScreen(
                 FeedUiState.Loading -> {
 
                     item {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth()
-                        )
+                        LoadingScreen()
                     }
                 }
 

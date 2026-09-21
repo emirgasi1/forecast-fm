@@ -3,6 +3,7 @@ package com.emirgasic.forecastfm.feature.music
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.data.model.MusicHistory
 import com.emirgasic.forecastfm.data.model.Playlist
 import com.emirgasic.forecastfm.data.model.Weather
@@ -29,7 +30,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
-class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
+class MusicViewModel(
+    private val tokenManager: TokenManager,
+    private val onboardingPrefs: OnboardingPreferences
+) : ViewModel() {
 
     private val playlistRepository = PlaylistRepository(
         playlistApi = PlaylistApi()
@@ -69,10 +73,15 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
+    private val userGenres = MutableStateFlow<Set<String>>(emptySet())
+    private val userMoods = MutableStateFlow<Set<String>>(emptySet())
+    private val userWeather = MutableStateFlow<Set<String>>(emptySet())
+
     private val searchQuery = MutableStateFlow("")
     private val debounceTime = 500L
 
     init {
+        loadUserPreferences()
         loadPlaylists()
         loadFavoritePlaylists()
         loadMusicHistory()
@@ -87,6 +96,14 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
                         _error.value = null
                     }
                 }
+        }
+    }
+
+    private fun loadUserPreferences() {
+        viewModelScope.launch {
+            userGenres.value = onboardingPrefs.musicGenres.first()
+            userMoods.value = onboardingPrefs.moods.first()
+            userWeather.value = onboardingPrefs.weatherPrefs.first()
         }
     }
 
@@ -152,8 +169,11 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
 
     val weatherPlaylists = combine(
         filteredPlaylists,
-        _weather
-    ) { playlists, weather ->
+        _weather,
+        userGenres,
+        userMoods,
+        userWeather
+    ) { playlists, weather, genres, moods, weatherPrefs ->
         if (weather == null) {
             emptyList()
         } else {
@@ -172,6 +192,11 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
                         else -> false
                     }
                 }
+                .sortedWith(
+                    compareByDescending<Playlist> {
+                        scorePlaylist(it, genres, moods, weatherPrefs, weather.condition)
+                    }.thenByDescending { it.likes }
+                )
                 .take(2)
         }
     }.stateIn(
@@ -182,12 +207,29 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
 
     val trendingPlaylists = combine(
         filteredPlaylists,
-        weatherPlaylists
-    ) { playlists, weatherPlaylists ->
+        weatherPlaylists,
+        userGenres,
+        userMoods,
+        userWeather,
+        _weather
+    ) { values ->
+        val playlists = values[0] as List<Playlist>
+        val weatherPlaylists = values[1] as List<Playlist>
+        val genres = values[2] as Set<String>
+        val moods = values[3] as Set<String>
+        val weatherPrefs = values[4] as Set<String>
+        val weather = values[5] as Weather?
+
         val weatherIds = weatherPlaylists.map { it.id }.toSet()
+        val currentCondition = weather?.condition ?: ""
+
         playlists
             .filter { it.id !in weatherIds }
-            .sortedByDescending { it.likes }
+            .sortedWith(
+                compareByDescending<Playlist> {
+                    scorePlaylist(it, genres, moods, weatherPrefs, currentCondition)
+                }.thenByDescending { it.likes }
+            )
             .take(4)
     }.stateIn(
         viewModelScope,
@@ -197,23 +239,104 @@ class MusicViewModel(private val tokenManager: TokenManager) : ViewModel() {
 
     val recommendedPlaylist = combine(
         filteredPlaylists,
-        _weather
-    ) { playlists, weather ->
+        _weather,
+        userGenres,
+        userMoods,
+        userWeather
+    ) { playlists, weather, genres, moods, weatherPrefs ->
         if (playlists.isEmpty()) {
             null
-        } else if (weather != null) {
-            playlists
-                .filter { it.weather.equals(weather.condition, ignoreCase = true) }
-                .maxByOrNull { it.likes }
-                ?: playlists.maxByOrNull { it.likes }
         } else {
-            playlists.maxByOrNull { it.likes }
+            val currentCondition = weather?.condition ?: ""
+            playlists.maxByOrNull {
+                scorePlaylist(it, genres, moods, weatherPrefs, currentCondition)
+            }
         }
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         null
     )
+
+    private fun scorePlaylist(
+        playlist: Playlist,
+        userGenres: Set<String>,
+        userMoods: Set<String>,
+        userWeather: Set<String>,
+        currentWeather: String
+    ): Int {
+        var score = 0
+
+        if (userGenres.isNotEmpty() && userGenres.any { genreMatches(it, playlist.genre) }) {
+            score += 10
+        }
+
+        if (userMoods.isNotEmpty() && userMoods.any { moodMatches(it, playlist.mood) }) {
+            score += 6
+        }
+
+        if (userWeather.isNotEmpty() && userWeather.any { weatherMatches(it, currentWeather) }) {
+            score += 8
+        } else if (playlist.weather.equals(currentWeather, ignoreCase = true)) {
+            score += 4
+        }
+
+        score += (playlist.likes / 20)
+
+        return score
+    }
+
+    private fun genreMatches(userPick: String, dbGenre: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val genre = dbGenre.lowercase().trim()
+
+        if (genre.contains(pick) || pick.contains(genre)) return true
+
+        return when (pick) {
+            "indie / alternative" -> genre.contains("indie")
+            "r&b / soul" -> genre.contains("r&b") || genre.contains("soul")
+            "sevdah / traditional" -> genre.contains("sevdah") || genre.contains("traditional")
+            "hip-hop" -> genre.contains("hip-hop") || genre.contains("hip hop")
+            "electronic" -> genre.contains("electronic") || genre.contains("edm")
+            "jazz / blues" -> genre.contains("jazz") || genre.contains("blues")
+            else -> false
+        }
+    }
+
+    private fun moodMatches(userPick: String, dbMood: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val mood = dbMood.lowercase().trim()
+
+        if (mood.contains(pick) || pick.contains(mood)) return true
+
+        return when (pick) {
+            "chill & cozy" -> mood.contains("chill") || mood.contains("cozy")
+            "energetic & social" -> mood.contains("energetic") || mood.contains("party") || mood.contains("social")
+            "romantic" -> mood.contains("romantic") || mood.contains("date")
+            "focused & productive" -> mood.contains("focus") || mood.contains("work")
+            "adventurous" -> mood.contains("adventure") || mood.contains("outdoor")
+            "feels good / sunny" -> mood.contains("feel good") || mood.contains("sunny")
+            else -> false
+        }
+    }
+
+    private fun weatherMatches(userPick: String, currentWeather: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val weather = currentWeather.lowercase().trim()
+
+        if (weather.contains(pick) || pick.contains(weather)) return true
+
+        return when (pick) {
+            "sunny & clear" -> weather.contains("sunny") || weather.contains("clear")
+            "partly cloudy" -> weather.contains("cloud") || weather.contains("partly")
+            "rainy" -> weather.contains("rain") || weather.contains("drizzle")
+            "snowy" -> weather.contains("snow")
+            "cool & crisp" -> weather.contains("cold") || weather.contains("cool")
+            "hot days" -> weather.contains("hot")
+            "mild weather" -> weather.contains("mild") || weather.contains("clear")
+            else -> false
+        }
+    }
 
     fun searchYouTube(query: String) {
         viewModelScope.launch {

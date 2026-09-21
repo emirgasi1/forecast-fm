@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -27,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -58,6 +63,7 @@ fun RouteScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
     val mode by viewModel.mode.collectAsState()
+    val actualOrigin by viewModel.actualOrigin.collectAsState()
 
     val styleJson = remember {
         context.resources.openRawResource(R.raw.map_style_morning)
@@ -66,7 +72,9 @@ fun RouteScreen(
     }
 
     LaunchedEffect(destinationLat, destinationLng) {
-        viewModel.setOrigin(originLat, originLng)
+        if (originLat != 0.0 && originLng != 0.0) {
+            viewModel.setOrigin(originLat, originLng)
+        }
         viewModel.fetchRoute(context, destinationLat, destinationLng)
     }
 
@@ -85,12 +93,31 @@ fun RouteScreen(
     ) {
         RouteMap(
             routePoints = routePoints,
-            originLat = originLat,
-            originLng = originLng,
+            originLat = actualOrigin?.first ?: originLat,
+            originLng = actualOrigin?.second ?: originLng,
             destinationLat = destinationLat,
             destinationLng = destinationLng,
             styleJson = styleJson,
             routeColor = routeColor
+        )
+
+        Text(
+            text = "← Back",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                .clickable {
+                    navController.popBackStack()
+                }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
         Column(
@@ -99,7 +126,13 @@ fun RouteScreen(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(20.dp)
+                .navigationBarsPadding()
+                .padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 20.dp,
+                    bottom = 0.dp
+                )
         ) {
             when (val s = state) {
                 RouteState.Idle, RouteState.Loading -> {

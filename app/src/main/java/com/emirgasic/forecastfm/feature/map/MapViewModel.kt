@@ -2,35 +2,35 @@ package com.emirgasic.forecastfm.feature.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.data.model.BusStation
 import com.emirgasic.forecastfm.data.model.MapMarker
-import com.emirgasic.forecastfm.data.model.MapRecommendation
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.model.Place
 import com.emirgasic.forecastfm.data.repository.BusStationRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
-import com.emirgasic.forecastfm.data.repository.MapRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.network.location.LocationResponse
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MapViewModel : ViewModel() {
+class MapViewModel(
+    private val onboardingPrefs: OnboardingPreferences
+) : ViewModel() {
 
     private val repository = LocationRepository()
     private val outfitRepository = OutfitRepository()
     private val placeRepository = PlaceRepository()
     private val playlistRepository = PlaylistRepository(playlistApi = PlaylistApi())
-
     private val busStationRepository = BusStationRepository()
 
     private val _locations = MutableStateFlow<List<LocationResponse>>(emptyList())
@@ -39,8 +39,22 @@ class MapViewModel : ViewModel() {
     private val _selectedLocation = MutableStateFlow<LocationResponse?>(null)
     val selectedLocation: StateFlow<LocationResponse?> = _selectedLocation.asStateFlow()
 
-    private val _places = MutableStateFlow<List<Place>>(emptyList())
-    val places: StateFlow<List<Place>> = _places.asStateFlow()
+    private val _allPlaces = MutableStateFlow<List<Place>>(emptyList())
+
+    val visiblePlaces: StateFlow<List<Place>> = combine(
+        _allPlaces,
+        _selectedLocation
+    ) { places, location ->
+        if (location == null) {
+            places
+        } else {
+            places.filter { it.venueId == location.id }
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        emptyList()
+    )
 
     private val _selectedPlace = MutableStateFlow<Place?>(null)
     val selectedPlace: StateFlow<Place?> = _selectedPlace.asStateFlow()
@@ -54,6 +68,9 @@ class MapViewModel : ViewModel() {
     private val _markers = MutableStateFlow<List<MapMarker>>(emptyList())
     val markers: StateFlow<List<MapMarker>> = _markers.asStateFlow()
 
+    private val _busStations = MutableStateFlow<List<BusStation>>(emptyList())
+    val busStations: StateFlow<List<BusStation>> = _busStations.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -62,9 +79,6 @@ class MapViewModel : ViewModel() {
 
     private val _enabledLayers = MutableStateFlow(setOf("Venues", "Places", "Bus Stops"))
     val enabledLayers: StateFlow<Set<String>> = _enabledLayers.asStateFlow()
-
-    private val _busStations = MutableStateFlow<List<BusStation>>(emptyList())
-    val busStations: StateFlow<List<BusStation>> = _busStations.asStateFlow()
 
     init {
         loadLocations()
@@ -89,8 +103,19 @@ class MapViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val allPlaces = placeRepository.getAllPlaces()
-                _places.value = allPlaces
-                _selectedPlace.value = allPlaces.firstOrNull()
+                val prefs = onboardingPrefs.placeCategories.first()
+
+                val sorted = if (prefs.isEmpty()) {
+                    allPlaces.sortedByDescending { it.rating }
+                } else {
+                    allPlaces.sortedWith(
+                        compareByDescending<Place> { scorePlace(it, prefs) }
+                            .thenByDescending { it.rating }
+                    )
+                }
+
+                _allPlaces.value = sorted
+                _selectedPlace.value = sorted.firstOrNull()
                 updateMarkers()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -102,7 +127,7 @@ class MapViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val places = placeRepository.getPlacesByVenue(venueId)
-                _places.value = places
+                _allPlaces.value = places
                 _selectedPlace.value = places.firstOrNull()
                 updateMarkers()
             } catch (e: Exception) {
@@ -113,6 +138,9 @@ class MapViewModel : ViewModel() {
 
     fun selectLocation(location: LocationResponse) {
         _selectedLocation.value = location
+        viewModelScope.launch {
+            _selectedPlace.value = visiblePlaces.value.firstOrNull()
+        }
         updateMarkers()
     }
 
@@ -151,7 +179,7 @@ class MapViewModel : ViewModel() {
 
     private fun updateMarkers() {
         val currentLocations = _locations.value
-        val currentPlaces = _places.value
+        val currentPlaces = _allPlaces.value
         val currentBusStations = _busStations.value
         val currentSelectedLocation = _selectedLocation.value
         val currentSelectedPlace = _selectedPlace.value
@@ -256,6 +284,28 @@ class MapViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private fun scorePlace(place: Place, prefs: Set<String>): Int {
+        return if (prefs.any { categoryMatches(it, place.category) }) 10 else 0
+    }
+
+    private fun categoryMatches(userPick: String, dbCategory: String): Boolean {
+        val pick = userPick.lowercase().trim()
+        val cat = dbCategory.lowercase().trim()
+
+        if (cat.contains(pick.removeSuffix("s")) || pick.contains(cat)) return true
+
+        return when (pick) {
+            "cafes" -> cat == "cafe"
+            "restaurants" -> cat == "restaurant"
+            "parks & nature" -> cat == "park" || cat == "outdoor"
+            "viewpoints" -> cat == "viewpoint"
+            "historic & culture" -> cat == "attraction" || cat == "culture"
+            "shopping" -> cat == "shopping"
+            "nightlife" -> cat == "nightlife" || cat == "nightclub"
+            else -> false
         }
     }
 }

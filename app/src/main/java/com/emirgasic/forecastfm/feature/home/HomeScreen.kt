@@ -38,7 +38,9 @@ import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.ui.components.common.ForecastItem
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
@@ -48,17 +50,22 @@ import kotlin.toString
 fun HomeScreen(
     mainNavController: NavController,
     rootNavController: NavController,
-    tokenManager: TokenManager,  // ← Add this
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(
+    tokenManager: TokenManager,
+    modifier: Modifier = Modifier
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val viewModel: HomeViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return HomeViewModel(tokenManager) as T
+                return HomeViewModel(
+                    tokenManager,
+                    OnboardingPreferences(context)
+                ) as T
             }
         }
     )
-) {
+
     val uiState by viewModel.uiState.collectAsState()
 
     when (val state = uiState) {
@@ -70,7 +77,7 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center
             ) {
 
-                CircularProgressIndicator()
+                LoadingScreen()
             }
         }
 

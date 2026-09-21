@@ -10,54 +10,43 @@ class OutfitRepository(
 
     suspend fun getTrendingOutfits(): List<Outfit> {
         val responses = outfitApi.getTrendingOutfits()
-        return responses.map { response ->
-            Outfit(
-                id = response.id,
-                imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
-                title = response.title,
-                weatherCondition = response.weatherCondition,
-                season = response.season,
-                likes = response.likes,
-                storeName = response.storeName,
-                storeAddress = response.storeAddress,
-                price = response.price
-            )
-        }
+        return responses.map { response -> response.toOutfit() }
     }
 
     suspend fun getOutfitsByWeather(weather: String): List<Outfit> {
         val responses = outfitApi.getOutfitsByWeather(weather)
-        return responses.map { response ->
-            Outfit(
-                id = response.id,
-                imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
-                title = response.title,
-                weatherCondition = response.weatherCondition,
-                season = response.season,
-                likes = response.likes,
-                storeName = response.storeName,
-                storeAddress = response.storeAddress,
-                price = response.price
-            )
-        }
+        return responses.map { response -> response.toOutfit() }
     }
 
     suspend fun getOutfitById(id: String): Outfit {
-        val response = outfitApi.getOutfitById(id)
-        return Outfit(
-            id = response.id,
-            imageUrl = "${ApiClient.baseUrl()}${response.imageUrl}",
-            title = response.title,
-            weatherCondition = response.weatherCondition,
-            season = response.season,
-            likes = response.likes,
-            storeName = response.storeName,
-            storeAddress = response.storeAddress,
-            price = response.price
-        )
+        return outfitApi.getOutfitById(id).toOutfit()
     }
 
     suspend fun likeOutfit(outfitId: String) {
         outfitApi.likeOutfit(outfitId)
+    }
+
+    private fun com.emirgasic.forecastfm.network.outfit.OutfitResponse.toOutfit(): Outfit {
+        val fullImageUrl = if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            imageUrl
+        } else {
+            "${ApiClient.baseUrl()}$imageUrl"
+        }
+
+        return Outfit(
+            id = id,
+            userId = userId,
+            imageUrl = fullImageUrl,
+            title = title,
+            weatherCondition = weatherCondition,
+            season = season,
+            likes = likes,
+            storeName = storeName,
+            storeAddress = storeAddress,
+            price = price,
+            storePhone = storePhone,
+            productUrl = productUrl,
+            createdAt = createdAt
+        )
     }
 }

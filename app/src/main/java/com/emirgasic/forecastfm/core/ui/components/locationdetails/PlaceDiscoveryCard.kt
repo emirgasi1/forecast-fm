@@ -28,6 +28,7 @@ fun PlaceDiscoveryCard(
     temperature: String,
     playlist: String,
     outfit: String,
+    placesCount: Int,
     onChooseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -80,6 +81,10 @@ fun PlaceDiscoveryCard(
                 )
                 Text(
                     text = "👕 $outfit",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "📍 $placesCount places nearby",
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

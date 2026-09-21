@@ -13,16 +13,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,14 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.ui.components.common.DetailRow
 import com.emirgasic.forecastfm.core.ui.components.common.TagChip
 
@@ -65,7 +62,7 @@ fun StyleDetailScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(
-                top = 60.dp,
+                top = 20.dp,
                 start = 16.dp,
                 end = 16.dp,
                 bottom = 10.dp
@@ -76,7 +73,6 @@ fun StyleDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                // Loading indicator
             }
         } else {
             outfit?.let { item ->
@@ -85,7 +81,6 @@ fun StyleDetailScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Back button
                     Text(
                         text = "← Back",
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -102,7 +97,6 @@ fun StyleDetailScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Hero Image
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -122,7 +116,6 @@ fun StyleDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Outfit Title
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.headlineLarge.copy(
@@ -134,7 +127,6 @@ fun StyleDetailScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Tags
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -144,7 +136,6 @@ fun StyleDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Where to Buy Section
                     Text(
                         text = "Where to Buy",
                         style = MaterialTheme.typography.titleLarge.copy(
@@ -181,9 +172,37 @@ fun StyleDetailScreen(
                         valueSize = 18.sp
                     )
 
+                    if (!item.storePhone.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                                        data = Uri.parse("tel:${item.storePhone}")
+                                    }
+                                    context.startActivity(intent)
+                                },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Phone",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = item.storePhone,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Get Directions Button
                     Button(
                         onClick = {
                             val address = item.storeAddress ?: "Sarajevo"
@@ -194,7 +213,11 @@ fun StyleDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.background
+                        )
                     ) {
                         Text(
                             text = "Get Directions to Store",
@@ -202,6 +225,28 @@ fun StyleDetailScreen(
                                 fontSize = 18.sp
                             )
                         )
+                    }
+
+                    if (!item.productUrl.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.productUrl))
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Buy Online",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontSize = 18.sp
+                                )
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
