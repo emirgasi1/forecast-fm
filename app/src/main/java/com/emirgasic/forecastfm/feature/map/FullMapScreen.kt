@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Explore
@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,7 +50,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
-import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.theme.AppTheme
 import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheet
@@ -63,10 +61,16 @@ import com.emirgasic.forecastfm.core.ui.components.map.tabs.LegendTabContent
 import com.emirgasic.forecastfm.core.ui.components.map.tabs.PlaceDetailSlider
 import com.emirgasic.forecastfm.core.ui.components.map.tabs.SearchTabContent
 import com.emirgasic.forecastfm.data.model.Place
-import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
+import com.emirgasic.forecastfm.data.repository.BusStationRepository
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.dsl.asString
+import org.maplibre.compose.expressions.dsl.case
 import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.feature
+import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.sources.GeoJsonData
@@ -81,15 +85,21 @@ fun FullMapScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     searchViewModel: PlaceSearchViewModel = viewModel(),
-    weatherViewModel: WeatherViewModel = viewModel()
+    weatherViewModel: com.emirgasic.forecastfm.feature.weather.WeatherViewModel = viewModel()
 ) {
     val context = LocalContext.current
 
-    val viewModel: MapViewModel = viewModel(
+    val viewModel: FullMapViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(
+                modelClass: Class<T>
+            ): T {
                 @Suppress("UNCHECKED_CAST")
-                return MapViewModel(OnboardingPreferences(context)) as T
+                return FullMapViewModel(
+                    locationRepository = LocationRepository(),
+                    placeRepository = PlaceRepository(),
+                    busStationRepository = BusStationRepository()
+                ) as T
             }
         }
     )
@@ -116,18 +126,23 @@ fun FullMapScreen(
     }
 
     val locations by viewModel.locations.collectAsState()
-    val places by viewModel.visiblePlaces.collectAsState()
-    val selectedFilters by viewModel.selectedFilters.collectAsState()
+    val places by viewModel.places.collectAsState()
     val enabledLayers by viewModel.enabledLayers.collectAsState()
-    val filteredMarkers by viewModel.filteredMarkers.collectAsState()
+    val venueCategoryFilter by viewModel.venueCategoryFilter.collectAsState()
+    val markerGeoJson by viewModel.markerGeoJson.collectAsState()
 
     val searchQuery by searchViewModel.query.collectAsState()
     val searchResults by searchViewModel.results.collectAsState()
     val isSearching by searchViewModel.isLoading.collectAsState()
     val searchError by searchViewModel.error.collectAsState()
 
-    var selectedTab by remember { mutableStateOf(MapTab.Search) }
-    var selectedSearchResult by remember { mutableStateOf<Place?>(null) }
+    var selectedTab by remember {
+        mutableStateOf(MapTab.Search)
+    }
+
+    var selectedSearchResult by remember {
+        mutableStateOf<Place?>(null)
+    }
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -139,13 +154,14 @@ fun FullMapScreen(
         )
     )
 
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        hasLocationPermission =
-            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                    permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-    }
+    val locationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            hasLocationPermission =
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                        permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        }
 
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
@@ -161,8 +177,10 @@ fun FullMapScreen(
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
             val location = locationManager.getCurrentLocation()
+
             location?.let {
                 userLocation = it
+
                 cameraState.position = CameraPosition(
                     target = Position(
                         latitude = it.latitude,
@@ -190,7 +208,8 @@ fun FullMapScreen(
             AppTheme.AUTO -> R.raw.map_style_morning
         }
 
-        context.resources.openRawResource(resId)
+        context.resources
+            .openRawResource(resId)
             .bufferedReader()
             .use { it.readText() }
     }
@@ -240,71 +259,126 @@ fun FullMapScreen(
                 )
             }
 
-            filteredMarkers.forEach { marker ->
-                key(marker.id) {
-                    val markerJson = """
-                        {
-                            "type": "FeatureCollection",
-                            "features": [
-                                {
-                                    "type": "Feature",
-                                    "geometry": {
-                                        "type": "Point",
-                                        "coordinates": [
-                                            ${marker.longitude},
-                                            ${marker.latitude}
-                                        ]
-                                    },
-                                    "properties": {
-                                        "id": "${marker.id}",
-                                        "name": "${marker.name}",
-                                        "type": "${marker.type}"
+            val markerSource = rememberGeoJsonSource(
+                data = GeoJsonData.JsonString(markerGeoJson)
+            )
+
+            CircleLayer(
+                id = "all-map-markers",
+                source = markerSource,
+                radius = const(7.dp),
+                color = switch(
+                    input = feature["category"].asString(),
+                    case(
+                        label = "cafe",
+                        output = const(Color(0xFFC47A44))
+                    ),
+                    case(
+                        label = "restaurant",
+                        output = const(Color(0xFFE05A47))
+                    ),
+                    case(
+                        label = "bar",
+                        output = const(Color(0xFF8E5BB7))
+                    ),
+                    case(
+                        label = "nightlife",
+                        output = const(Color(0xFF5B4B9A))
+                    ),
+                    case(
+                        label = "park",
+                        output = const(Color(0xFF5E9C62))
+                    ),
+                    case(
+                        label = "museum",
+                        output = const(Color(0xFFD39B3D))
+                    ),
+                    case(
+                        label = "shop",
+                        output = const(Color(0xFF4F86C6))
+                    ),
+                    case(
+                        label = "hotel",
+                        output = const(Color(0xFFB86B77))
+                    ),
+                    case(
+                        label = "landmark",
+                        output = const(Color(0xFF9A6B3F))
+                    ),
+                    case(
+                        label = "culture",
+                        output = const(Color(0xFFB35C9E))
+                    ),
+                    case(
+                        label = "activity",
+                        output = const(Color(0xFF3E9B91))
+                    ),
+                    case(
+                        label = "outdoor",
+                        output = const(Color(0xFF4F966B))
+                    ),
+                    case(
+                        label = "viewpoint",
+                        output = const(Color(0xFF607D8B))
+                    ),
+                    case(
+                        label = "attraction",
+                        output = const(Color(0xFFD07842))
+                    ),
+                    case(
+                        label = "Bus Stops",
+                        output = const(Color(0xFF7B61FF))
+                    ),
+                    fallback = const(MaterialTheme.colorScheme.primary)
+                ),
+                strokeWidth = const(2.dp),
+                strokeColor = const(Color.White),
+                strokeOpacity = const(1f),
+                onClick = { features ->
+                    val properties =
+                        features
+                            .firstOrNull()
+                            ?.properties
+
+                    val markerId =
+                        properties
+                            ?.get("id")
+                            ?.toString()
+                            ?.removeSurrounding("\"")
+
+                    val markerType =
+                        properties
+                            ?.get("type")
+                            ?.toString()
+                            ?.removeSurrounding("\"")
+
+                    if (markerId != null) {
+                        when (markerType) {
+                            "venue" -> {
+                                locations
+                                    .firstOrNull {
+                                        it.id == markerId
                                     }
-                                }
-                            ]
+                                    ?.let {
+                                        viewModel.selectLocation(it)
+                                    }
+                            }
+
+                            "place" -> {
+                                places
+                                    .firstOrNull {
+                                        it.id == markerId
+                                    }
+                                    ?.let {
+                                        viewModel.selectPlace(it)
+                                    }
+                            }
                         }
-                    """.trimIndent()
-
-                    val markerSource = rememberGeoJsonSource(
-                        data = GeoJsonData.JsonString(markerJson)
-                    )
-
-                    val markerColor = when {
-                        marker.isSelected -> Color(0xFF6B8E4E)
-                        marker.type == "venue" -> Color(0xFFD97706)
-                        marker.type == "place" -> Color(0xFFD6A77A)
-                        marker.type == "bus_station" -> Color(0xFFF4C96B)
-                        else -> Color(0xFF9C27B0)
                     }
 
-                    CircleLayer(
-                        id = "marker-${marker.id}",
-                        source = markerSource,
-                        radius = const(if (marker.isSelected) 12.dp else 9.dp),
-                        color = const(markerColor),
-                        strokeWidth = const(3.dp),
-                        strokeColor = const(Color.White),
-                        strokeOpacity = const(1f),
-                        onClick = { features ->
-                            val markerName = features
-                                .firstOrNull()
-                                ?.properties
-                                ?.get("name")
-                                ?.toString()
-                                ?.removeSurrounding("\"")
-
-                            if (markerName != null) {
-                                locations.firstOrNull { it.name == markerName }?.let {
-                                    viewModel.selectLocation(it)
-                                } ?: places.firstOrNull { it.name == markerName }?.let {
-                                    viewModel.selectPlace(it)
-                                }
-                            }
-                            ClickResult.Pass
-                        }
-                    )
+                    ClickResult.Pass
                 }
-            }
+            )
         }
 
         Text(
@@ -318,11 +392,18 @@ fun FullMapScreen(
                 .align(Alignment.TopStart)
                 .padding(16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                .background(
+                    MaterialTheme.colorScheme.background.copy(
+                        alpha = 0.7f
+                    )
+                )
                 .clickable {
                     navController.popBackStack()
                 }
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 8.dp
+                )
         )
 
         Column(
@@ -336,7 +417,11 @@ fun FullMapScreen(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(
+                            alpha = 0.9f
+                        )
+                    )
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
@@ -358,12 +443,23 @@ fun FullMapScreen(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 12.dp,
+                            topEnd = 12.dp
+                        )
+                    )
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(
+                            alpha = 0.9f
+                        )
+                    )
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
-                            zoom = (cameraState.position.zoom + 1.0).coerceAtMost(22.0),
+                            zoom = (
+                                    cameraState.position.zoom + 1.0
+                                    ).coerceAtMost(22.0),
                             bearing = cameraState.position.bearing,
                             tilt = cameraState.position.tilt
                         )
@@ -381,12 +477,23 @@ fun FullMapScreen(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                    .clip(
+                        RoundedCornerShape(
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp
+                        )
+                    )
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(
+                            alpha = 0.9f
+                        )
+                    )
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
-                            zoom = (cameraState.position.zoom - 1.0).coerceAtLeast(1.0),
+                            zoom = (
+                                    cameraState.position.zoom - 1.0
+                                    ).coerceAtLeast(1.0),
                             bearing = cameraState.position.bearing,
                             tilt = cameraState.position.tilt
                         )
@@ -403,16 +510,20 @@ fun FullMapScreen(
         }
 
         MapBottomSheet(
-            modifier = Modifier
-                .align(Alignment.BottomCenter),
+            modifier = Modifier.align(Alignment.BottomCenter),
             content = {
                 val detail = selectedSearchResult
+
                 if (detail != null) {
                     PlaceDetailSlider(
                         place = detail,
                         onGetDirectionsClick = {
-                            val originLat = userLocation?.latitude ?: 0.0
-                            val originLng = userLocation?.longitude ?: 0.0
+                            val originLat =
+                                userLocation?.latitude ?: 0.0
+
+                            val originLng =
+                                userLocation?.longitude ?: 0.0
+
                             navController.navigate(
                                 Routes.routeRoute(
                                     destLat = detail.latitude,
@@ -425,23 +536,28 @@ fun FullMapScreen(
                     )
                 } else {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         MapBottomSheetTabs(
                             selectedTab = selectedTab,
-                            onTabSelected = { selectedTab = it }
+                            onTabSelected = {
+                                selectedTab = it
+                            }
                         )
 
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
+                                .verticalScroll(
+                                    rememberScrollState()
+                                )
                         ) {
                             when (selectedTab) {
                                 MapTab.Search -> SearchTabContent(
                                     query = searchQuery,
-                                    onQueryChange = { searchViewModel.updateQuery(it) },
+                                    onQueryChange = {
+                                        searchViewModel.updateQuery(it)
+                                    },
                                     results = searchResults,
                                     isLoading = isSearching,
                                     error = searchError,
@@ -449,18 +565,29 @@ fun FullMapScreen(
                                         selectedSearchResult = place
                                     }
                                 )
+
                                 MapTab.Filters -> FiltersTabContent(
-                                    selectedFilters = selectedFilters,
-                                    onFilterToggle = { viewModel.toggleFilter(it) }
+                                    selectedCategory = venueCategoryFilter,
+                                    onCategorySelected = { category ->
+                                        viewModel.setVenueCategoryFilter(
+                                            category
+                                        )
+                                    }
                                 )
+
                                 MapTab.Legend -> LegendTabContent()
+
                                 MapTab.Layers -> LayersTabContent(
                                     enabledLayers = enabledLayers,
-                                    onLayerToggle = { viewModel.toggleLayer(it) }
+                                    onLayerToggle = {
+                                        viewModel.toggleLayer(it)
+                                    }
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(
+                                modifier = Modifier.height(16.dp)
+                            )
                         }
                     }
                 }

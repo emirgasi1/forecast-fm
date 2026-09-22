@@ -42,23 +42,23 @@ class PlaceRecommendationRepository(
     }
 
     suspend fun getRecommendationsByVenue(venueId: String): List<PlaceRecommendation> {
-        val places = api.getRecommendationsByVenue(venueId)
-        return places.map { place ->
+        val responses = api.getRecommendationsByVenue(venueId)
+        return responses.map { response ->
             PlaceRecommendation(
-                id = place.id,
-                placeId = place.id,
-                name = place.name,
-                category = place.category,
-                location = place.venueId ?: "",
-                description = place.description,
-                suitableFor = emptyList(),
-                weatherCondition = "Any",
-                ageGroup = listOf("All Ages"),
-                rating = place.rating,
-                imageUrl = if (place.imageUrl != null) {
-                    "${ApiClient.baseUrl()}${place.imageUrl}"
+                id = response.id,
+                placeId = response.placeId,
+                name = response.name,
+                category = response.category,
+                location = response.location,
+                description = response.description,
+                suitableFor = response.suitableFor,
+                weatherCondition = response.weatherCondition,
+                ageGroup = response.ageGroup,
+                rating = response.rating,
+                imageUrl = if (response.imageUrl != null) {
+                    "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                address = place.address
+                address = response.address
             )
         }
     }

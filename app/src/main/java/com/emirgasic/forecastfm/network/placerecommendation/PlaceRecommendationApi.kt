@@ -26,7 +26,7 @@ class PlaceRecommendationApi {
         return ApiClient.client.get("${ApiClient.baseUrl()}/api/place-recommendations/$id").body()
     }
 
-    suspend fun getRecommendationsByVenue(venueId: String): List<PlaceResponse> {
+    suspend fun getRecommendationsByVenue(venueId: String): List<PlaceRecommendationResponse> {
         return ApiClient.client
             .get("${ApiClient.baseUrl()}/api/places/venue/$venueId/recommendations")
             .body()

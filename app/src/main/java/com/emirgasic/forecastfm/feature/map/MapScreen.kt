@@ -3,9 +3,11 @@ package com.emirgasic.forecastfm.feature.map
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,9 +23,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,10 +43,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
+import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.theme.AppTheme
 import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
@@ -51,7 +58,13 @@ import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 import com.emirgasic.forecastfm.core.ui.components.map.LocationRecommendationCard
 import com.emirgasic.forecastfm.core.ui.components.place.PlaceCard
 import com.emirgasic.forecastfm.data.model.Place
+import com.emirgasic.forecastfm.data.repository.BusStationRepository
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.OutfitRepository
+import com.emirgasic.forecastfm.data.repository.PlaceRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -73,12 +86,20 @@ fun MapScreen(
     weatherViewModel: WeatherViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
     val viewModel: MapViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return MapViewModel(
-                    com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences(context)
+                    onboardingPrefs = OnboardingPreferences(context),
+                    locationRepository = LocationRepository(),
+                    outfitRepository = OutfitRepository(),
+                    placeRepository = PlaceRepository(),
+                    playlistRepository = PlaylistRepository(
+                        playlistApi = PlaylistApi()
+                    ),
+                    busStationRepository = BusStationRepository()
                 ) as T
             }
         }
@@ -119,15 +140,26 @@ fun MapScreen(
                     ) == PackageManager.PERMISSION_GRANTED
         )
     }
-    val locationManager = remember { LocationManager(context) }
+
+    val locationManager = remember {
+        LocationManager(context)
+    }
 
     val outfits by viewModel.outfits.collectAsState()
     val locations by viewModel.locations.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
     val places by viewModel.visiblePlaces.collectAsState()
     val selectedPlace by viewModel.selectedPlace.collectAsState()
-    val markers by viewModel.markers.collectAsState()
+    val markers by viewModel.filteredMarkers.collectAsState()
     val playlistMap by viewModel.playlistMap.collectAsState()
+    val venueFilter by viewModel.venueCategoryFilter.collectAsState()
+
+    LaunchedEffect(venueFilter, selectedLocation, places) {
+        Log.d(
+            "MAPDEBUG",
+            "location=${selectedLocation?.name} filter=$venueFilter places=${places.size} names=${places.map { it.name }}"
+        )
+    }
 
     val searchQuery by searchViewModel.query.collectAsState()
     val searchResults by searchViewModel.results.collectAsState()
@@ -184,9 +216,11 @@ fun MapScreen(
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
             val location = locationManager.getCurrentLocation()
+
             location?.let {
                 if (it.latitude != 0.0 && it.longitude != 0.0) {
                     userLocation = it
+
                     cameraState.position = CameraPosition(
                         target = Position(
                             latitude = it.latitude,
@@ -213,13 +247,15 @@ fun MapScreen(
         }
     }
 
-    LaunchedEffect(weather) {
-        weather?.let {
-            viewModel.loadOutfits(it.condition)
-            selectedLocation?.let { location ->
-                viewModel.loadPlaylistForLocation(location.id, it.condition)
-            }
-        }
+    LaunchedEffect(weather, selectedLocation) {
+        val condition = weather?.condition ?: return@LaunchedEffect
+        val location = selectedLocation ?: return@LaunchedEffect
+
+        viewModel.loadOutfits(condition)
+        viewModel.loadPlaylistForLocation(
+            location.id,
+            condition
+        )
     }
 
     LaunchedEffect(selectedPlace) {
@@ -239,8 +275,13 @@ fun MapScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 20.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                top = 20.dp,
+                start = 10.dp,
+                bottom = 10.dp,
+                end = 10.dp
+            )
     ) {
         Column(
             modifier = Modifier
@@ -369,7 +410,13 @@ fun MapScreen(
                             CircleLayer(
                                 id = "marker-${marker.id}",
                                 source = markerSource,
-                                radius = const(if (marker.isSelected) 12.dp else 9.dp),
+                                radius = const(
+                                    if (marker.isSelected) {
+                                        12.dp
+                                    } else {
+                                        9.dp
+                                    }
+                                ),
                                 color = const(markerColor),
                                 strokeWidth = const(3.dp),
                                 strokeColor = const(Color.White),
@@ -383,12 +430,22 @@ fun MapScreen(
                                         ?.removeSurrounding("\"")
 
                                     if (markerName != null) {
-                                        locations.firstOrNull { it.name == markerName }?.let {
-                                            viewModel.selectLocation(it)
-                                        } ?: places.firstOrNull { it.name == markerName }?.let {
-                                            viewModel.selectPlace(it)
-                                        }
+                                        locations
+                                            .firstOrNull {
+                                                it.name == markerName
+                                            }
+                                            ?.let {
+                                                viewModel.selectLocation(it)
+                                            }
+                                            ?: places
+                                                .firstOrNull {
+                                                    it.name == markerName
+                                                }
+                                                ?.let {
+                                                    viewModel.selectPlace(it)
+                                                }
                                     }
+
                                     ClickResult.Pass
                                 }
                             )
@@ -410,30 +467,68 @@ fun MapScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf(
+                    null to "All",
+                    "Cafe" to "Cafe",
+                    "Restaurant" to "Restaurant",
+                    "Shop" to "Shop",
+                    "Nightlife" to "Nightlife"
+                ).forEach { (value, label) ->
+                    FilterChip(
+                        selected = venueFilter == value,
+                        onClick = {
+                            viewModel.setVenueCategoryFilter(value)
+                        },
+                        label = {
+                            Text(label)
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             LocationDropdown(
                 selectedLocation = selectedLocation?.name ?: "",
                 locations = locationNames,
                 expanded = expanded,
-                onExpandedChange = { expanded = it },
+                onExpandedChange = {
+                    expanded = it
+                },
                 onLocationSelected = { name ->
-                    locations.firstOrNull { it.name == name }?.let {
-                        viewModel.selectLocation(it)
-                    }
+                    locations
+                        .firstOrNull { it.name == name }
+                        ?.let {
+                            viewModel.selectLocation(it)
+                        }
+
                     expanded = false
                 }
             )
 
             if (places.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
+
                 LocationDropdown(
                     selectedLocation = selectedPlace?.name ?: "",
                     locations = placeNames,
                     expanded = placesExpanded,
-                    onExpandedChange = { placesExpanded = it },
+                    onExpandedChange = {
+                        placesExpanded = it
+                    },
                     onLocationSelected = { name ->
-                        places.firstOrNull { it.name == name }?.let {
-                            viewModel.selectPlace(it)
-                        }
+                        places
+                            .firstOrNull { it.name == name }
+                            ?.let {
+                                viewModel.selectPlace(it)
+                            }
+
                         placesExpanded = false
                     }
                 )
@@ -443,11 +538,11 @@ fun MapScreen(
 
             selectedLocation?.let { location ->
                 weather?.let { weatherData ->
-                    val outfitName = outfits.firstOrNull {
-                        it.weatherCondition.equals(weatherData.condition, ignoreCase = true)
-                    }?.title ?: "Recommended Outfit"
+                    val outfitName = outfits.firstOrNull()?.title
+                        ?: "Recommended Outfit"
 
-                    val playlistName = playlistMap[location.id] ?: "Today's Soundtrack"
+                    val playlistName = playlistMap[location.id]
+                        ?: "Today's Soundtrack"
 
                     LocationRecommendationCard(
                         location = location.name,
@@ -457,7 +552,9 @@ fun MapScreen(
                         music = playlistName,
                         outfit = outfitName,
                         onViewDetailsClick = {
-                            rootNavController.navigate(Routes.locationDetailsRoute(location.id))
+                            rootNavController.navigate(
+                                Routes.locationDetailsRoute(location.id)
+                            )
                         }
                     )
                 }
@@ -465,12 +562,15 @@ fun MapScreen(
 
             selectedPlace?.let { place ->
                 Spacer(modifier = Modifier.height(12.dp))
+
                 PlaceCard(
                     name = place.name,
                     category = place.category,
                     rating = place.rating,
                     onViewPlaceClick = {
-                        rootNavController.navigate(Routes.placeInfoRoute(place.id))
+                        rootNavController.navigate(
+                            Routes.placeInfoRoute(place.id)
+                        )
                     }
                 )
             }

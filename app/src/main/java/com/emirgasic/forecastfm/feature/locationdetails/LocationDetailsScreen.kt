@@ -104,7 +104,7 @@ fun LocationDetailsScreen(
                 )
             }
 
-            items(outfits) { outfit ->
+            items(outfits.take(2)) { outfit ->
                 LocationOutfitCard(
                     imageUrl = outfit.imageUrl,
                     title = outfit.title,

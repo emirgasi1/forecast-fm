@@ -11,6 +11,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,17 +66,19 @@ fun LocationDropdown(
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
 
-            locations.forEach { location ->
+            key(locations) {
+                locations.forEach { location ->
 
-                DropdownMenuItem(
-                    text = {
-                        Text(location)
-                    },
-                    onClick = {
-                        onLocationSelected(location)
-                    }
-                )
+                    DropdownMenuItem(
+                        text = {
+                            Text(location)
+                        },
+                        onClick = {
+                            onLocationSelected(location)
+                        }
+                    )
 
+                }
             }
 
         }

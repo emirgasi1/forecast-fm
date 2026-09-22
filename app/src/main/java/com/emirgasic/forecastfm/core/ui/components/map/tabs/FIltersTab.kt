@@ -17,14 +17,23 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun FiltersTabContent(
-    selectedFilters: Set<String>,
-    onFilterToggle: (String) -> Unit,
+    selectedCategory: String?,
+    onCategorySelected: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val filters = listOf(
-        "Coffee", "Restaurant", "Bar", "Nightlife",
-        "Park", "Museum", "Shop", "Hotel",
-        "Landmark", "Culture", "Activity", "Venues"
+        "Cafe",
+        "Restaurant",
+        "Bar",
+        "Nightlife",
+        "Park",
+        "Museum",
+        "Shop",
+        "Hotel",
+        "Landmark",
+        "Culture",
+        "Activity",
+        "Venues"
     )
 
     Column(
@@ -51,8 +60,12 @@ fun FiltersTabContent(
                 filters.filterIndexed { index, _ -> index % 2 == 0 }
                     .forEach { filter ->
                         FilterChip(
-                            selected = filter in selectedFilters,
-                            onClick = { onFilterToggle(filter) },
+                            selected = selectedCategory == filter,
+                            onClick = {
+                                onCategorySelected(
+                                    if (selectedCategory == filter) null else filter
+                                )
+                            },
                             label = { Text(filter) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -69,8 +82,12 @@ fun FiltersTabContent(
                 filters.filterIndexed { index, _ -> index % 2 == 1 }
                     .forEach { filter ->
                         FilterChip(
-                            selected = filter in selectedFilters,
-                            onClick = { onFilterToggle(filter) },
+                            selected = selectedCategory == filter,
+                            onClick = {
+                                onCategorySelected(
+                                    if (selectedCategory == filter) null else filter
+                                )
+                            },
                             label = { Text(filter) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,

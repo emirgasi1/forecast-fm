@@ -13,7 +13,6 @@ import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.network.location.LocationResponse
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,14 +23,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MapViewModel(
-    private val onboardingPrefs: OnboardingPreferences
+    private val onboardingPrefs: OnboardingPreferences,
+    private val locationRepository: LocationRepository,
+    private val outfitRepository: OutfitRepository,
+    private val placeRepository: PlaceRepository,
+    private val playlistRepository: PlaylistRepository,
+    private val busStationRepository: BusStationRepository
 ) : ViewModel() {
-
-    private val repository = LocationRepository()
-    private val outfitRepository = OutfitRepository()
-    private val placeRepository = PlaceRepository()
-    private val playlistRepository = PlaylistRepository(playlistApi = PlaylistApi())
-    private val busStationRepository = BusStationRepository()
 
     private val _locations = MutableStateFlow<List<LocationResponse>>(emptyList())
     val locations: StateFlow<List<LocationResponse>> = _locations.asStateFlow()
@@ -40,21 +38,6 @@ class MapViewModel(
     val selectedLocation: StateFlow<LocationResponse?> = _selectedLocation.asStateFlow()
 
     private val _allPlaces = MutableStateFlow<List<Place>>(emptyList())
-
-    val visiblePlaces: StateFlow<List<Place>> = combine(
-        _allPlaces,
-        _selectedLocation
-    ) { places, location ->
-        if (location == null) {
-            places
-        } else {
-            places.filter { it.venueId == location.id }
-        }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
-        emptyList()
-    )
 
     private val _selectedPlace = MutableStateFlow<Place?>(null)
     val selectedPlace: StateFlow<Place?> = _selectedPlace.asStateFlow()
@@ -80,6 +63,148 @@ class MapViewModel(
     private val _enabledLayers = MutableStateFlow(setOf("Venues", "Places", "Bus Stops"))
     val enabledLayers: StateFlow<Set<String>> = _enabledLayers.asStateFlow()
 
+    private val _venueCategoryFilter = MutableStateFlow<String?>(null)
+    val venueCategoryFilter: StateFlow<String?> = _venueCategoryFilter.asStateFlow()
+
+    val visiblePlaces: StateFlow<List<Place>> = combine(
+        _allPlaces,
+        _selectedLocation,
+        _venueCategoryFilter
+    ) { places, location, category ->
+        places.filter { place ->
+            val locationMatch =
+                location == null || place.venueId == location.id
+
+            val categoryMatch =
+                category == null ||
+                        canonicalCategory(place.category) == canonicalCategory(category)
+
+            locationMatch && categoryMatch
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        emptyList()
+    )
+
+    private val markerLocationCategoryFilter: StateFlow<Pair<LocationResponse?, String?>> =
+        combine(
+            _selectedLocation,
+            _venueCategoryFilter
+        ) { location, category ->
+            location to category
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            null to null
+        )
+
+    val filteredMarkers: StateFlow<List<MapMarker>> =
+        combine(
+            _markers,
+            _searchQuery,
+            _selectedFilters,
+            _enabledLayers
+        ) { markers, query, filters, layers ->
+
+            FilterBaseData(
+                markers = markers,
+                query = query,
+                filters = filters,
+                layers = layers
+            )
+        }.combine(
+            combine(
+                _selectedLocation,
+                _venueCategoryFilter,
+                _allPlaces
+            ) { location, category, places ->
+                FilterLocationData(
+                    location = location,
+                    category = category,
+                    places = places
+                )
+            }
+        ) { base, locationData ->
+
+            val placesById = locationData.places.associateBy { it.id }
+
+            base.markers.filter { marker ->
+
+                val layerMatch = when (marker.type) {
+                    "venue" -> "Venues" in base.layers
+                    "place" -> "Places" in base.layers
+                    "bus_station" -> "Bus Stops" in base.layers
+                    else -> true
+                }
+
+                val place = placesById[marker.id]
+
+                val locationMatch = when (marker.type) {
+                    "venue" ->
+                        locationData.location == null ||
+                                marker.id == locationData.location.id
+
+                    "place" ->
+                        locationData.location == null ||
+                                place?.venueId == locationData.location.id
+
+                    else -> true
+                }
+
+                val categoryMatch =
+                    marker.type != "place" ||
+                            locationData.category == null ||
+                            canonicalCategory(marker.category) ==
+                            canonicalCategory(locationData.category)
+
+                val filterMatch =
+                    base.filters.isEmpty() ||
+                            base.filters.any { filter: String ->
+                                canonicalCategory(marker.category) ==
+                                        canonicalCategory(filter) ||
+                                        (
+                                                filter.equals(
+                                                    "Venues",
+                                                    ignoreCase = true
+                                                ) &&
+                                                        marker.type == "venue"
+                                                ) ||
+                                        (
+                                                filter.equals(
+                                                    "Places",
+                                                    ignoreCase = true
+                                                ) &&
+                                                        marker.type == "place"
+                                                ) ||
+                                        (
+                                                filter.equals(
+                                                    "Bus Stops",
+                                                    ignoreCase = true
+                                                ) &&
+                                                        marker.type == "bus_station"
+                                                )
+                            }
+
+                val searchMatch =
+                    base.query.isBlank() ||
+                            marker.name.contains(
+                                base.query,
+                                ignoreCase = true
+                            )
+
+                layerMatch &&
+                        locationMatch &&
+                        categoryMatch &&
+                        filterMatch &&
+                        searchMatch
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyList()
+        )
+
     init {
         loadLocations()
         loadAllPlaces()
@@ -89,7 +214,7 @@ class MapViewModel(
     private fun loadLocations() {
         viewModelScope.launch {
             try {
-                val locations = repository.getLocations()
+                val locations = locationRepository.getLocations()
                 _locations.value = locations
                 _selectedLocation.value = locations.firstOrNull()
                 updateMarkers()
@@ -127,8 +252,13 @@ class MapViewModel(
         viewModelScope.launch {
             try {
                 val places = placeRepository.getPlacesByVenue(venueId)
-                _allPlaces.value = places
-                _selectedPlace.value = places.firstOrNull()
+
+                _selectedPlace.value = places.firstOrNull {
+                    _venueCategoryFilter.value == null ||
+                            canonicalCategory(it.category) ==
+                            canonicalCategory(_venueCategoryFilter.value)
+                }
+
                 updateMarkers()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -138,9 +268,18 @@ class MapViewModel(
 
     fun selectLocation(location: LocationResponse) {
         _selectedLocation.value = location
+
         viewModelScope.launch {
-            _selectedPlace.value = visiblePlaces.value.firstOrNull()
+            _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
+                place.venueId == location.id &&
+                        (
+                                _venueCategoryFilter.value == null ||
+                                        canonicalCategory(place.category) ==
+                                        canonicalCategory(_venueCategoryFilter.value)
+                                )
+            }
         }
+
         updateMarkers()
     }
 
@@ -153,12 +292,17 @@ class MapViewModel(
         viewModelScope.launch {
             try {
                 val location = _locations.value.firstOrNull { it.id == locationId }
+
                 if (location != null) {
                     val playlist = playlistRepository.getRecommendedPlaylist(
                         location = location.name,
                         weather = weather
                     )
-                    _playlistMap.value = _playlistMap.value + (locationId to (playlist?.title ?: "Today's Soundtrack"))
+
+                    if (playlist != null) {
+                        _playlistMap.value =
+                            _playlistMap.value + (locationId to playlist.title)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -228,52 +372,71 @@ class MapViewModel(
     }
 
     fun toggleFilter(filter: String) {
-        _selectedFilters.value = if (filter in _selectedFilters.value) {
-            _selectedFilters.value - filter
-        } else {
-            _selectedFilters.value + filter
-        }
+        _selectedFilters.value =
+            if (filter in _selectedFilters.value) {
+                _selectedFilters.value - filter
+            } else {
+                _selectedFilters.value + filter
+            }
     }
 
     fun toggleLayer(layer: String) {
-        _enabledLayers.value = if (layer in _enabledLayers.value) {
-            _enabledLayers.value - layer
+        _enabledLayers.value =
+            if (layer in _enabledLayers.value) {
+                _enabledLayers.value - layer
+            } else {
+                _enabledLayers.value + layer
+            }
+    }
+
+    fun setVenueCategoryFilter(category: String?) {
+        _venueCategoryFilter.value = category
+
+        viewModelScope.launch {
+            val currentLocation = _selectedLocation.value
+
+            _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
+                place.venueId == currentLocation?.id &&
+                        (
+                                category == null ||
+                                        canonicalCategory(place.category) ==
+                                        canonicalCategory(category)
+                                )
+            }
+        }
+
+        updateMarkers()
+    }
+
+    private fun scorePlace(place: Place, prefs: Set<String>): Int {
+        return if (
+            prefs.any {
+                canonicalCategory(place.category) == canonicalCategory(it)
+            }
+        ) {
+            10
         } else {
-            _enabledLayers.value + layer
+            0
         }
     }
 
-    val filteredMarkers = combine(
-        _markers,
-        _searchQuery,
-        _selectedFilters,
-        _enabledLayers
-    ) { markers, query, filters, layers ->
-        markers.filter { marker ->
-            val layerMatch = when (marker.type) {
-                "venue" -> "Venues" in layers
-                "place" -> "Places" in layers
-                "bus_station" -> "Bus Stops" in layers
-                else -> true
-            }
-
-            val filterMatch = filters.isEmpty() || filters.any { filter ->
-                marker.category.equals(filter, ignoreCase = true) ||
-                        (filter == "Venues" && marker.type == "venue") ||
-                        (filter == "Places" && marker.type == "place") ||
-                        (filter == "Bus Stops" && marker.type == "bus_station")
-            }
-
-            val searchMatch = query.isBlank() ||
-                    marker.name.contains(query, ignoreCase = true)
-
-            layerMatch && filterMatch && searchMatch
+    private fun canonicalCategory(category: String?): String {
+        return when (category?.trim()?.lowercase()) {
+            null -> ""
+            "all" -> ""
+            "cafe", "cafes" -> "cafe"
+            "restaurant", "restaurants" -> "restaurant"
+            "shop", "shops", "shopping" -> "shop"
+            "nightlife", "nightclub", "nightclubs" -> "nightlife"
+            "park", "parks", "parks & nature" -> "park"
+            "outdoor", "outdoors" -> "outdoor"
+            "viewpoint", "viewpoints" -> "viewpoint"
+            "attraction", "attractions" -> "attraction"
+            "culture", "cultures", "historic & culture" -> "culture"
+            "bus stop", "bus stops" -> "bus stop"
+            else -> category.trim().lowercase()
         }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
-        emptyList()
-    )
+    }
 
     private fun loadBusStations() {
         viewModelScope.launch {
@@ -286,26 +449,16 @@ class MapViewModel(
             }
         }
     }
+    private data class FilterBaseData(
+        val markers: List<MapMarker>,
+        val query: String,
+        val filters: Set<String>,
+        val layers: Set<String>
+    )
 
-    private fun scorePlace(place: Place, prefs: Set<String>): Int {
-        return if (prefs.any { categoryMatches(it, place.category) }) 10 else 0
-    }
-
-    private fun categoryMatches(userPick: String, dbCategory: String): Boolean {
-        val pick = userPick.lowercase().trim()
-        val cat = dbCategory.lowercase().trim()
-
-        if (cat.contains(pick.removeSuffix("s")) || pick.contains(cat)) return true
-
-        return when (pick) {
-            "cafes" -> cat == "cafe"
-            "restaurants" -> cat == "restaurant"
-            "parks & nature" -> cat == "park" || cat == "outdoor"
-            "viewpoints" -> cat == "viewpoint"
-            "historic & culture" -> cat == "attraction" || cat == "culture"
-            "shopping" -> cat == "shopping"
-            "nightlife" -> cat == "nightlife" || cat == "nightclub"
-            else -> false
-        }
-    }
+    private data class FilterLocationData(
+        val location: LocationResponse?,
+        val category: String?,
+        val places: List<Place>
+    )
 }

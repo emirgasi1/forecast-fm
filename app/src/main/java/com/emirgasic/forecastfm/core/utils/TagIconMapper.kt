@@ -24,6 +24,11 @@ object TagIconMapper {
             "traditional evening" -> R.drawable.music
             "romantic dinner" -> R.drawable.heart
             "culture" -> R.drawable.books
+            "shop" -> R.drawable.books
+            "shopping" -> R.drawable.books
+            "nightlife" -> R.drawable.music
+            "restaurant" -> R.drawable.coffee
+            "cafe" -> R.drawable.coffee
             else -> R.drawable.music
         }
     }

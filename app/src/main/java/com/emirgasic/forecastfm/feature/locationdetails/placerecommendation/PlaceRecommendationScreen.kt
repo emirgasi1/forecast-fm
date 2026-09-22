@@ -85,7 +85,7 @@ fun PlaceRecommendationScreen(
 
                 item {
                     PlaceCategorySelector(
-                        categories = listOf("Coffee", "Restaurant", "Shop", "Activity", "Nightlife", "Culture"),
+                        categories = listOf("Cafe", "Restaurant", "Shop", "Activity", "Nightlife", "Culture"),
                         selectedCategory = selectedCategory,
                         onCategorySelected = { viewModel.selectCategory(it) }
                     )
