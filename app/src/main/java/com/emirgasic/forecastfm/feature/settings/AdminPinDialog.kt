@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun AdminPinDialog(
@@ -27,12 +30,25 @@ fun AdminPinDialog(
     var pin by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
 
+    val forecastColors = LocalForecastColors.current
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Admin Access") },
+        containerColor = forecastColors.card,
+        titleContentColor = forecastColors.title,
+        textContentColor = forecastColors.body,
+        title = {
+            Text(
+                text = "Admin Access",
+                color = forecastColors.title
+            )
+        },
         text = {
             Column {
-                Text("Enter admin PIN")
+                Text(
+                    text = "Enter admin PIN",
+                    color = forecastColors.body
+                )
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = pin,
@@ -44,7 +60,14 @@ fun AdminPinDialog(
                     isError = error,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = forecastColors.title,
+                        unfocusedTextColor = forecastColors.title,
+                        focusedBorderColor = forecastColors.primary,
+                        unfocusedBorderColor = forecastColors.border,
+                        cursorColor = forecastColors.primary
+                    )
                 )
             }
         },
@@ -58,10 +81,20 @@ fun AdminPinDialog(
                         pin = ""
                     }
                 }
-            ) { Text("Unlock") }
+            ) {
+                Text(
+                    text = "Unlock",
+                    color = forecastColors.primary
+                )
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Cancel",
+                    color = forecastColors.muted
+                )
+            }
         }
     )
 }

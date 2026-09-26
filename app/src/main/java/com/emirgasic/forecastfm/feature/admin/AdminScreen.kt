@@ -29,6 +29,7 @@ import com.emirgasic.forecastfm.core.ui.components.admin.AdminApiUrlEditor
 import com.emirgasic.forecastfm.core.ui.components.admin.AdminDebugRow
 import com.emirgasic.forecastfm.core.ui.components.admin.AdminSectionTitle
 import com.emirgasic.forecastfm.core.ui.components.admin.AdminThemeOption
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun AdminScreen(
@@ -44,6 +45,8 @@ fun AdminScreen(
         }
     )
 ) {
+
+    val forecastColors = LocalForecastColors.current
 
     val currentTheme by viewModel.currentTheme.collectAsState()
     val currentApiUrl by viewModel.currentApiUrl.collectAsState()
@@ -66,7 +69,7 @@ fun AdminScreen(
             item {
                 Text(
                     text = "Admin Panel",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.headlineMedium
                 )
             }

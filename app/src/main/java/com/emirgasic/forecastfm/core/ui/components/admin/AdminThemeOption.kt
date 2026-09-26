@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun AdminThemeOption(
@@ -18,6 +20,9 @@ fun AdminThemeOption(
     selected: Boolean,
     onSelect: () -> Unit
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -30,11 +35,15 @@ fun AdminThemeOption(
     ) {
         RadioButton(
             selected = selected,
-            onClick = onSelect
+            onClick = onSelect,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary,
+                unselectedColor = forecastColors.muted
+            )
         )
         Text(
             text = label,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = forecastColors.body,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(start = 8.dp)
         )

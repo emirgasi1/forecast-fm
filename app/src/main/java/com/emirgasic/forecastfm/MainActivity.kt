@@ -21,6 +21,7 @@ import com.emirgasic.forecastfm.core.theme.ThemeManager
 import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.ui.theme.ForecastfmTheme
 import com.emirgasic.forecastfm.ui.theme.colorSchemeFor
+import com.emirgasic.forecastfm.ui.theme.forecastColorsFor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -47,11 +48,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             val selectedTheme by ThemeManager.selectedTheme.collectAsState()
 
-            val colorScheme = androidx.compose.runtime.remember(selectedTheme) {
-                colorSchemeFor(if (selectedTheme == AppTheme.AUTO) ThemeManager.resolveTheme() else selectedTheme)
+            val resolvedTheme = remember(selectedTheme) {
+                if (selectedTheme == AppTheme.AUTO) ThemeManager.resolveTheme() else selectedTheme
             }
 
-            ForecastfmTheme(colorScheme = colorScheme) {
+            val colorScheme = remember(resolvedTheme) {
+                colorSchemeFor(resolvedTheme)
+            }
+
+            val forecastColors = remember(resolvedTheme) {
+                forecastColorsFor(resolvedTheme)
+            }
+
+            ForecastfmTheme(
+                colorScheme = colorScheme,
+                forecastColors = forecastColors
+            ) {
                 ForecastFMApp(tokenManager = tokenManager)
             }
         }
@@ -79,8 +91,6 @@ fun ForecastFMApp(tokenManager: TokenManager) {
 
     if (isLoading) {
         SplashScreen()
-
-
     } else {
         val start = when {
             !isLoggedIn -> Routes.Login

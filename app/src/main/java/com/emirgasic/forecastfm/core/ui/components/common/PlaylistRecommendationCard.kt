@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -19,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaylistRecommendationCard(
@@ -37,21 +40,28 @@ fun PlaylistRecommendationCard(
     onClick: () -> Unit
 ) {
 
+    val forecastColors = LocalForecastColors.current
+
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            )
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = forecastColors.card
         )
     ) {
 
         Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
@@ -65,13 +75,13 @@ fun PlaylistRecommendationCard(
 
                     Text(
                         text = title,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = forecastColors.title,
                         style = MaterialTheme.typography.titleMedium
                     )
 
                     Text(
                         text = genre,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = forecastColors.muted,
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -92,7 +102,12 @@ fun PlaylistRecommendationCard(
                                 "Remove from favorites"
                             } else {
                                 "Add to favorites"
-                            }
+                            },
+                        tint = if (isFavorite) {
+                            forecastColors.error
+                        } else {
+                            forecastColors.muted
+                        }
                     )
                 }
             }
@@ -117,11 +132,7 @@ fun PlaylistRecommendationCard(
                     icon = playIcon,
                     text = "Play"
                 )
-
             }
-
         }
-
     }
-
 }

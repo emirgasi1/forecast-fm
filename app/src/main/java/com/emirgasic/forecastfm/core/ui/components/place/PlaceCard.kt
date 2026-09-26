@@ -16,8 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import com.emirgasic.forecastfm.core.ui.components.common.IconText
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaceCard(
@@ -27,28 +28,38 @@ fun PlaceCard(
     modifier: Modifier = Modifier,
     onViewPlaceClick: () -> Unit = {}
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            ),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline
-        ),
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = forecastColors.card
         )
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(forecastColors.card)
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
             Text(
                 text = name,
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = forecastColors.title
             )
 
             Row(
@@ -57,13 +68,13 @@ fun PlaceCard(
                 Text(
                     text = category,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = forecastColors.muted
                 )
                 if (rating > 0) {
                     Text(
                         text = " • ⭐ $rating",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted
                     )
                 }
             }
@@ -72,7 +83,7 @@ fun PlaceCard(
                 onClick = onViewPlaceClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = forecastColors.primary,
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {

@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun LocationOutfitCard(
@@ -24,6 +25,9 @@ fun LocationOutfitCard(
     season: String,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -51,13 +55,13 @@ fun LocationOutfitCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = forecastColors.title
             )
 
             Text(
                 text = "$weatherCondition • $season",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = forecastColors.muted
             )
         }
     }

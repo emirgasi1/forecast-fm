@@ -7,34 +7,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaceInfoAbout(
     description: String,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Column(modifier = modifier) {
+
         Text(
             text = "About",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onPrimary
+            style = MaterialTheme.typography.titleLarge,
+            color = forecastColors.title
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = description,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 17.sp,
-                lineHeight = 26.sp
-            ),
-            color = MaterialTheme.colorScheme.onBackground
+            style = MaterialTheme.typography.bodyLarge,
+            color = forecastColors.body
         )
     }
 }

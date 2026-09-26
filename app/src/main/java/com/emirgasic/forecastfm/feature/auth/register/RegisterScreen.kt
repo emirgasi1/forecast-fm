@@ -1,21 +1,39 @@
 package com.emirgasic.forecastfm.feature.auth.register
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
@@ -23,7 +41,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
-
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun RegisterScreen(
@@ -31,6 +49,8 @@ fun RegisterScreen(
     tokenManager: TokenManager,
     modifier: Modifier = Modifier
 ) {
+    val forecastColors = LocalForecastColors.current
+
     val registerViewModel: RegisterViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -73,13 +93,13 @@ fun RegisterScreen(
             )
             Text(
                 text = "Create Account",
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.offset(y = (-30).dp)
             )
             Text(
                 text = "Join the Bascarsija vibe today",
-                color = MaterialTheme.colorScheme.onBackground,
+                color = forecastColors.body,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = modifier.width(320.dp)
             )
@@ -101,7 +121,7 @@ fun RegisterScreen(
 
                 Text(
                     text = "Username",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = modifier.align(Alignment.Start)
                 )
@@ -126,7 +146,7 @@ fun RegisterScreen(
 
                 Text(
                     text = "Email",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.align(Alignment.Start)
                 )
@@ -139,7 +159,7 @@ fun RegisterScreen(
 
                 Text(
                     text = "Password",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.align(Alignment.Start)
                 )
@@ -152,7 +172,7 @@ fun RegisterScreen(
 
                 Text(
                     text = "Confirm Password",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.align(Alignment.Start)
                 )
@@ -171,12 +191,17 @@ fun RegisterScreen(
                     Checkbox(
                         checked = checkMark,
                         onCheckedChange = { registerViewModel.updateCheckMark(it) },
-                        enabled = !isLoading
+                        enabled = !isLoading,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = forecastColors.muted,
+                            checkmarkColor = MaterialTheme.colorScheme.background
+                        )
                     )
                     Text(
                         text = "I Agree to the Terms & Privacy",
                         modifier = Modifier.padding(start = 8.dp),
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = forecastColors.body,
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -197,28 +222,28 @@ fun RegisterScreen(
                 ) {
                     HorizontalDivider(
                         modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.outline
+                        color = forecastColors.border
                     )
                     Text(
                         text = " OR ",
                         modifier = Modifier.padding(horizontal = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = forecastColors.muted
                     )
                     HorizontalDivider(
                         modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.outline
+                        color = forecastColors.border
                     )
                 }
                 Spacer(modifier.height(20.dp))
                 Text(
                     text = "Continue with Google",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = forecastColors.body,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier.height(12.dp))
                 Text(
                     text = "Log In",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = modifier.clickable { navController.navigate(Routes.Login) }
                 )

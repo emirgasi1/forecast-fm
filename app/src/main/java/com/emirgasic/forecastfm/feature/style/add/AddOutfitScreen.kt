@@ -1,12 +1,11 @@
 package com.emirgasic.forecastfm.feature.style.add
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,23 +35,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +77,8 @@ fun AddOutfitScreen(
     val weatherOptions = listOf("Clear", "Clouds", "Rain", "Drizzle", "Snow", "Thunderstorm")
     val seasonOptions = listOf("Spring", "Summer", "Autumn", "Winter")
 
+    val forecastColors = LocalForecastColors.current
+
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -85,29 +87,40 @@ fun AddOutfitScreen(
         }
     }
 
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = forecastColors.card,
+        unfocusedContainerColor = forecastColors.card,
+        focusedTextColor = forecastColors.title,
+        unfocusedTextColor = forecastColors.title,
+        focusedBorderColor = forecastColors.primary,
+        unfocusedBorderColor = forecastColors.border,
+        focusedLabelColor = forecastColors.muted,
+        unfocusedLabelColor = forecastColors.muted,
+        focusedPlaceholderColor = forecastColors.muted,
+        unfocusedPlaceholderColor = forecastColors.muted,
+        cursorColor = forecastColors.primary
+    )
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(
-                top = 20.dp,
+                top = 60.dp,
                 start = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp
+                end = 16.dp
             )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
         ) {
             Text(
                 text = "← Back",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium
-                ),
-                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.titleMedium,
+                color = forecastColors.title,
                 modifier = Modifier
                     .padding(horizontal = 4.dp, vertical = 8.dp)
                     .clickable { navController.popBackStack() }
@@ -117,11 +130,8 @@ fun AddOutfitScreen(
 
             Text(
                 text = "Add Outfit",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onPrimary
+                style = MaterialTheme.typography.headlineMedium,
+                color = forecastColors.title
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -130,6 +140,12 @@ fun AddOutfitScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1.2f)
+                    .shadow(
+                        elevation = 3.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                        spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+                    )
                     .clickable {
                         imagePicker.launch(
                             PickVisualMediaRequest(
@@ -138,8 +154,10 @@ fun AddOutfitScreen(
                         )
                     },
                 shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, forecastColors.border),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = forecastColors.card
                 )
             ) {
                 if (state.imageUri != null) {
@@ -156,7 +174,8 @@ fun AddOutfitScreen(
                     ) {
                         Text(
                             text = "Tap to select an image",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = forecastColors.muted,
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
@@ -171,10 +190,7 @@ fun AddOutfitScreen(
                 placeholder = { Text("e.g. Sunny City Casual") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -194,19 +210,19 @@ fun AddOutfitScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    colors = fieldColors
                 )
 
                 ExposedDropdownMenu(
                     expanded = weatherExpanded,
-                    onDismissRequest = { weatherExpanded = false }
+                    onDismissRequest = { weatherExpanded = false },
+                    modifier = Modifier.background(forecastColors.card)
                 ) {
                     weatherOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = {
+                                Text(option, color = forecastColors.title)
+                            },
                             onClick = {
                                 viewModel.setWeatherCondition(option)
                                 weatherExpanded = false
@@ -233,19 +249,19 @@ fun AddOutfitScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    colors = fieldColors
                 )
 
                 ExposedDropdownMenu(
                     expanded = seasonExpanded,
-                    onDismissRequest = { seasonExpanded = false }
+                    onDismissRequest = { seasonExpanded = false },
+                    modifier = Modifier.background(forecastColors.card)
                 ) {
                     seasonOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = {
+                                Text(option, color = forecastColors.title)
+                            },
                             onClick = {
                                 viewModel.setSeason(option)
                                 seasonExpanded = false
@@ -264,10 +280,7 @@ fun AddOutfitScreen(
                 placeholder = { Text("e.g. Zara") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -279,10 +292,7 @@ fun AddOutfitScreen(
                 placeholder = { Text("e.g. Sarajevo City Center") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -294,10 +304,7 @@ fun AddOutfitScreen(
                 placeholder = { Text("e.g. 60-100 KM") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -308,10 +315,7 @@ fun AddOutfitScreen(
                 label = { Text("Store phone (optional)") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -323,18 +327,15 @@ fun AddOutfitScreen(
                 placeholder = { Text("https://...") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = fieldColors
             )
 
             if (state.error != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = state.error ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 14.sp
+                    color = forecastColors.error,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
@@ -352,7 +353,7 @@ fun AddOutfitScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = forecastColors.primary,
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
@@ -364,12 +365,12 @@ fun AddOutfitScreen(
                 } else {
                     Text(
                         text = "Add Outfit",
-                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp)
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

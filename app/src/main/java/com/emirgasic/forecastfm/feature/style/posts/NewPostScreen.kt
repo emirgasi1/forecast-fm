@@ -3,15 +3,12 @@ package com.emirgasic.forecastfm.feature.style.posts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -31,8 +29,8 @@ import com.emirgasic.forecastfm.core.ui.components.style.posts.ImagePickerCard
 import com.emirgasic.forecastfm.core.ui.components.style.posts.PostActionButtons
 import com.emirgasic.forecastfm.core.ui.components.style.posts.ProfileInputField
 import com.emirgasic.forecastfm.core.utils.rememberImagePicker
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewPostScreen(
     navController: NavController,
@@ -40,7 +38,7 @@ fun NewPostScreen(
     modifier: Modifier = Modifier,
     viewModel: NewPostViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return NewPostViewModel(tokenManager) as T
             }
@@ -60,38 +58,37 @@ fun NewPostScreen(
     }
     val context = LocalContext.current
     val contentResolver = context.contentResolver
+
+    val forecastColors = LocalForecastColors.current
+
     Box(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 60.dp, start = 10.dp, end = 10.dp)
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.surfaceVariant)
-                .padding(16.dp),
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             item {
                 Text(
                     text = "New Post",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.headlineMedium
                 )
-            }
-
-            item {
-                Spacer(modifier.height(20.dp))
             }
 
             if (errorMessage != null) {
                 item {
                     Text(
                         text = errorMessage ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        color = forecastColors.error,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
@@ -99,16 +96,12 @@ fun NewPostScreen(
             item {
                 ImagePickerCard(
                     image = post.image,
-                    icon = painterResource(R.drawable.camera),
+                    icon = painterResource(R.drawable.clothes),
                     text = if (post.image != null) "Change photo" else "Add a photo",
                     onClick = {
                         imagePicker.pickFromGallery()
                     }
                 )
-            }
-
-            item {
-                Spacer(modifier.height(18.dp))
             }
 
             item {
@@ -123,10 +116,6 @@ fun NewPostScreen(
             }
 
             item {
-                Spacer(modifier.height(18.dp))
-            }
-
-            item {
                 ProfileInputField(
                     title = "Weather",
                     value = post.weather,
@@ -138,49 +127,14 @@ fun NewPostScreen(
             }
 
             item {
-                Spacer(modifier.height(18.dp))
-            }
-
-            item {
-                Text(
-                    text = "Location",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            item {
-                Spacer(modifier.height(6.dp))
-            }
-
-            item {
-                OutlinedTextField(
+                ProfileInputField(
+                    title = "Location",
                     value = post.location,
+                    placeholder = "Baščaršija",
                     onValueChange = {
                         viewModel.updateLocation(it)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text("Baščaršija")
-                    },
-                    singleLine = true
+                    }
                 )
-            }
-
-            item {
-                Spacer(modifier.height(18.dp))
-            }
-
-            item {
-                Text(
-                    text = "Playlist",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            item {
-                Spacer(modifier.height(6.dp))
             }
 
             item {
@@ -192,10 +146,6 @@ fun NewPostScreen(
                         viewModel.selectPlaylist(it)
                     }
                 )
-            }
-
-            item {
-                Spacer(modifier.height(18.dp))
             }
 
             item {

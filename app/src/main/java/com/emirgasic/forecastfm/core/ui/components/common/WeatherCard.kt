@@ -1,19 +1,20 @@
 package com.emirgasic.forecastfm.core.ui.components.common
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun WeatherCard(
@@ -25,128 +26,73 @@ fun WeatherCard(
     modifier: Modifier = Modifier
 ) {
 
+    val forecastColors = LocalForecastColors.current
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.small,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.3f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.5f)
+            ),
         shape = MaterialTheme.shapes.small,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+            color = forecastColors.border
         ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = forecastColors.card
         )
     ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.small)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+        Column(
+            modifier = Modifier.padding(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp,
+                bottom = 20.dp
+            )
         ) {
 
+            Text(
+                text = "Weather Forecast",
+                color = forecastColors.muted,
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Column(
-                modifier = Modifier.padding(
-                    start = 12.dp,
-                    top = 12.dp,
-                    end = 12.dp,
-                    bottom = 20.dp
-                )
-            ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
+            Text(
+                text = temperature,
+                color = forecastColors.title,
+                style = MaterialTheme.typography.headlineLarge
+            )
 
-                Text(
-                    text = "Weather Forecast",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineSmall
-                )
+            Text(
+                text = weather,
+                color = forecastColors.body,
+                style = MaterialTheme.typography.headlineMedium
+            )
 
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(
-                    modifier = Modifier.height(6.dp)
-                )
+            WeatherInfoRow(
+                title = "Feels like:",
+                value = feelsLike
+            )
 
+            WeatherInfoRow(
+                title = "Humidity:",
+                value = humidity
+            )
 
-                Text(
-                    text = temperature,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.headlineLarge
-                )
-
-
-                Text(
-                    text = weather,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
-
-                WeatherInfoRow(
-                    title = "Feels like:",
-                    value = feelsLike
-                )
-
-
-                WeatherInfoRow(
-                    title = "Humidity:",
-                    value = humidity
-                )
-
-
-                WeatherInfoRow(
-                    title = "Wind:",
-                    value = wind
-                )
-
-            }
+            WeatherInfoRow(
+                title = "Wind:",
+                value = wind
+            )
         }
     }
-}
-
-
-@Composable
-private fun WeatherInfoRow(
-    title: String,
-    value: String
-) {
-
-    Row(
-        horizontalArrangement = Arrangement.Start
-    ) {
-
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-
-        Spacer(
-            modifier = Modifier.width(16.dp)
-        )
-
-
-        Text(
-            text = value,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-    }
-
 }

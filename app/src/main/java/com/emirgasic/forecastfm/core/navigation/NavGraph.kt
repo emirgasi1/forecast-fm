@@ -1,7 +1,7 @@
 package com.emirgasic.forecastfm.core.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,7 +37,6 @@ import com.emirgasic.forecastfm.feature.settings.info.AboutAppScreen
 import com.emirgasic.forecastfm.feature.settings.info.PrivacyPolicyScreen
 import com.emirgasic.forecastfm.feature.settings.location.DefaultLocationScreen
 import com.emirgasic.forecastfm.feature.settings.notifications.NotificationsScreen
-import com.emirgasic.forecastfm.feature.splash.SplashScreen
 import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
 import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
@@ -55,20 +54,20 @@ fun NavGraph(
         startDestination = startDestination
     ) {
 
-
         composable(Routes.Login) {
             LoginScreen(
                 navController = navController,
                 tokenManager = tokenManager
             )
         }
+
         composable(
             route = Routes.PlaceInfo,
             arguments = listOf(
                 navArgument("placeId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val placeId = backStackEntry.arguments?.getString("placeId")
+            val placeId = backStackEntry.arguments?.getString("placeId")?.let { Uri.decode(it) }
             PlaceInfoScreen(
                 navController = navController,
                 placeId = placeId,
@@ -77,14 +76,13 @@ fun NavGraph(
         }
 
         composable(Routes.Register) {
-            RegisterScreen(navController=navController,tokenManager=tokenManager)
+            RegisterScreen(navController = navController, tokenManager = tokenManager)
         }
 
         composable(Routes.ForgotPassword) {
-            ForgotPasswordScreen(navController=navController)
+            ForgotPasswordScreen(navController = navController)
         }
 
-        // Main Screen with Bottom Navigation
         composable(Routes.Main) {
             MainScreen(
                 rootNavController = navController,
@@ -92,7 +90,6 @@ fun NavGraph(
             )
         }
 
-        // Bottom Navigation Screens
         composable(Routes.Home) {
             HomeScreen(
                 mainNavController = navController,
@@ -138,29 +135,33 @@ fun NavGraph(
             )
         }
 
-        // Settings & Edit Profile
         composable(Routes.Settings) {
             SettingsScreen(
-                navController = navController,tokenManager=tokenManager
+                navController = navController,
+                tokenManager = tokenManager
             )
         }
+
         composable(Routes.SavedHub) {
             SavedHubScreen(
                 navController = navController
             )
         }
+
         composable(Routes.SavedPosts) {
             SavedPostsScreen(
                 navController = navController,
                 tokenManager = tokenManager
             )
         }
+
         composable(Routes.SavedPlaylists) {
             SavedPlaylistsScreen(
                 navController = navController,
                 tokenManager = tokenManager
             )
         }
+
         composable(Routes.SavedStyles) {
             SavedStylesScreen(
                 navController = navController,
@@ -168,15 +169,14 @@ fun NavGraph(
             )
         }
 
-        composable(
-            route = Routes.PlaceRecommendationDetail
-        ) { backStackEntry ->
-            val recommendationId = backStackEntry.arguments?.getString("id")
+        composable(route = Routes.PlaceRecommendationDetail) { backStackEntry ->
+            val recommendationId = backStackEntry.arguments?.getString("id")?.let { Uri.decode(it) }
             PlaceRecommendationDetailScreen(
                 navController = navController,
                 recommendationId = recommendationId
             )
         }
+
         composable(Routes.EditProfile) {
             EditProfileScreen(
                 navController = navController,
@@ -184,16 +184,14 @@ fun NavGraph(
             )
         }
 
-        // Playlist
-        composable(
-            route = Routes.Playlist
-        ) { backStackEntry ->
-            val playlistId = backStackEntry.arguments?.getString("playlistId")
+        composable(route = Routes.Playlist) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getString("playlistId")?.let { Uri.decode(it) }
             PlaylistScreen(
                 navController = navController,
                 playlistId = playlistId
             )
         }
+
         composable(Routes.Notifications) {
             NotificationsScreen()
         }
@@ -210,7 +208,6 @@ fun NavGraph(
             AboutAppScreen()
         }
 
-
         composable(Routes.Onboarding) {
             OnboardingScreen(
                 navController = navController,
@@ -222,16 +219,13 @@ fun NavGraph(
             )
         }
 
-
-        // Location Details
-        // Location Details
         composable(
             route = Routes.LocationDetails,
             arguments = listOf(
                 navArgument("locationId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val locationId = backStackEntry.arguments?.getString("locationId")
+            val locationId = backStackEntry.arguments?.getString("locationId")?.let { Uri.decode(it) }
             LocationDetailsScreen(
                 navController = navController,
                 locationId = locationId
@@ -244,38 +238,33 @@ fun NavGraph(
                 navArgument("venueId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val venueId = backStackEntry.arguments?.getString("venueId")
+            val venueId = backStackEntry.arguments?.getString("venueId")?.let { Uri.decode(it) }
             PlaceRecommendationScreen(
                 navController = navController,
                 venueId = venueId
             )
         }
 
-
-        // Music History
         composable(Routes.MusicHistory) {
             MusicHistoryScreen(
                 navController = navController,
-                tokenManager=tokenManager
+                tokenManager = tokenManager
             )
         }
 
-        // New Post
         composable(Routes.NewPost) {
             NewPostScreen(
                 navController = navController,
-                tokenManager=tokenManager
+                tokenManager = tokenManager
             )
         }
 
-        // Weather
         composable(Routes.Weather) {
             WeatherScreen(
                 navController = navController
             )
         }
 
-        // Comments
         composable(
             route = Routes.Comments,
             arguments = listOf(
@@ -284,7 +273,7 @@ fun NavGraph(
                 }
             )
         ) { backStackEntry ->
-            val postId = backStackEntry.arguments?.getString("postId")
+            val postId = backStackEntry.arguments?.getString("postId")?.let { Uri.decode(it) }
                 ?: return@composable
 
             CommentsScreen(
@@ -294,7 +283,6 @@ fun NavGraph(
             )
         }
 
-        // Admin
         composable(Routes.Admin) {
             AdminScreen(
                 navController = navController,

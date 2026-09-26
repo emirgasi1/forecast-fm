@@ -25,6 +25,7 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationMusic
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationOutfitCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.PlaceDiscoveryCard
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun LocationDetailsScreen(
@@ -37,6 +38,8 @@ fun LocationDetailsScreen(
     val locationDetails by viewModel.locationDetails.collectAsState()
     val outfits by viewModel.outfits.collectAsState()
     val placesCount by viewModel.placesCount.collectAsState()
+
+    val forecastColors = LocalForecastColors.current
 
     LaunchedEffect(locationId) {
         locationId?.let {
@@ -59,7 +62,7 @@ fun LocationDetailsScreen(
     ) {
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.navigationBarsPadding()
         ) {
 
@@ -67,6 +70,14 @@ fun LocationDetailsScreen(
                 LocationHeader(
                     location = details.location.name,
                     description = details.location.description
+                )
+            }
+
+            item {
+                Text(
+                    text = "Current weather",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = forecastColors.title
                 )
             }
 
@@ -81,10 +92,19 @@ fun LocationDetailsScreen(
             }
 
             item {
+                Text(
+                    text = "Today's Soundtrack",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = forecastColors.title
+                )
+            }
+
+            item {
                 if (details.playlist == null) {
                     Text(
                         text = "No playlist found",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = forecastColors.muted
                     )
                 } else {
                     LocationMusicCard(
@@ -100,7 +120,7 @@ fun LocationDetailsScreen(
                 Text(
                     text = "Outfits for this weather",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = forecastColors.title
                 )
             }
 

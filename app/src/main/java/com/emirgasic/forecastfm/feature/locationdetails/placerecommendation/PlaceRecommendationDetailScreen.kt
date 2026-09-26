@@ -1,6 +1,7 @@
 package com.emirgasic.forecastfm.feature.locationdetails.placerecommendation
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,12 +41,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.DetailRow
 import com.emirgasic.forecastfm.core.ui.components.common.TagChip
-import androidx.compose.ui.platform.LocalContext
-import android.net.Uri
-import androidx.compose.material3.ButtonDefaults
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaceRecommendationDetailScreen(
@@ -53,6 +53,7 @@ fun PlaceRecommendationDetailScreen(
     viewModel: PlaceRecommendationDetailViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val forecastColors = LocalForecastColors.current
     val recommendation by viewModel.recommendation.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -78,7 +79,6 @@ fun PlaceRecommendationDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                // Loading indicator
             }
         } else {
             recommendation?.let { place ->
@@ -87,14 +87,13 @@ fun PlaceRecommendationDetailScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Back button
                     Text(
                         text = "Back",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium
                         ),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = forecastColors.title,
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 8.dp)
                             .clickable {
@@ -104,7 +103,6 @@ fun PlaceRecommendationDetailScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Hero Image
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -124,26 +122,25 @@ fun PlaceRecommendationDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Place Name
                     Text(
                         text = place.name,
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold
                         ),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Location
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.mappin),
                             contentDescription = "Location",
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            tint = forecastColors.muted
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -151,13 +148,12 @@ fun PlaceRecommendationDetailScreen(
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontSize = 18.sp
                             ),
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = forecastColors.body
                         )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Tags
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -168,14 +164,13 @@ fun PlaceRecommendationDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Description section
                     Text(
                         text = "About",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -186,19 +181,18 @@ fun PlaceRecommendationDetailScreen(
                             fontSize = 18.sp,
                             lineHeight = 28.sp
                         ),
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.body
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Details section
                     Text(
                         text = "Details",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -230,7 +224,6 @@ fun PlaceRecommendationDetailScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Get Directions Button
                     Button(
                         onClick = {
                             val address = place.address ?: "${place.name}, ${place.location}"
@@ -244,7 +237,7 @@ fun PlaceRecommendationDetailScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.background
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
                         Text(

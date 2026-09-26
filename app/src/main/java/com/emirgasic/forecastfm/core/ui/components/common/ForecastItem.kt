@@ -1,6 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.common
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun ForecastItem(
@@ -21,6 +20,8 @@ fun ForecastItem(
     temperature: String,
     modifier: Modifier = Modifier
 ){
+
+    val forecastColors = LocalForecastColors.current
 
     Column(
         modifier = modifier,
@@ -36,13 +37,13 @@ fun ForecastItem(
 
         Text(
             text = day,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = forecastColors.muted,
             style = MaterialTheme.typography.titleMedium
         )
 
         Text(
             text = temperature,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = forecastColors.title,
             style = MaterialTheme.typography.titleLarge
         )
     }

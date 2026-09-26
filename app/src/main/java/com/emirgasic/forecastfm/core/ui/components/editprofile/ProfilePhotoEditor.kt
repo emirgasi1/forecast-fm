@@ -1,5 +1,7 @@
 package com.emirgasic.forecastfm.core.ui.components.editprofile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun ProfilePhotoEditor(
@@ -22,6 +25,8 @@ fun ProfilePhotoEditor(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
+
+    val forecastColors = LocalForecastColors.current
 
     Column(
         modifier = modifier,
@@ -31,29 +36,28 @@ fun ProfilePhotoEditor(
 
         Box(
             modifier = Modifier
-                .size(120.dp)
+                .size(128.dp)
                 .clip(CircleShape)
-                .clickable {
-                    onClick()
-                },
+                .background(forecastColors.card)
+                .border(2.dp, forecastColors.border, CircleShape)
+                .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
 
             AsyncImage(
                 model = image,
                 contentDescription = "Profile picture",
-                modifier = Modifier.matchParentSize(),
+                modifier = Modifier
+                    .size(124.dp)
+                    .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
-
         }
 
         Text(
             text = "Change Photo",
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.headlineSmall
+            color = forecastColors.body,
+            style = MaterialTheme.typography.titleMedium
         )
-
     }
-
 }

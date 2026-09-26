@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun InfoRow(
@@ -17,6 +18,8 @@ fun InfoRow(
     modifier: Modifier = Modifier
 ) {
 
+    val forecastColors = LocalForecastColors.current
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -25,19 +28,19 @@ fun InfoRow(
 
         Text(
             text = first,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = forecastColors.body,
             style = MaterialTheme.typography.titleMedium
         )
 
         Text(
             text = "•",
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            color = forecastColors.muted.copy(alpha = 0.6f),
             style = MaterialTheme.typography.bodyLarge
         )
 
         Text(
             text = second,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = forecastColors.body,
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -45,18 +48,15 @@ fun InfoRow(
 
             Text(
                 text = "•",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                color = forecastColors.muted.copy(alpha = 0.6f),
                 style = MaterialTheme.typography.bodyLarge
             )
 
             Text(
                 text = third,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = forecastColors.body,
                 style = MaterialTheme.typography.titleMedium
             )
-
         }
-
     }
-
 }

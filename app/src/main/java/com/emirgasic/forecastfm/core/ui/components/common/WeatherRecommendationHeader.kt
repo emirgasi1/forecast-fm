@@ -1,6 +1,5 @@
 package com.emirgasic.forecastfm.core.ui.components.common
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun WeatherRecommendationHeader(
@@ -21,6 +21,8 @@ fun WeatherRecommendationHeader(
     icon: Painter,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
 
     Column(
         modifier = modifier,
@@ -40,18 +42,15 @@ fun WeatherRecommendationHeader(
 
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.headlineMedium
             )
-
         }
 
         Text(
             text = subtitle,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = forecastColors.muted,
             style = MaterialTheme.typography.titleMedium
         )
-
     }
-
 }

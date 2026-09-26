@@ -1,5 +1,9 @@
 package com.emirgasic.forecastfm.feature.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,23 +23,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
@@ -44,6 +50,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
+import com.emirgasic.forecastfm.feature.map.LocationManager
 import kotlin.toString
 
 @Composable
@@ -53,7 +60,7 @@ fun HomeScreen(
     tokenManager: TokenManager,
     modifier: Modifier = Modifier
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -68,40 +75,71 @@ fun HomeScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    val locationManager = remember { LocationManager(context) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            viewModel.loadHome(null, null)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (fineGranted || coarseGranted) {
+            val location = locationManager.getCurrentLocation()
+            if (location != null) {
+                viewModel.loadHome(location.latitude, location.longitude)
+            } else {
+                viewModel.loadHome(null, null)
+            }
+        } else {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
     when (val state = uiState) {
 
         HomeUiState.Loading -> {
-
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-
                 LoadingScreen()
             }
         }
 
         is HomeUiState.Error -> {
-
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Text(
                         text = state.message,
                         style = MaterialTheme.typography.bodyLarge
                     )
-
                     Button(
-                        onClick = {
-                            viewModel.loadHome()
-                        }
+                        onClick = { viewModel.loadHome(null, null) }
                     ) {
                         Text("Retry")
                     }
@@ -110,7 +148,6 @@ fun HomeScreen(
         }
 
         is HomeUiState.Success -> {
-
             val home = state.home
 
             Box(
@@ -129,7 +166,7 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = home!!.greeting,
+                                text = home.greeting,
                                 color = MaterialTheme.colorScheme.onBackground,
                                 style = MaterialTheme.typography.titleSmall
                             )
@@ -142,22 +179,20 @@ fun HomeScreen(
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = home!!.weather.location,
+                            text = home.weather.location,
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.headlineMedium
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         WeatherCard(
-                            temperature = home!!.weather.temperature,
-                            weather = home!!.weather.condition,
-                            feelsLike = home!!.weather.feelsLike,
-                            humidity = home!!.weather.humidity,
-                            wind = home!!.weather.wind
+                            temperature = home.weather.temperature,
+                            weather = home.weather.condition,
+                            feelsLike = home.weather.feelsLike,
+                            humidity = home.weather.humidity,
+                            wind = home.weather.wind
                         )
                         Spacer(modifier.height(26.dp))
-                        SectionTitle(
-                            title = "5-day Forecast"
-                        )
+                        SectionTitle(title = "5-day Forecast")
                         Spacer(modifier.height(38.dp))
                         Box(
                             modifier = Modifier
@@ -179,8 +214,7 @@ fun HomeScreen(
                                     shape = MaterialTheme.shapes.medium
                                 )
                                 .clickable { rootNavController.navigate(Routes.Weather) }
-                        )  {
-
+                        ) {
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -188,29 +222,22 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(26.dp)
                             ) {
-
-                                items(home!!.forecast) { forecast ->
-
+                                items(home.forecast) { forecast ->
                                     ForecastItem(
                                         icon = forecast.icon,
                                         day = forecast.time,
                                         temperature = forecast.temperature
                                     )
-
                                 }
-
                             }
                         }
                         Spacer(modifier.height(26.dp))
-                        SectionTitle(
-                            title = "Today's Soundtrack"
-                        )
+                        SectionTitle(title = "Today's Soundtrack")
                         Spacer(modifier = modifier.height(20.dp))
                         Column(
                             verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {
-
-                            home!!.playlists.forEach { playlist ->
+                            home.playlists.forEach { playlist ->
                                 PlaylistCard(
                                     title = playlist.title,
                                     genre = playlist.genre,
@@ -223,14 +250,10 @@ fun HomeScreen(
                                     }
                                 )
                             }
-
                         }
                     }
                 }
             }
         }
-
-
-
     }
-    }
+}

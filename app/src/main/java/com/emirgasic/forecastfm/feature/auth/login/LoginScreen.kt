@@ -3,9 +3,10 @@ package com.emirgasic.forecastfm.feature.auth.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,11 +15,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,7 +33,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
-
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun LoginScreen(
@@ -37,6 +41,8 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     tokenManager: TokenManager
 ) {
+    val forecastColors = LocalForecastColors.current
+
     val loginViewModel: LoginViewModel = viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
@@ -73,14 +79,14 @@ fun LoginScreen(
             )
             Text(
                 text = "Welcome Back",
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.offset(y = (-30).dp)
             )
             Spacer(modifier = modifier.height(24.dp))
             Text(
                 text = "Continue your Sarajevo vibe.",
-                color = MaterialTheme.colorScheme.onBackground,
+                color = forecastColors.body,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = modifier.width(320.dp)
             )
@@ -93,7 +99,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Email",
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = forecastColors.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = modifier.align(Alignment.Start)
                 )
@@ -117,7 +123,6 @@ fun LoginScreen(
                 )
                 Spacer(modifier.height(32.dp))
 
-                // Show error message if any
                 if (errorMessage != null) {
                     Text(
                         text = errorMessage ?: "",
@@ -140,7 +145,7 @@ fun LoginScreen(
 
                 Text(
                     text = "Forgot password?",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = forecastColors.body,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = modifier.clickable { navController.navigate(Routes.ForgotPassword) }
                 )
@@ -152,28 +157,28 @@ fun LoginScreen(
                 ) {
                     HorizontalDivider(
                         modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.outline
+                        color = forecastColors.border
                     )
                     Text(
                         text = " OR ",
                         modifier = Modifier.padding(horizontal = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = forecastColors.muted
                     )
                     HorizontalDivider(
                         modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.outline
+                        color = forecastColors.border
                     )
                 }
                 Spacer(modifier.height(20.dp))
                 Text(
                     text = "Continue with Google",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = forecastColors.body,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier.height(12.dp))
                 Text(
                     text = "Sign Up",
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = modifier.clickable { navController.navigate(Routes.Register) }
                 )

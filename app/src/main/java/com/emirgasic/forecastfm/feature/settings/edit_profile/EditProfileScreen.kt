@@ -39,6 +39,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.editprofile.ProfilePhotoEditor
 import com.emirgasic.forecastfm.core.ui.components.editprofile.ProfileTextField
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +59,7 @@ fun EditProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val forecastColors = LocalForecastColors.current
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -89,7 +91,8 @@ fun EditProfileScreen(
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
             )
         } else {
             LazyColumn(
@@ -199,7 +202,7 @@ fun EditProfileScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = msg,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = forecastColors.success,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

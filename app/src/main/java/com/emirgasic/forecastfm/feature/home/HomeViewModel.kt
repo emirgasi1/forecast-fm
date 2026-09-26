@@ -1,6 +1,6 @@
 package com.emirgasic.forecastfm.feature.home
 
-import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class HomeViewModel(
     private val tokenManager: TokenManager,
@@ -33,10 +37,10 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadHome()
+        loadHome(null, null)
     }
 
-    fun loadHome() {
+    fun loadHome(userLatitude: Double?, userLongitude: Double?) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
 
@@ -45,8 +49,15 @@ class HomeViewModel(
                     ?: throw Exception("User not logged in")
 
                 val locations = locationRepository.getLocations()
-                val location = locations.firstOrNull()
-                    ?: throw Exception("No locations available")
+                if (locations.isEmpty()) throw Exception("No locations available")
+
+                val location = pickNearestLocation(
+                    locations = locations,
+                    userLat = userLatitude,
+                    userLng = userLongitude
+                )
+
+                Log.d("HomeVM", "Using location: ${location.name} (${location.latitude}, ${location.longitude})")
 
                 val weatherData = weatherRepository.getWeather(
                     location = location.name,
@@ -100,6 +111,34 @@ class HomeViewModel(
                 )
             }
         }
+    }
+
+    private fun pickNearestLocation(
+        locations: List<com.emirgasic.forecastfm.network.location.LocationResponse>,
+        userLat: Double?,
+        userLng: Double?
+    ): com.emirgasic.forecastfm.network.location.LocationResponse {
+        if (userLat == null || userLng == null) {
+            return locations.first()
+        }
+
+        return locations.minByOrNull { loc ->
+            haversineKm(userLat, userLng, loc.latitude, loc.longitude)
+        } ?: locations.first()
+    }
+
+    private fun haversineKm(
+        lat1: Double, lon1: Double,
+        lat2: Double, lon2: Double
+    ): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).let { it * it } +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2).let { it * it }
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return r * c
     }
 
     private fun scorePlaylist(

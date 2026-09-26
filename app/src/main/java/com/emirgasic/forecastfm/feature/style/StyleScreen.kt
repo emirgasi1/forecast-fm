@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,7 +18,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun StyleScreen(
@@ -57,6 +59,8 @@ fun StyleScreen(
     val error by viewModel.error.collectAsState()
     val savedOutfitIds by viewModel.savedOutfitIds.collectAsState()
 
+    val forecastColors = LocalForecastColors.current
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -64,8 +68,7 @@ fun StyleScreen(
             .padding(
                 top = 20.dp,
                 start = 10.dp,
-                end = 10.dp,
-                bottom = 10.dp
+                end = 10.dp
             )
     ) {
         when {
@@ -85,9 +88,17 @@ fun StyleScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Couldn't load outfits")
+                    Text(
+                        text = "Couldn't load outfits",
+                        color = forecastColors.title,
+                        style = MaterialTheme.typography.titleLarge
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = error ?: "")
+                    Text(
+                        text = error ?: "",
+                        color = forecastColors.muted,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.loadStyle() }) {
                         Text("Retry")
@@ -96,6 +107,7 @@ fun StyleScreen(
             }
             style != null -> {
                 Column(
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.Start
                 ) {
@@ -117,16 +129,17 @@ fun StyleScreen(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add outfit",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = forecastColors.primary
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "Trending outfits inspired by Sarajevo weather",
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted,
+                        style = MaterialTheme.typography.bodyMedium
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -135,7 +148,10 @@ fun StyleScreen(
                         columns = GridCells.Fixed(2),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding(),
+                        contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         items(style!!.outfits) { outfit ->
                             val isSaved = outfit.id in savedOutfitIds

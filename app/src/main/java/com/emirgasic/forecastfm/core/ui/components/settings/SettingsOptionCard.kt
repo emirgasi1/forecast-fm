@@ -7,16 +7,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun SettingsOptionCard(
@@ -25,20 +29,30 @@ fun SettingsOptionCard(
     onClick: () -> Unit = {}
 ) {
 
+    val forecastColors = LocalForecastColors.current
+
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            ),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = forecastColors.card
         )
     ) {
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(forecastColors.card)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
@@ -46,22 +60,18 @@ fun SettingsOptionCard(
 
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.titleMedium
             )
 
-            Spacer(
-                modifier = Modifier.weight(1f)
-            )
+            Spacer(modifier = Modifier.weight(1f))
 
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                painter = painterResource(R.drawable.arrow_right),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                modifier = Modifier.size(20.dp),
+                tint = forecastColors.muted
             )
-
         }
-
     }
-
 }

@@ -3,11 +3,12 @@ package com.emirgasic.forecastfm.feature.music.musichistory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.musichistory.MusicHistoryEntryCard
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun MusicHistoryScreen(
@@ -43,11 +44,13 @@ fun MusicHistoryScreen(
     val history by viewModel.history.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    val forecastColors = LocalForecastColors.current
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 60.dp, start = 10.dp, bottom = 10.dp, end = 10.dp)
+            .padding(top = 60.dp, start = 10.dp, end = 10.dp)
     ) {
         if (isLoading) {
             Box(
@@ -59,16 +62,19 @@ fun MusicHistoryScreen(
         } else if (history.isEmpty()) {
             Text(
                 text = "No music history yet.\nStart listening to playlists!",
-                color = MaterialTheme.colorScheme.onBackground,
+                color = forecastColors.body,
                 modifier = Modifier.padding(16.dp)
             )
         } else {
             val groupedHistory = history.groupBy { it.section }
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
+                contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 groupedHistory.forEach { (section, entries) ->
                     item {

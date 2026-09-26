@@ -17,8 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaceDiscoveryCard(
@@ -32,6 +36,9 @@ fun PlaceDiscoveryCard(
     onChooseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -50,7 +57,7 @@ fun PlaceDiscoveryCard(
             Text(
                 text = location,
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = forecastColors.title
             )
 
             Row(
@@ -60,33 +67,72 @@ fun PlaceDiscoveryCard(
                 Icon(
                     painter = weatherIcon,
                     contentDescription = "Weather",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
                 )
                 Text(
                     text = weather,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = forecastColors.body
                 )
                 Text(
                     text = temperature,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = forecastColors.body
                 )
             }
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "🎵 $playlist",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = "👕 $outfit",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = "📍 $placesCount places nearby",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.music),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = forecastColors.body
+                    )
+                    Text(
+                        text = playlist,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = forecastColors.body
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.clothes),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = forecastColors.body
+                    )
+                    Text(
+                        text = outfit,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = forecastColors.body
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.mappin),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = forecastColors.body
+                    )
+                    Text(
+                        text = "$placesCount places nearby",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = forecastColors.body
+                    )
+                }
             }
 
             Button(

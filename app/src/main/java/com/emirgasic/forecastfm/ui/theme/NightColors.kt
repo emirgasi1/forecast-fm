@@ -11,6 +11,7 @@ val NightBackground = Color(0xFF161210)
 val NightSurface = Color(0xFF221A17)
 val NightCard = Color(0xFF2B211D)
 val NightBorder = Color(0xFF473C38)
+val NightShadow = Color(0xFF000000)
 
 val NightTitle = Color(0xFFF8F2EA)
 val NightBody = Color(0xFFD6C8BB)

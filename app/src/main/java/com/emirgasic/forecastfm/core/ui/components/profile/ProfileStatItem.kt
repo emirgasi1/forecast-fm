@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun ProfileStatItem(
@@ -16,24 +17,24 @@ fun ProfileStatItem(
     modifier: Modifier = Modifier
 ) {
 
+    val forecastColors = LocalForecastColors.current
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
 
         Text(
             text = value,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.titleMedium
+            color = forecastColors.title,
+            style = MaterialTheme.typography.titleLarge
         )
 
         Text(
             text = label,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.titleLarge
+            color = forecastColors.muted,
+            style = MaterialTheme.typography.bodyMedium
         )
-
     }
-
 }

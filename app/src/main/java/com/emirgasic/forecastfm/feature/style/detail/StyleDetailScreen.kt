@@ -2,24 +2,26 @@ package com.emirgasic.forecastfm.feature.style.detail
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -29,16 +31,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.core.ui.components.common.DetailRow
+import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.TagChip
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun StyleDetailScreen(
@@ -51,6 +56,8 @@ fun StyleDetailScreen(
     val outfit by viewModel.outfit.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    val forecastColors = LocalForecastColors.current
+
     LaunchedEffect(outfitId) {
         outfitId?.let {
             viewModel.loadOutfit(it)
@@ -62,10 +69,9 @@ fun StyleDetailScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(
-                top = 20.dp,
+                top = 60.dp,
                 start = 16.dp,
-                end = 16.dp,
-                bottom = 10.dp
+                end = 16.dp
             )
     ) {
         if (isLoading) {
@@ -73,6 +79,7 @@ fun StyleDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+                LoadingScreen()
             }
         } else {
             outfit?.let { item ->
@@ -80,14 +87,12 @@ fun StyleDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
+                        .navigationBarsPadding()
                 ) {
                     Text(
                         text = "← Back",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = forecastColors.title,
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 8.dp)
                             .clickable {
@@ -97,14 +102,22 @@ fun StyleDetailScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(350.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                            .height(350.dp)
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                ambientColor = forecastColors.shadow.copy(alpha = 0.3f),
+                                spotColor = forecastColors.shadow.copy(alpha = 0.45f)
+                            )
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(
+                                width = 1.dp,
+                                color = forecastColors.border,
+                                shape = RoundedCornerShape(16.dp)
+                            )
                     ) {
                         AsyncImage(
                             model = item.imageUrl,
@@ -118,14 +131,12 @@ fun StyleDetailScreen(
 
                     Text(
                         text = item.title,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = forecastColors.title,
+                        fontWeight = FontWeight.SemiBold
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -138,38 +149,29 @@ fun StyleDetailScreen(
 
                     Text(
                         text = "Where to Buy",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        style = MaterialTheme.typography.titleLarge,
+                        color = forecastColors.title
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     DetailRow(
                         label = "Store",
-                        value = item.storeName ?: "Not available",
-                        labelSize = 18.sp,
-                        valueSize = 18.sp
+                        value = item.storeName ?: "Not available"
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     DetailRow(
                         label = "Address",
-                        value = item.storeAddress ?: "Not available",
-                        labelSize = 18.sp,
-                        valueSize = 18.sp
+                        value = item.storeAddress ?: "Not available"
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     DetailRow(
                         label = "Price",
-                        value = item.price ?: "Not available",
-                        labelSize = 18.sp,
-                        valueSize = 18.sp
+                        value = item.price ?: "Not available"
                     )
 
                     if (!item.storePhone.isNullOrBlank()) {
@@ -189,13 +191,13 @@ fun StyleDetailScreen(
                         ) {
                             Text(
                                 text = "Phone",
-                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = forecastColors.body
                             )
                             Text(
                                 text = item.storePhone,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
-                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = forecastColors.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -215,15 +217,13 @@ fun StyleDetailScreen(
                             .height(56.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
+                            containerColor = forecastColors.primary,
                             contentColor = MaterialTheme.colorScheme.background
                         )
                     ) {
                         Text(
                             text = "Get Directions to Store",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontSize = 18.sp
-                            )
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
 
@@ -238,13 +238,13 @@ fun StyleDetailScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, forecastColors.border)
                         ) {
                             Text(
                                 text = "Buy Online",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontSize = 18.sp
-                                )
+                                style = MaterialTheme.typography.titleMedium,
+                                color = forecastColors.title
                             )
                         }
                     }

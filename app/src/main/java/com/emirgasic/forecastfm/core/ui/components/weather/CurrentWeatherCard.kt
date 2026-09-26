@@ -1,6 +1,8 @@
 package com.emirgasic.forecastfm.core.ui.components.weather
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun CurrentWeatherCard(
@@ -28,27 +31,35 @@ fun CurrentWeatherCard(
     location: String,
     updated: String,
     modifier: Modifier = Modifier
-){
+) {
+
+    val forecastColors = LocalForecastColors.current
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.3f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.45f)
+            ),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = forecastColors.card
         ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline
-        )
-    ){
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, forecastColors.border)
+    ) {
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(forecastColors.card)
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
-        ){
+        ) {
 
             Image(
                 painter = weatherIcon,
@@ -56,49 +67,40 @@ fun CurrentWeatherCard(
                 modifier = Modifier.size(90.dp)
             )
 
-
             Text(
                 text = temperature,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.displaySmall
             )
 
-
             Text(
                 text = condition,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = forecastColors.body,
                 style = MaterialTheme.typography.titleLarge
             )
 
-
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
-
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
 
                 Column {
 
                     Text(
                         text = location,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = forecastColors.title,
                         style = MaterialTheme.typography.titleMedium
                     )
 
-
                     Text(
                         text = updated,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        color = forecastColors.muted,
                         style = MaterialTheme.typography.bodyMedium
                     )
-
                 }
-
             }
         }
     }

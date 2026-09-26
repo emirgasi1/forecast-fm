@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.theme.AppTheme
 import com.emirgasic.forecastfm.core.theme.ThemeManager
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -37,6 +38,13 @@ fun PlaceInfoMapPreview(
 ) {
     val context = LocalContext.current
     val selectedTheme by ThemeManager.selectedTheme.collectAsState()
+    val forecastColors = LocalForecastColors.current
+
+    val markerColor = Color(
+        red = (forecastColors.primary.red * 255f).toInt(),
+        green = (forecastColors.primary.green * 255f).toInt(),
+        blue = (forecastColors.primary.blue * 255f).toInt()
+    )
 
     val styleJson = remember(selectedTheme) {
         val resolved = if (selectedTheme == AppTheme.AUTO) {
@@ -100,7 +108,7 @@ fun PlaceInfoMapPreview(
                 id = "place-preview-marker",
                 source = source,
                 radius = const(12.dp),
-                color = const(Color(0xFFD97706)),
+                color = const(markerColor),
                 strokeWidth = const(3.dp),
                 strokeColor = const(Color.White),
                 strokeOpacity = const(1f)

@@ -9,42 +9,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.core.navigation.Routes
-import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
-import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.emirgasic.forecastfm.feature.feed.FeedViewModel
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
-import com.emirgasic.forecastfm.core.ui.components.feed.SaveOptionsBottomSheet
-import androidx.compose.runtime.setValue
+import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
+import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
+import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
+import com.emirgasic.forecastfm.core.ui.components.feed.SaveOptionsBottomSheet
 
 @Composable
 fun FeedScreen(
     mainNavController: NavController,
     rootNavController: NavController,
-    tokenManager: TokenManager,  // ← Add this
+    tokenManager: TokenManager,
     modifier: Modifier = Modifier,
     viewModel: FeedViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -54,11 +50,10 @@ fun FeedScreen(
             }
         }
     )
-){
+) {
 
     val uiState by viewModel.uiState.collectAsState()
     val likedPosts by viewModel.likedPosts.collectAsState()
-
     val savedPosts by viewModel.savedPosts.collectAsState()
 
     var showSaveSheet by remember { mutableStateOf(false) }
@@ -70,15 +65,15 @@ fun FeedScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(
                 top = 20.dp,
-                start = 10.dp,
-                end = 10.dp,
+                start = 8.dp,
+                end = 8.dp,
                 bottom = 10.dp
             )
     ) {
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.spacedBy(28.dp),
             horizontalAlignment = Alignment.Start
         ) {
 
@@ -88,21 +83,15 @@ fun FeedScreen(
                 )
             }
 
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-
             when (val state = uiState) {
 
                 FeedUiState.Loading -> {
-
                     item {
                         LoadingScreen()
                     }
                 }
 
                 is FeedUiState.Success -> {
-
                     items(state.posts) { post ->
                         val isLiked = post.id in likedPosts
                         val isSaved = post.id in savedPosts
@@ -133,42 +122,23 @@ fun FeedScreen(
                                 showSaveSheet = true
                             }
                         )
-
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 
                 is FeedUiState.Error -> {
-
                     item {
-
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-
-                            Text(
-                                text = "Couldn't load feed"
-                            )
-
-                            Spacer(
-                                modifier = Modifier.height(8.dp)
-                            )
-
-                            Text(
-                                text = state.message
-                            )
-
-                            Spacer(
-                                modifier = Modifier.height(16.dp)
-                            )
-
+                            Text(text = "Couldn't load feed")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = state.message)
+                            Spacer(modifier = Modifier.height(16.dp))
                             Button(
-                                onClick = {
-                                    viewModel.loadFeed()
-                                }
+                                onClick = { viewModel.loadFeed() }
                             ) {
                                 Text("Retry")
                             }
@@ -177,6 +147,7 @@ fun FeedScreen(
                 }
             }
         }
+
         if (showSaveSheet && selectedPostId != null) {
             SaveOptionsBottomSheet(
                 onDismiss = {

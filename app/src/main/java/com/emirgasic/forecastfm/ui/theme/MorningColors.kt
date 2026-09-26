@@ -11,6 +11,7 @@ val MorningBackground = Color(0xFFFFF9F2)
 val MorningSurface = Color(0xFFFFFFFF)
 val MorningCard = Color(0xFFFFFDFB)
 val MorningBorder = Color(0xFFE8DCCF)
+val MorningShadow = Color(0xFF3B2A22)
 
 val MorningTitle = Color(0xFF3B2A22)
 val MorningBody = Color(0xFF65564C)

@@ -11,23 +11,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-
 @Composable
 fun AuthButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
-){
+) {
 
     Button(
-
         onClick = onClick,
-
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp),
-
         shape = RoundedCornerShape(0.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
@@ -35,9 +31,7 @@ fun AuthButton(
             contentColor = MaterialTheme.colorScheme.background,
             disabledContainerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
-
-    ){
-
+    ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleLarge

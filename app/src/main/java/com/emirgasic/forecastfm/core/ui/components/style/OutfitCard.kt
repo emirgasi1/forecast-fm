@@ -25,12 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun OutfitCard(
@@ -44,43 +45,46 @@ fun OutfitCard(
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            )
             .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline
-        ),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = forecastColors.card
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .background(forecastColors.card)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(12.dp),
-                        clip = false
-                    )
                     .clip(RoundedCornerShape(12.dp))
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                        color = forecastColors.border,
                         shape = RoundedCornerShape(12.dp)
                     )
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(forecastColors.surface)
             ) {
                 AsyncImage(
                     model = imageUrl,
@@ -93,7 +97,9 @@ fun OutfitCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = forecastColors.title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Row(
@@ -104,14 +110,17 @@ fun OutfitCard(
                 Text(
                     text = "$weatherCondition • $season",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = forecastColors.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = onLikeClick
+                        onClick = onLikeClick,
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             painter = if (isSaved) {
@@ -120,14 +129,18 @@ fun OutfitCard(
                                 painterResource(R.drawable.heart)
                             },
                             contentDescription = if (isSaved) "Unsave" else "Save",
-                            modifier = Modifier.size(20.dp),
-                            tint = if (isSaved) Color.Red else MaterialTheme.colorScheme.onBackground
+                            modifier = Modifier.size(18.dp),
+                            tint = if (isSaved) {
+                                forecastColors.primary
+                            } else {
+                                forecastColors.muted
+                            }
                         )
                     }
                     Text(
                         text = likes.toString(),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted
                     )
                 }
             }

@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaceInfoHero(
@@ -27,6 +27,9 @@ fun PlaceInfoHero(
     locationName: String?,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -34,20 +37,17 @@ fun PlaceInfoHero(
             .background(
                 Brush.linearGradient(
                     listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        forecastColors.primary,
+                        forecastColors.primaryDark
                     )
                 )
             )
             .padding(24.dp)
     ) {
+
         Text(
             text = category.uppercase(),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.5.sp
-            ),
+            style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
         )
 
@@ -55,11 +55,7 @@ fun PlaceInfoHero(
 
         Text(
             text = name,
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 36.sp
-            ),
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.background
         )
 
@@ -68,10 +64,7 @@ fun PlaceInfoHero(
 
             Text(
                 text = locationName,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium
-                ),
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.background.copy(alpha = 0.85f)
             )
         }
@@ -84,14 +77,11 @@ fun PlaceInfoHero(
             ) {
                 Text(
                     text = "⭐",
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = rating.toString(),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    ),
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.background
                 )
             }

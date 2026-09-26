@@ -1,23 +1,18 @@
 package com.emirgasic.forecastfm.core.ui.components.common
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun SearchField(
@@ -39,10 +34,11 @@ fun SearchField(
             )
         },
         leadingIcon = {
-            Image(
+            Icon(
                 painter = painterResource(R.drawable.magnify),
                 contentDescription = "Search",
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
+                tint = LocalForecastColors.current.muted
             )
         }
     )

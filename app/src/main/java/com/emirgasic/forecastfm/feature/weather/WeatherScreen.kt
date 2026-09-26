@@ -1,46 +1,45 @@
 package com.emirgasic.forecastfm.feature.weather
+
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
-import com.emirgasic.forecastfm.core.ui.components.weather.CurrentWeatherCard
-import com.emirgasic.forecastfm.core.ui.components.weather.ForecastRowItem
-import com.emirgasic.forecastfm.core.ui.components.weather.WeatherDetailsCard
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
+import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
+import com.emirgasic.forecastfm.core.ui.components.weather.CurrentWeatherCard
+import com.emirgasic.forecastfm.core.ui.components.weather.ForecastRowItem
+import com.emirgasic.forecastfm.core.ui.components.weather.WeatherDetailsCard
 import com.emirgasic.forecastfm.data.repository.LocationRepository
-import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import com.emirgasic.forecastfm.network.location.LocationResponse
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun WeatherScreen(
@@ -59,18 +58,16 @@ fun WeatherScreen(
     val hourlyForecast by viewModel.hourlyForecast.collectAsState()
     val dailyForecast by viewModel.dailyForecast.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+
+    val forecastColors = LocalForecastColors.current
+
     LaunchedEffect(Unit) {
-
-        val locations =
-            locationRepository.getLocations()
-
-        location =
-            locations.firstOrNull()
+        val locations = locationRepository.getLocations()
+        location = locations.firstOrNull()
     }
+
     LaunchedEffect(location) {
-
         location?.let {
-
             viewModel.loadWeather(
                 location = it.name,
                 latitude = it.latitude,
@@ -86,7 +83,6 @@ fun WeatherScreen(
             .padding(
                 top = 60.dp,
                 start = 10.dp,
-                bottom = 10.dp,
                 end = 10.dp
             )
     ) {
@@ -94,19 +90,15 @@ fun WeatherScreen(
         when (uiState) {
 
             WeatherUiState.LOADING -> {
-
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-
                     LoadingScreen()
                 }
             }
 
-
             WeatherUiState.ERROR -> {
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -117,26 +109,23 @@ fun WeatherScreen(
 
                     Text(
                         text = "Unable to load weather",
-                        style = MaterialTheme.typography.titleMedium
+                        color = forecastColors.title,
+                        style = MaterialTheme.typography.titleLarge
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "Please check your connection and try again.",
+                        color = forecastColors.muted,
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(16.dp)
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = {
                             location?.let {
-
                                 viewModel.loadWeather(
                                     location = it.name,
                                     latitude = it.latitude,
@@ -145,37 +134,31 @@ fun WeatherScreen(
                             }
                         }
                     ) {
-
                         Text("Retry")
                     }
                 }
             }
-
 
             WeatherUiState.SUCCESS -> {
 
                 weather?.let { currentWeather ->
 
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.Start
+                        horizontalAlignment = Alignment.Start,
+                        contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
 
                         item {
-
-                            SectionTitle(
-                                title = "Today's Weather"
-                            )
+                            SectionTitle(title = "Today's Weather")
                         }
 
-
                         item {
-
                             CurrentWeatherCard(
-                                weatherIcon = painterResource(
-                                    currentWeather.icon
-                                ),
+                                weatherIcon = painterResource(currentWeather.icon),
                                 temperature = currentWeather.temperature,
                                 condition = currentWeather.condition,
                                 location = currentWeather.location,
@@ -183,9 +166,7 @@ fun WeatherScreen(
                             )
                         }
 
-
                         item {
-
                             WeatherDetailsCard(
                                 feelsLike = currentWeather.feelsLike,
                                 humidity = currentWeather.humidity,
@@ -195,38 +176,37 @@ fun WeatherScreen(
                             )
                         }
 
-
                         item {
-
-                            SectionTitle(
-                                title = "Hourly Forecast"
-                            )
+                            SectionTitle(title = "Hourly Forecast")
                         }
 
-
                         item {
-
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(
+                                        elevation = 3.dp,
+                                        shape = MaterialTheme.shapes.medium,
+                                        ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                                        spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+                                    ),
                                 shape = MaterialTheme.shapes.medium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    containerColor = forecastColors.card
                                 ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outline
-                                )
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                                border = BorderStroke(1.dp, forecastColors.border)
                             ) {
 
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        .background(forecastColors.card)
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
 
                                     hourlyForecast.forEach {
-
                                         ForecastRowItem(
                                             title = it.time,
                                             icon = painterResource(it.icon),
@@ -237,38 +217,37 @@ fun WeatherScreen(
                             }
                         }
 
-
                         item {
-
-                            SectionTitle(
-                                title = "Next 5 Days"
-                            )
+                            SectionTitle(title = "Next 5 Days")
                         }
 
-
                         item {
-
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(
+                                        elevation = 3.dp,
+                                        shape = MaterialTheme.shapes.medium,
+                                        ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                                        spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+                                    ),
                                 shape = MaterialTheme.shapes.medium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    containerColor = forecastColors.card
                                 ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outline
-                                )
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                                border = BorderStroke(1.dp, forecastColors.border)
                             ) {
 
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        .background(forecastColors.card)
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
 
                                     dailyForecast.forEach {
-
                                         ForecastRowItem(
                                             title = it.time,
                                             icon = painterResource(it.icon),

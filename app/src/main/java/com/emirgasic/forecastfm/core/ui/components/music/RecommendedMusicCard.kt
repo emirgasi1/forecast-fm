@@ -1,33 +1,34 @@
 package com.emirgasic.forecastfm.core.ui.components.music
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.core.ui.components.common.IconText
-import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun RecommendedMusicCard(
@@ -41,90 +42,123 @@ fun RecommendedMusicCard(
     onPlayClick: () -> Unit,
     onViewPlaylistClick: (String) -> Unit
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            )
+            .clickable { onViewPlaylistClick(id) },
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = forecastColors.card
+        )
     ) {
 
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
 
-            AsyncImage(
-                model = image,
-                contentDescription = "Album cover",
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .clip(MaterialTheme.shapes.medium)
-            )
-
-            Text(
-                text = title,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            InfoRow(
-                first = genre,
-                second = mood
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(56.dp),
-                verticalAlignment = Alignment.CenterVertically
+                        color = forecastColors.border,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-
-                Row(
-                    modifier = Modifier.clickable {
-                        onPlayClick()
-                    },
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.music),
-                        contentDescription = "Play",
-                        modifier = Modifier.size(20.dp)
+                if (image.isNullOrBlank()) {
+                    Icon(
+                        painter = painterResource(R.drawable.album_disc),
+                        contentDescription = "Album placeholder",
+                        modifier = Modifier.size(52.dp),
+                        tint = forecastColors.muted
                     )
-
-                    Text(
-                        text = "Play",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
+                } else {
+                    AsyncImage(
+                        model = image,
+                        contentDescription = "Album cover",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
-
-                IconText(
-                    icon = painterResource(R.drawable.heart),
-                    text = likes
-                )
             }
 
-            TextButton(
-                onClick = {
-                    onViewPlaylistClick(id)
-                }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+
                 Text(
-                    text = "View Playlist",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyLarge
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = forecastColors.title,
+                    style = MaterialTheme.typography.titleMedium
                 )
+
+                Text(
+                    text = "$genre · $mood",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = forecastColors.muted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.clickable { onPlayClick() },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.music),
+                            contentDescription = "Play",
+                            modifier = Modifier.size(18.dp),
+                            tint = forecastColors.primary
+                        )
+                        Text(
+                            text = "Play",
+                            color = forecastColors.primary,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.heart),
+                            contentDescription = "Likes",
+                            modifier = Modifier.size(16.dp),
+                            tint = forecastColors.muted
+                        )
+                        Text(
+                            text = likes,
+                            color = forecastColors.muted,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun MusicPlaylistCard(
@@ -41,6 +42,8 @@ fun MusicPlaylistCard(
     onFavoriteClick: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
+
+    val forecastColors = LocalForecastColors.current
 
     Card(
         modifier = modifier
@@ -125,6 +128,12 @@ fun MusicPlaylistCard(
                                 "Remove from favorites"
                             } else {
                                 "Add to favorites"
+                            },
+                        tint =
+                            if (isFavorite) {
+                                forecastColors.error
+                            } else {
+                                forecastColors.muted
                             }
                     )
                 }

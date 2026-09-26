@@ -1,11 +1,6 @@
 package com.emirgasic.forecastfm.core.ui.components.auth
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,13 +18,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PasswordField(
     password: String,
     onPasswordChange: (String) -> Unit,
     modifier: Modifier = Modifier
-){
+) {
 
     var passwordVisible by remember {
         mutableStateOf(false)
@@ -46,28 +42,37 @@ fun PasswordField(
         modifier = modifier,
         singleLine = true,
         visualTransformation =
-            if(passwordVisible)
+            if (passwordVisible)
                 VisualTransformation.None
             else
                 PasswordVisualTransformation(),
-
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         trailingIcon = {
 
             IconButton(
                 onClick = {
                     passwordVisible = !passwordVisible
                 }
-            ){
+            ) {
 
                 Icon(
                     painter = painterResource(
-                        id = if(passwordVisible)
+                        id = if (passwordVisible)
                             R.drawable.visibilityon
                         else
                             R.drawable.visibilityoff
                     ),
                     contentDescription = "Toggle password visibility",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
+                    tint = LocalForecastColors.current.muted
                 )
             }
         }

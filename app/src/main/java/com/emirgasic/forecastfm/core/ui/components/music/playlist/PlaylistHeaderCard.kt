@@ -4,21 +4,37 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun PlaylistHeaderCard(
@@ -34,84 +50,106 @@ fun PlaylistHeaderCard(
     isFavorite: Boolean,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
-){
-    println("PLAYLIST HEADER: album URL = $album")
+) {
+
+    val forecastColors = LocalForecastColors.current
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.3f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.45f)
+            ),
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = forecastColors.card
         )
-    ){
+    ) {
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(forecastColors.card)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
-        ){
+        ) {
 
-            AsyncImage(
-                model = album,
-                contentDescription = "Album cover",
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 300.dp)
+                    .aspectRatio(1f)
                     .clip(MaterialTheme.shapes.medium)
                     .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                        MaterialTheme.shapes.medium
+                        width = 1.dp,
+                        color = forecastColors.border,
+                        shape = MaterialTheme.shapes.medium
                     ),
-                contentScale = ContentScale.Fit
-            )
-
+                contentAlignment = Alignment.Center
+            ) {
+                if (album.isNullOrBlank()) {
+                    Icon(
+                        painter = painterResource(R.drawable.album_disc),
+                        contentDescription = "Album placeholder",
+                        modifier = Modifier.size(96.dp),
+                        tint = forecastColors.muted
+                    )
+                } else {
+                    AsyncImage(
+                        model = album,
+                        contentDescription = "Album cover",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
 
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = forecastColors.title,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
             )
-
 
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
 
                 Text(
                     text = genre,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = forecastColors.body,
+                    style = MaterialTheme.typography.bodyMedium
                 )
 
                 Spacer(Modifier.width(8.dp))
 
                 Text(
                     text = "•",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    color = forecastColors.muted
                 )
 
                 Spacer(Modifier.width(8.dp))
 
                 Text(
                     text = mood,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = forecastColors.body,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-
-
             Row(
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
 
                 Image(
                     painter = weatherIcon,
@@ -119,15 +157,17 @@ fun PlaylistHeaderCard(
                     modifier = Modifier.size(20.dp)
                 )
 
-                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = weather,
+                    color = forecastColors.body,
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-                Text(weather)
-
-                Spacer(Modifier.width(18.dp))
-
-                Text(temperature)
-
-                Spacer(Modifier.width(18.dp))
+                Text(
+                    text = temperature,
+                    color = forecastColors.body,
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
                 Image(
                     painter = locationIcon,
@@ -135,31 +175,29 @@ fun PlaylistHeaderCard(
                     modifier = Modifier.size(20.dp)
                 )
 
-                Spacer(Modifier.width(4.dp))
-
-                Text(location)
-
-                Spacer(Modifier.width(18.dp))
+                Text(
+                    text = location,
+                    color = forecastColors.body,
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
                 IconButton(
                     onClick = onFavoriteClick
                 ) {
                     Icon(
-                        imageVector = if (isFavorite) {
-                            Icons.Filled.Favorite
-                        } else {
-                            Icons.Outlined.FavoriteBorder
-                        },
+                        painter = painterResource(
+                            if (isFavorite) R.drawable.heart_filled else R.drawable.heart
+                        ),
                         contentDescription = if (isFavorite) {
                             "Remove from favorites"
                         } else {
                             "Add to favorites"
                         },
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isFavorite) forecastColors.primary else forecastColors.muted,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
-
         }
     }
 }

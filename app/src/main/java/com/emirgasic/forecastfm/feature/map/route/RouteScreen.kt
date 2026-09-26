@@ -42,6 +42,7 @@ import com.emirgasic.forecastfm.core.ui.components.route.RouteMap
 import com.emirgasic.forecastfm.core.utils.PolylineDecoder
 import com.emirgasic.forecastfm.core.utils.RouteFormatter
 import com.emirgasic.forecastfm.network.route.RouteApi
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun RouteScreen(
@@ -61,6 +62,7 @@ fun RouteScreen(
     )
 ) {
     val context = LocalContext.current
+    val forecastColors = LocalForecastColors.current
     val state by viewModel.state.collectAsState()
     val mode by viewModel.mode.collectAsState()
     val actualOrigin by viewModel.actualOrigin.collectAsState()
@@ -84,7 +86,7 @@ fun RouteScreen(
             ?: emptyList()
     }
 
-    val routeColor = MaterialTheme.colorScheme.primary
+    val routeColor = forecastColors.primary
 
     Box(
         modifier = modifier
@@ -103,17 +105,14 @@ fun RouteScreen(
 
         Text(
             text = "← Back",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.titleMedium,
+            color = forecastColors.title,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .statusBarsPadding()
                 .padding(16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                .background(forecastColors.card)
                 .clickable {
                     navController.popBackStack()
                 }
@@ -125,33 +124,41 @@ fun RouteScreen(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                .background(MaterialTheme.colorScheme.surface)
+                .background(forecastColors.surface)
                 .navigationBarsPadding()
                 .padding(
                     start = 20.dp,
                     end = 20.dp,
                     top = 20.dp,
-                    bottom = 0.dp
+                    bottom = 20.dp
                 )
         ) {
             when (val s = state) {
                 RouteState.Idle, RouteState.Loading -> {
-                    Text("Loading route...", color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        text = "Loading route...",
+                        color = forecastColors.muted,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
                 is RouteState.Error -> {
-                    Text(s.message, color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = s.message,
+                        color = forecastColors.error,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
                 is RouteState.Success -> {
                     Text(
                         text = RouteFormatter.formatDistance(s.route.distanceMeters),
                         style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = forecastColors.title
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = "About ${RouteFormatter.formatDuration(s.route.durationSeconds)}",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = forecastColors.muted
                     )
                 }
             }
@@ -196,7 +203,7 @@ fun RouteScreen(
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = forecastColors.primary,
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {

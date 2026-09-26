@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.core.utils.RouteGeoJson
 import com.emirgasic.forecastfm.core.utils.RouteZoomCalculator
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
@@ -30,6 +31,11 @@ fun RouteMap(
     routeColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val forecastColors = LocalForecastColors.current
+
+    val originMarkerColor = forecastColors.primary
+    val destinationMarkerColor = forecastColors.accent
+
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
             target = Position(
@@ -94,7 +100,7 @@ fun RouteMap(
             id = "route-origin",
             source = originSource,
             radius = const(8.dp),
-            color = const(Color(0xFF2196F3)),
+            color = const(originMarkerColor),
             strokeWidth = const(3.dp),
             strokeColor = const(Color.White),
             strokeOpacity = const(1f)
@@ -109,7 +115,7 @@ fun RouteMap(
             id = "route-destination",
             source = destSource,
             radius = const(10.dp),
-            color = const(Color(0xFFC94A3F)),
+            color = const(destinationMarkerColor),
             strokeWidth = const(3.dp),
             strokeColor = const(Color.White),
             strokeOpacity = const(1f)

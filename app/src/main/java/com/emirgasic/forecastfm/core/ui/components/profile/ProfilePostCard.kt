@@ -9,17 +9,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun ProfilePostCard(
@@ -28,32 +38,41 @@ fun ProfilePostCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
+
+    val forecastColors = LocalForecastColors.current
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(0.8f),
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline
-        ),
+            .aspectRatio(0.8f)
+            .shadow(
+                elevation = 3.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+            ),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, forecastColors.border),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = forecastColors.card
         ),
         onClick = onClick
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .background(MaterialTheme.colorScheme.surface),
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(forecastColors.surface),
                 contentAlignment = Alignment.Center
             ) {
                 if (!imageUrl.isNullOrBlank()) {
@@ -64,22 +83,23 @@ fun ProfilePostCard(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Text(
-                        text = "📷",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.headlineLarge
+                    Icon(
+                        painter = painterResource(R.drawable.magnify),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = forecastColors.muted
                     )
                 }
             }
 
-            Spacer(
-                modifier = Modifier.weight(0.1f)
-            )
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.titleMedium
+                color = forecastColors.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

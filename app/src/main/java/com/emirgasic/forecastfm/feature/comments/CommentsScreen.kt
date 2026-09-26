@@ -1,32 +1,27 @@
 package com.emirgasic.forecastfm.feature.comments
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
-import com.emirgasic.forecastfm.core.navigation.BottomBar
-import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentCard
 import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputField
@@ -35,7 +30,7 @@ import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputFiel
 fun CommentsScreen(
     navController: NavController,
     postId: String,
-    tokenManager: TokenManager,  // ← Add this
+    tokenManager: TokenManager,
     modifier: Modifier = Modifier,
     viewModel: CommentsViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -55,9 +50,7 @@ fun CommentsScreen(
     }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .navigationBarsPadding(),
+        modifier = Modifier.fillMaxSize(),
         bottomBar = {
             CommentInputField(
                 value = commentText,
@@ -65,31 +58,26 @@ fun CommentsScreen(
                     commentText = it
                 },
                 onSendClick = {
-                    println("🔵 Send button clicked! text: '$commentText'")
                     if (commentText.isNotBlank()) {
-                        println("🔵 Calling viewModel.addComment...")
                         viewModel.addComment(
                             postId = postId,
                             text = commentText
                         )
                         commentText = ""
                     }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp)
+                }
             )
         }
-    ){ paddingValues ->
+    ) { paddingValues ->
 
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .padding(16.dp),
-
             verticalArrangement = Arrangement.spacedBy(16.dp)
-        ){
+        ) {
 
             item {
                 SectionTitle(
@@ -98,7 +86,6 @@ fun CommentsScreen(
             }
 
             items(comments) { comment ->
-
                 CommentCard(
                     profileImage = comment.user.profileImage,
                     username = comment.user.username,
@@ -110,11 +97,7 @@ fun CommentsScreen(
                         viewModel.toggleLike(comment.id)
                     }
                 )
-
             }
-
         }
-
     }
-
 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,7 @@ fun SaveOptionsBottomSheet(
     onSaveStyle: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
+    val forecastColors = LocalForecastColors.current
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -48,11 +50,10 @@ fun SaveOptionsBottomSheet(
             Text(
                 text = "Save to...",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = forecastColors.title,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Save Post Option
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,7 +68,7 @@ fun SaveOptionsBottomSheet(
                     painter = painterResource(R.drawable.bookmark),
                     contentDescription = "Save Post",
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = forecastColors.body
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -76,17 +77,16 @@ fun SaveOptionsBottomSheet(
                     Text(
                         text = "Save Post",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
                     Text(
                         text = "Save this post to your collection",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted
                     )
                 }
             }
 
-            // Save Playlist Option
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -101,7 +101,7 @@ fun SaveOptionsBottomSheet(
                     painter = painterResource(R.drawable.music),
                     contentDescription = "Save Playlist",
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = forecastColors.body
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -110,17 +110,16 @@ fun SaveOptionsBottomSheet(
                     Text(
                         text = "Save Playlist",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
                     Text(
                         text = "Save the playlist mentioned in this post",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted
                     )
                 }
             }
 
-            // Save Style Option
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,7 +134,7 @@ fun SaveOptionsBottomSheet(
                     painter = painterResource(R.drawable.clothes),
                     contentDescription = "Save Style",
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = forecastColors.body
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -144,12 +143,12 @@ fun SaveOptionsBottomSheet(
                     Text(
                         text = "Save Style",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = forecastColors.title
                     )
                     Text(
                         text = "Save the outfit/style from this post",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = forecastColors.muted
                     )
                 }
             }

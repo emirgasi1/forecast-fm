@@ -11,11 +11,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +27,8 @@ fun DropdownSelector(
     onSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val forecastColors = LocalForecastColors.current
 
     var expanded by remember {
         mutableStateOf(false)
@@ -44,7 +47,10 @@ fun DropdownSelector(
             onValueChange = {},
             readOnly = true,
             placeholder = {
-                Text(title)
+                Text(
+                    text = title,
+                    color = forecastColors.muted
+                )
             },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
@@ -55,12 +61,16 @@ fun DropdownSelector(
                 .fillMaxWidth()
                 .menuAnchor(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                focusedContainerColor = forecastColors.card,
+                unfocusedContainerColor = forecastColors.card,
+                focusedTextColor = forecastColors.title,
+                unfocusedTextColor = forecastColors.title,
+                focusedBorderColor = forecastColors.primary,
+                unfocusedBorderColor = forecastColors.border,
+                focusedPlaceholderColor = forecastColors.muted,
+                unfocusedPlaceholderColor = forecastColors.muted,
+                focusedTrailingIconColor = forecastColors.muted,
+                unfocusedTrailingIconColor = forecastColors.muted
             )
         )
 
@@ -69,14 +79,17 @@ fun DropdownSelector(
             onDismissRequest = {
                 expanded = false
             },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+            modifier = Modifier.background(forecastColors.card)
         ) {
 
             options.forEach { option ->
 
                 DropdownMenuItem(
                     text = {
-                        Text(option)
+                        Text(
+                            text = option,
+                            color = forecastColors.title
+                        )
                     },
                     onClick = {
                         onSelected(option)
