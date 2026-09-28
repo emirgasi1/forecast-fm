@@ -35,8 +35,8 @@ class RegisterViewModel(
     private val _confirmPassword = MutableStateFlow("")
     val confirmPassword: StateFlow<String> = _confirmPassword.asStateFlow()
 
-    private val _checkMark = MutableStateFlow(false)  // ← Add this
-    val checkMark: StateFlow<Boolean> = _checkMark.asStateFlow()  // ← Add this
+    private val _checkMark = MutableStateFlow(false)
+    val checkMark: StateFlow<Boolean> = _checkMark.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -64,7 +64,7 @@ class RegisterViewModel(
         _errorMessage.value = null
     }
 
-    fun updateCheckMark(value: Boolean) {  // ← Add this
+    fun updateCheckMark(value: Boolean) {
         _checkMark.value = value
     }
 
@@ -123,7 +123,15 @@ class RegisterViewModel(
 
                 if (response.status.value == 200 || response.status.value == 201) {
                     val registerResponse: RegisterResponse = response.body()
-                    Log.d("Register", "Registration successful: ${registerResponse.id}")
+                    Log.d("Register", "Registration successful for user: ${registerResponse.user.email}")
+
+                    tokenManager.saveTokens(
+                        token = registerResponse.token,
+                        refreshToken = registerResponse.refreshToken,
+                        userId = registerResponse.user.id,
+                        email = registerResponse.user.email
+                    )
+
                     _isLoading.value = false
                     onRegisterSuccess()
                 } else {

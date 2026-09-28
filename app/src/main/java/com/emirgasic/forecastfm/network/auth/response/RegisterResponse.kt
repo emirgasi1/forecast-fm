@@ -4,12 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterResponse(
-    val id: String,
-    val email: String,
-    val username: String,
-    val bio: String?,
-    val profileImageUrl: String?,
-    val favoriteLocation: String?,
-    val isVerified: Boolean,
-    val status: String
+    val token: String,
+    val refreshToken: String,
+    val user: AuthUser,
+    val expiresAt: Long
 )

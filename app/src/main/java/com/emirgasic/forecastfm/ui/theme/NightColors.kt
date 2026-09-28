@@ -6,6 +6,7 @@ val NightPrimary = Color(0xFFD4A24C)
 val NightPrimaryDark = Color(0xFFA9792A)
 val NightSecondary = Color(0xFFA86A42)
 val NightAccent = Color(0xFFE5C07B)
+val NightPurple = Color(0xFFB98BD4)
 
 val NightBackground = Color(0xFF161210)
 val NightSurface = Color(0xFF221A17)

@@ -58,7 +58,7 @@ fun RegisterScreen(
                 return RegisterViewModel(
                     tokenManager = tokenManager,
                     onRegisterSuccess = {
-                        navController.navigate(Routes.Login) {
+                        navController.navigate(Routes.Onboarding) {
                             popUpTo(Routes.Register) { inclusive = true }
                         }
                     }
