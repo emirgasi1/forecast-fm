@@ -21,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,7 +49,14 @@ import com.emirgasic.forecastfm.core.ui.components.music.PlaylistCarousel
 import com.emirgasic.forecastfm.core.ui.components.music.RecommendedMusicCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.MusicRow
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
-
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.MusicHistoryRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.data.repository.YouTubeRepository
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
+import com.emirgasic.forecastfm.network.user.UserApi
 @Composable
 fun MusicScreen(
     mainNavController: NavController,
@@ -63,9 +71,20 @@ fun MusicScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
+                val userApi = UserApi()
+                val userRepository = UserRepository(userApi)
+                val playlistApi = PlaylistApi()
+                val playlistRepository = PlaylistRepository(playlistApi)
+
                 return MusicViewModel(
-                    tokenManager,
-                    OnboardingPreferences(context)
+                    tokenManager = tokenManager,
+                    onboardingPrefs = OnboardingPreferences(context),
+                    playlistRepository = playlistRepository,
+                    locationRepository = LocationRepository(),
+                    weatherRepository = WeatherRepository(),
+                    musicHistoryRepository = MusicHistoryRepository(),
+                    userRepository = userRepository,
+                    youTubeRepository = YouTubeRepository()
                 ) as T
             }
         }
@@ -83,6 +102,12 @@ fun MusicScreen(
     val musicHistory by viewModel.musicHistory.collectAsState()
     val lastPlayed = musicHistory.firstOrNull()?.title ?: "No history"
 
+    LaunchedEffect(Unit) {
+        viewModel.loadUserPreferences()
+        viewModel.loadPlaylists()
+        viewModel.loadFavoritePlaylists()
+        viewModel.loadMusicHistory()
+    }
     Box(
         modifier = modifier
             .fillMaxSize()

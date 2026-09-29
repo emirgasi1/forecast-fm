@@ -3,65 +3,35 @@ package com.emirgasic.forecastfm.feature.feed
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
-import com.emirgasic.forecastfm.data.model.Comment
-import com.emirgasic.forecastfm.data.model.FeedPost
-import com.emirgasic.forecastfm.data.repository.CommentRepository
 import com.emirgasic.forecastfm.data.repository.FeedRepository
 import com.emirgasic.forecastfm.data.repository.LikeRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
-import com.emirgasic.forecastfm.data.repository.PostRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedPostRepository
-import com.emirgasic.forecastfm.data.repository.UserRepository
-import com.emirgasic.forecastfm.network.comment.CommentApi
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
-import com.emirgasic.forecastfm.network.post.PostApi
-import com.emirgasic.forecastfm.network.user.UserApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-
 class FeedViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val feedRepository: FeedRepository,
+    private val likeRepository: LikeRepository,
+    private val savedPostRepository: SavedPostRepository,
+    private val savedOutfitRepository: SavedOutfitRepository,
+    private val outfitRepository: OutfitRepository,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
-
-    private val savedPostRepository = SavedPostRepository()
-    private val savedOutfitRepository = SavedOutfitRepository()
-
-    private val outfitRepository = OutfitRepository()
-
-
-    private val userApi = UserApi()
-    private val userRepository = UserRepository(userApi)
-    private val postApi = PostApi()
-    private val postRepository = PostRepository(postApi)
-    private val playlistRepository = PlaylistRepository(PlaylistApi())
-    private val commentApi = CommentApi()
-    private val commentRepository = CommentRepository(commentApi, userRepository)
-    private val likeRepository = LikeRepository()
 
     private val _likedPosts = MutableStateFlow<Set<String>>(emptySet())
     private val _savedPosts = MutableStateFlow<Set<String>>(emptySet())
     val savedPosts: StateFlow<Set<String>> = _savedPosts.asStateFlow()
     val likedPosts: StateFlow<Set<String>> = _likedPosts.asStateFlow()
 
-    private val repository = FeedRepository(
-        userRepository = userRepository,
-        postRepository = postRepository,
-        playlistRepository = playlistRepository,
-        commentRepository = commentRepository
-    )
-
     private val _uiState = MutableStateFlow<FeedUiState>(FeedUiState.Loading)
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
-
-    init {
-        loadFeed()
-    }
 
     fun loadFeed() {
         viewModelScope.launch {
@@ -71,17 +41,16 @@ class FeedViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                val posts = repository.getPosts(userId)
+                val posts = feedRepository.getPosts(userId)
 
-                // Check which posts are liked by the user
                 val likedSet = mutableSetOf<String>()
                 posts.forEach { post ->
                     try {
                         if (likeRepository.isPostLiked(post.id, userId)) {
                             likedSet.add(post.id)
                         }
-                    } catch (e: Exception) {
-                        // Ignore
+                    } catch (_: Exception) {
+                        // Skip this post — treat as not liked
                     }
                 }
                 _likedPosts.value = likedSet
@@ -101,48 +70,51 @@ class FeedViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                val isLiked = _likedPosts.value.contains(postId)
+                val wasLiked = _likedPosts.value.contains(postId)
 
-                // Update UI immediately (optimistic update)
-                if (isLiked) {
-                    _likedPosts.value = _likedPosts.value - postId
-                    likeRepository.unlikePost(postId, userId)
+                // Optimistic update
+                _likedPosts.value = if (wasLiked) {
+                    _likedPosts.value - postId
                 } else {
-                    _likedPosts.value = _likedPosts.value + postId
-                    likeRepository.likePost(postId, userId)
+                    _likedPosts.value + postId
                 }
 
-                // Update like count in posts
                 val currentState = _uiState.value
                 if (currentState is FeedUiState.Success) {
                     val updatedPosts = currentState.posts.map { post ->
                         if (post.id == postId) {
-                            post.copy(likes = if (isLiked) post.likes - 1 else post.likes + 1)
-                        } else {
-                            post
-                        }
+                            post.copy(
+                                likes = if (wasLiked) post.likes - 1 else post.likes + 1
+                            )
+                        } else post
                     }
                     _uiState.value = FeedUiState.Success(updatedPosts)
                 }
 
+                // Perform the API call after the optimistic update
+                if (wasLiked) {
+                    likeRepository.unlikePost(postId, userId)
+                } else {
+                    likeRepository.likePost(postId, userId)
+                }
+
             } catch (e: Exception) {
-                // Revert if API call fails
+                // Revert by reloading from the source of truth
                 loadFeed()
             }
         }
     }
+
     fun savePost(postId: String) {
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                // Save post
                 savedPostRepository.savePost(postId, userId)
                 _savedPosts.value = _savedPosts.value + postId
-
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — UI already shows the save button state
             }
         }
     }
@@ -153,7 +125,6 @@ class FeedViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                // Find the post and get its playlist
                 val state = _uiState.value
                 if (state is FeedUiState.Success) {
                     val post = state.posts.find { it.id == postId }
@@ -161,9 +132,8 @@ class FeedViewModel(
                         playlistRepository.favoritePlaylist(userId, playlist.id)
                     }
                 }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -174,13 +144,9 @@ class FeedViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                // Find the post and save its style/outfit
-                // For now, we'll save a default outfit or find by weather
                 val state = _uiState.value
                 if (state is FeedUiState.Success) {
                     val post = state.posts.find { it.id == postId }
-                    // TODO: Get outfit based on post's weather condition
-                    // For now, save the first outfit matching the weather
                     post?.weather?.condition?.let { weather ->
                         val outfits = outfitRepository.getOutfitsByWeather(weather)
                         outfits.firstOrNull()?.let { outfit ->
@@ -188,12 +154,9 @@ class FeedViewModel(
                         }
                     }
                 }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
-
-
 }

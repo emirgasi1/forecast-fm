@@ -38,6 +38,7 @@ import com.emirgasic.forecastfm.core.ui.components.weather.CurrentWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.weather.ForecastRowItem
 import com.emirgasic.forecastfm.core.ui.components.weather.WeatherDetailsCard
 import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.network.location.LocationResponse
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -45,8 +46,16 @@ import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 fun WeatherScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: WeatherViewModel = viewModel()
-) {
+    viewModel: WeatherViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return WeatherViewModel(
+                    repository = WeatherRepository()
+                ) as T
+            }
+        }
+    )) {
     val locationRepository = remember {
         LocationRepository()
     }

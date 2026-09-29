@@ -49,6 +49,7 @@ fun LoginScreen(
                 @Suppress("UNCHECKED_CAST")
                 return LoginViewModel(
                     tokenManager = tokenManager,
+                    authRepository = com.emirgasic.forecastfm.data.repository.AuthRepository(),
                     onLoginSuccess = {
                         navController.navigate(Routes.Main) {
                             popUpTo(Routes.Login) { inclusive = true }

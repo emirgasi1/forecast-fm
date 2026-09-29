@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
+import com.emirgasic.forecastfm.data.repository.AuthRepository
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -38,6 +39,7 @@ fun ForgotPasswordScreen(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return ForgotPasswordViewModel(
+                    authRepository = AuthRepository(),
                     onSuccess = {
                         navController.popBackStack()
                     }

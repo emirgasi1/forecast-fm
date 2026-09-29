@@ -10,32 +10,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class WeatherViewModel : ViewModel() {
-
-    private val repository = WeatherRepository()
+class WeatherViewModel(
+    private val repository: WeatherRepository
+) : ViewModel() {
 
     private val _weather = MutableStateFlow<Weather?>(null)
     val weather: StateFlow<Weather?> = _weather.asStateFlow()
 
-    private val _hourlyForecast =
-        MutableStateFlow<List<Forecast>>(emptyList())
+    private val _hourlyForecast = MutableStateFlow<List<Forecast>>(emptyList())
+    val hourlyForecast: StateFlow<List<Forecast>> = _hourlyForecast.asStateFlow()
 
-    val hourlyForecast: StateFlow<List<Forecast>> =
-        _hourlyForecast.asStateFlow()
+    private val _dailyForecast = MutableStateFlow<List<Forecast>>(emptyList())
+    val dailyForecast: StateFlow<List<Forecast>> = _dailyForecast.asStateFlow()
 
-    private val _dailyForecast =
-        MutableStateFlow<List<Forecast>>(emptyList())
-
-    val dailyForecast: StateFlow<List<Forecast>> =
-        _dailyForecast.asStateFlow()
-
-    private val _uiState =
-        MutableStateFlow(WeatherUiState.LOADING)
-
-    val uiState: StateFlow<WeatherUiState> =
-        _uiState.asStateFlow()
-
-
+    private val _uiState = MutableStateFlow(WeatherUiState.LOADING)
+    val uiState: StateFlow<WeatherUiState> = _uiState.asStateFlow()
 
     fun loadWeather(
         location: String,
@@ -43,11 +32,9 @@ class WeatherViewModel : ViewModel() {
         longitude: Double
     ) {
         viewModelScope.launch {
-
             _uiState.value = WeatherUiState.LOADING
 
             try {
-
                 val weatherData = repository.getWeather(
                     location = location,
                     latitude = latitude,
@@ -59,11 +46,7 @@ class WeatherViewModel : ViewModel() {
                 _dailyForecast.value = weatherData.daily
 
                 _uiState.value = WeatherUiState.SUCCESS
-
-            } catch (e: Exception) {
-
-                e.printStackTrace()
-
+            } catch (_: Exception) {
                 _uiState.value = WeatherUiState.ERROR
             }
         }

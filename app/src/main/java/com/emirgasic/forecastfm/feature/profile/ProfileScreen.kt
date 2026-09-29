@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,6 +45,8 @@ import com.emirgasic.forecastfm.core.ui.components.profile.FavoritePlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileHeader
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfilePostCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileStatsCard
+import com.emirgasic.forecastfm.data.repository.ProfileRepository
+import com.emirgasic.forecastfm.network.profile.ProfileApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -55,13 +58,20 @@ fun ProfileScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return ProfileViewModel(tokenManager) as T
+                return ProfileViewModel(
+                    tokenManager = tokenManager,
+                    profileRepository = ProfileRepository(ProfileApi())
+                ) as T
             }
         }
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val forecastColors = LocalForecastColors.current
+
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
 
     Box(
         modifier = modifier

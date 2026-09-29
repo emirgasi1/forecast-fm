@@ -41,6 +41,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.auth.AuthButton
 import com.emirgasic.forecastfm.core.ui.components.auth.EmailField
 import com.emirgasic.forecastfm.core.ui.components.auth.PasswordField
+import com.emirgasic.forecastfm.data.repository.AuthRepository
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -57,6 +58,7 @@ fun RegisterScreen(
                 @Suppress("UNCHECKED_CAST")
                 return RegisterViewModel(
                     tokenManager = tokenManager,
+                    authRepository = AuthRepository(),
                     onRegisterSuccess = {
                         navController.navigate(Routes.Onboarding) {
                             popUpTo(Routes.Register) { inclusive = true }

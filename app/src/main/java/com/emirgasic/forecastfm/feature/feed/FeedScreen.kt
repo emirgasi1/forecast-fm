@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,19 @@ import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
 import com.emirgasic.forecastfm.core.ui.components.feed.SaveOptionsBottomSheet
+import com.emirgasic.forecastfm.data.repository.CommentRepository
+import com.emirgasic.forecastfm.data.repository.FeedRepository
+import com.emirgasic.forecastfm.data.repository.LikeRepository
+import com.emirgasic.forecastfm.data.repository.OutfitRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.PostRepository
+import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
+import com.emirgasic.forecastfm.data.repository.SavedPostRepository
+import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.network.comment.CommentApi
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
+import com.emirgasic.forecastfm.network.post.PostApi
+import com.emirgasic.forecastfm.network.user.UserApi
 
 @Composable
 fun FeedScreen(
@@ -46,7 +60,29 @@ fun FeedScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return FeedViewModel(tokenManager) as T
+                val userApi = UserApi()
+                val userRepository = UserRepository(userApi)
+                val postApi = PostApi()
+                val postRepository = PostRepository(postApi)
+                val playlistApi = PlaylistApi()
+                val playlistRepository = PlaylistRepository(playlistApi)
+                val commentApi = CommentApi()
+                val commentRepository = CommentRepository(commentApi, userRepository)
+
+                return FeedViewModel(
+                    tokenManager = tokenManager,
+                    feedRepository = FeedRepository(
+                        userRepository = userRepository,
+                        postRepository = postRepository,
+                        playlistRepository = playlistRepository,
+                        commentRepository = commentRepository
+                    ),
+                    likeRepository = LikeRepository(),
+                    savedPostRepository = SavedPostRepository(),
+                    savedOutfitRepository = SavedOutfitRepository(),
+                    outfitRepository = OutfitRepository(),
+                    playlistRepository = playlistRepository
+                ) as T
             }
         }
     )
@@ -55,6 +91,10 @@ fun FeedScreen(
     val uiState by viewModel.uiState.collectAsState()
     val likedPosts by viewModel.likedPosts.collectAsState()
     val savedPosts by viewModel.savedPosts.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadFeed()
+    }
 
     var showSaveSheet by remember { mutableStateOf(false) }
     var selectedPostId by remember { mutableStateOf<String?>(null) }

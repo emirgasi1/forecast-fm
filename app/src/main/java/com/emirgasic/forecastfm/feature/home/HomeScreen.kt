@@ -50,7 +50,12 @@ import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
+import com.emirgasic.forecastfm.data.repository.HomeRepository
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.feature.map.LocationManager
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import kotlin.toString
 
 @Composable
@@ -61,13 +66,18 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+
     val viewModel: HomeViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return HomeViewModel(
-                    tokenManager,
-                    OnboardingPreferences(context)
+                    tokenManager = tokenManager,
+                    onboardingPrefs = OnboardingPreferences(context),
+                    homeRepository = HomeRepository(),
+                    locationRepository = LocationRepository(),
+                    weatherRepository = WeatherRepository(),
+                    playlistRepository = PlaylistRepository(PlaylistApi())
                 ) as T
             }
         }

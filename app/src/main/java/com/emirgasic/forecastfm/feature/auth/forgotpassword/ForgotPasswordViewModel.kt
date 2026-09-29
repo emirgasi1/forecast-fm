@@ -3,20 +3,17 @@ package com.emirgasic.forecastfm.feature.auth.forgotpassword
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.emirgasic.forecastfm.network.ApiClient
-import com.emirgasic.forecastfm.network.auth.request.ForgotPasswordRequest
-import io.ktor.client.call.body
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import com.emirgasic.forecastfm.core.utils.EmailValidator
+import com.emirgasic.forecastfm.data.repository.AuthRepository
+import com.emirgasic.forecastfm.data.repository.ForgotPasswordResult
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ForgotPasswordViewModel(
+    private val authRepository: AuthRepository,
     private val onSuccess: () -> Unit
 ) : ViewModel() {
 
@@ -43,7 +40,7 @@ class ForgotPasswordViewModel(
             _errorMessage.value = "Email is required"
             return
         }
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.value).matches()) {
+        if (!EmailValidator.isValid(email.value)) {
             _errorMessage.value = "Invalid email format"
             return
         }
@@ -54,35 +51,30 @@ class ForgotPasswordViewModel(
             _successMessage.value = null
 
             try {
-                Log.d("ForgotPassword", "Sending reset link to: ${email.value}")
+                Log.d("ForgotPassword", "Sending reset link")
 
-                val response = ApiClient.client.post("${ApiClient.baseUrl()}/auth/forgot-password") {
-                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    setBody(ForgotPasswordRequest(email.value))
-                }
+                when (val result = authRepository.forgotPassword(email.value)) {
+                    is ForgotPasswordResult.Success -> {
+                        Log.d("ForgotPassword", "Reset link sent successfully")
+                        _isLoading.value = false
+                        _successMessage.value = "Password reset link sent to your email"
 
-                if (response.status.value == 200) {
-                    Log.d("ForgotPassword", "Reset link sent successfully")
-                    _isLoading.value = false
-                    _successMessage.value = "Password reset link sent to your email"
+                        delay(2000)
+                        onSuccess()
+                    }
 
-                    // Navigate back after delay
-                    kotlinx.coroutines.delay(2000)
-                    onSuccess()
-                } else {
-                    val errorResponse = response.body<String>()
-                    Log.e("ForgotPassword", "Failed with status: ${response.status.value}")
-                    _isLoading.value = false
-                    _errorMessage.value = when {
-                        response.status.value == 404 -> "Email not found"
-                        else -> "Failed to send reset link. Please try again."
+                    is ForgotPasswordResult.Error -> {
+                        Log.e("ForgotPassword", "Failed: ${result.message}")
+                        _isLoading.value = false
+                        _errorMessage.value = result.message
                     }
                 }
 
             } catch (e: Exception) {
                 _isLoading.value = false
                 _errorMessage.value = when {
-                    e.message?.contains("connect") == true -> "Cannot connect to server. Please check your connection."
+                    e.message?.contains("connect") == true ->
+                        "Cannot connect to server. Please check your connection."
                     else -> "Failed to send reset link: ${e.message}"
                 }
                 Log.e("ForgotPassword", "Error: ${e.message}", e)

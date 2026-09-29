@@ -13,8 +13,6 @@ import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.UserRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.data.repository.YouTubeRepository
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
-import com.emirgasic.forecastfm.network.user.UserApi
 import com.emirgasic.forecastfm.network.youtube.YouTubeVideo
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -24,7 +22,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,19 +29,14 @@ import kotlinx.coroutines.launch
 @OptIn(FlowPreview::class)
 class MusicViewModel(
     private val tokenManager: TokenManager,
-    private val onboardingPrefs: OnboardingPreferences
+    private val onboardingPrefs: OnboardingPreferences,
+    private val playlistRepository: PlaylistRepository,
+    private val locationRepository: LocationRepository,
+    private val weatherRepository: WeatherRepository,
+    private val musicHistoryRepository: MusicHistoryRepository,
+    private val userRepository: UserRepository,
+    private val youTubeRepository: YouTubeRepository
 ) : ViewModel() {
-
-    private val playlistRepository = PlaylistRepository(
-        playlistApi = PlaylistApi()
-    )
-    private val locationRepository = LocationRepository()
-    private val weatherRepository = WeatherRepository()
-    private val musicHistoryRepository = MusicHistoryRepository()
-    private val userRepository = UserRepository(
-        userApi = UserApi()
-    )
-    private val youTubeRepository = YouTubeRepository()
 
     private val _musicHistory = MutableStateFlow<List<MusicHistory>>(emptyList())
     val musicHistory: StateFlow<List<MusicHistory>> = _musicHistory.asStateFlow()
@@ -77,29 +69,9 @@ class MusicViewModel(
     private val userMoods = MutableStateFlow<Set<String>>(emptySet())
     private val userWeather = MutableStateFlow<Set<String>>(emptySet())
 
-    private val searchQuery = MutableStateFlow("")
-    private val debounceTime = 500L
 
-    init {
-        loadUserPreferences()
-        loadPlaylists()
-        loadFavoritePlaylists()
-        loadMusicHistory()
-        viewModelScope.launch {
-            searchQuery
-                .debounce(debounceTime)
-                .collect { query ->
-                    if (query.isNotBlank()) {
-                        searchYouTube(query)
-                    } else {
-                        _tracks.value = emptyList()
-                        _error.value = null
-                    }
-                }
-        }
-    }
 
-    private fun loadUserPreferences() {
+    fun loadUserPreferences() {
         viewModelScope.launch {
             userGenres.value = onboardingPrefs.musicGenres.first()
             userMoods.value = onboardingPrefs.moods.first()
@@ -107,7 +79,7 @@ class MusicViewModel(
         }
     }
 
-    private fun loadPlaylists() {
+    fun loadPlaylists() {
         viewModelScope.launch {
             try {
                 val locations = locationRepository.getLocations()
@@ -124,14 +96,12 @@ class MusicViewModel(
 
                 val playlists = playlistRepository.getPlaylists()
                 _playlists.value = playlists
-
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
 
-    private fun loadFavoritePlaylists() {
+    fun loadFavoritePlaylists() {
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first()
@@ -139,8 +109,8 @@ class MusicViewModel(
                     val favoriteIds = playlistRepository.getFavoritePlaylistIds(userId)
                     _favoritePlaylistIds.value = favoriteIds.toSet()
                 }
-            } catch (e: Exception) {
-                println("FAVORITE PLAYLIST ERROR: ${e.message}")
+            } catch (_: Exception) {
+
             }
         }
     }
@@ -367,8 +337,8 @@ class MusicViewModel(
                     val history = musicHistoryRepository.getMusicHistory(userId)
                     _musicHistory.value = history
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+
             }
         }
     }
@@ -378,7 +348,6 @@ class MusicViewModel(
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId == null) {
-                    println("FAVORITE ERROR: User not logged in")
                     return@launch
                 }
 
@@ -397,8 +366,8 @@ class MusicViewModel(
                     )
                     _favoritePlaylistIds.value = _favoritePlaylistIds.value + playlistId
                 }
-            } catch (e: Exception) {
-                println("FAVORITE ERROR: ${e.message}")
+            } catch (_: Exception) {
+
             }
         }
     }
@@ -408,7 +377,6 @@ class MusicViewModel(
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId == null) {
-                    println("HISTORY ERROR: User not logged in")
                     return@launch
                 }
 
@@ -416,8 +384,8 @@ class MusicViewModel(
                     userId = userId,
                     playlistId = playlist.id
                 )
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+
             }
         }
     }
@@ -437,7 +405,6 @@ class MusicViewModel(
         } else {
             _tracks.value = emptyList()
             _error.value = null
-            searchJob?.cancel()
         }
     }
 
