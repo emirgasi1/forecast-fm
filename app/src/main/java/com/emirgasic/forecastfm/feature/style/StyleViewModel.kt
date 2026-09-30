@@ -6,7 +6,6 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.model.Style
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
-import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,12 +13,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class StyleViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val outfitRepository: OutfitRepository,
+    private val savedOutfitRepository: SavedOutfitRepository
 ) : ViewModel() {
-
-    private val outfitRepository = OutfitRepository()
-    private val savedOutfitRepository = SavedOutfitRepository()
-    private val weatherRepository = WeatherRepository()
 
     private val _style = MutableStateFlow<Style?>(null)
     val style: StateFlow<Style?> = _style.asStateFlow()
@@ -32,11 +29,6 @@ class StyleViewModel(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
-
-    init {
-        loadStyle()
-        loadSavedOutfits()
-    }
 
     fun loadStyle() {
         viewModelScope.launch {
@@ -52,7 +44,7 @@ class StyleViewModel(
         }
     }
 
-    private fun loadSavedOutfits() {
+    fun loadSavedOutfits() {
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first()
@@ -60,8 +52,8 @@ class StyleViewModel(
                     val savedOutfits = savedOutfitRepository.getSavedOutfits(userId)
                     _savedOutfitIds.value = savedOutfits.map { it.id }.toSet()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -80,8 +72,8 @@ class StyleViewModel(
                     savedOutfitRepository.saveOutfit(outfitId, userId)
                     _savedOutfitIds.value = _savedOutfitIds.value + outfitId
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — state unchanged
             }
         }
     }
@@ -91,8 +83,8 @@ class StyleViewModel(
             try {
                 outfitRepository.likeOutfit(outfitId)
                 loadStyle()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }

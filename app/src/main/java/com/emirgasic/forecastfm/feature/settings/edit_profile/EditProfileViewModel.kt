@@ -1,14 +1,11 @@
 package com.emirgasic.forecastfm.feature.settings.edit_profile
 
-import android.content.ContentResolver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.repository.ProfileRepository
 import com.emirgasic.forecastfm.data.repository.UserRepository
 import com.emirgasic.forecastfm.network.location.LocationApi
-import com.emirgasic.forecastfm.network.profile.ProfileApi
-import com.emirgasic.forecastfm.network.user.UserApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,26 +25,18 @@ data class EditProfileUiState(
 )
 
 class EditProfileViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val profileRepository: ProfileRepository,
+    private val userRepository: UserRepository,
+    private val locationApi: LocationApi
 ) : ViewModel() {
-
-    private val profileApi = ProfileApi()
-    private val profileRepository = ProfileRepository(profileApi = profileApi)
-    private val userApi = UserApi()
-    private val userRepository = UserRepository(userApi)
-    private val locationApi = LocationApi()
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
     val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
 
     private var currentUserId: String? = null
 
-    init {
-        loadProfile()
-        loadLocations()
-    }
-
-    private fun loadProfile() {
+    fun loadProfile() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
@@ -74,15 +63,15 @@ class EditProfileViewModel(
         }
     }
 
-    private fun loadLocations() {
+    fun loadLocations() {
         viewModelScope.launch {
             try {
                 val locations = locationApi.getLocations()
                 _uiState.value = _uiState.value.copy(
                     locations = locations.map { it.name }
                 )
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — dropdown stays empty
             }
         }
     }
@@ -99,17 +88,24 @@ class EditProfileViewModel(
         _uiState.value = _uiState.value.copy(favoriteLocation = value)
     }
 
-    fun uploadImage(contentResolver: ContentResolver, imageUri: String) {
+    /**
+     * Uploads a profile image.
+     *
+     * @param uploadImage a suspend lambda that uploads the image for the given
+     *                    userId and returns the URL, or null on failure.
+     *                    Implemented by the UI layer so this ViewModel stays
+     *                    free of android.content.ContentResolver.
+     */
+    fun uploadImage(
+        imageUri: String,
+        uploadImage: suspend (userId: String, imageUri: String) -> String?
+    ) {
         viewModelScope.launch {
             try {
                 val userId = currentUserId ?: return@launch
                 _uiState.value = _uiState.value.copy(isSaving = true, error = null)
 
-                val uploadedUrl = profileRepository.uploadProfileImage(
-                    userId = userId,
-                    contentResolver = contentResolver,
-                    imageUri = imageUri
-                )
+                val uploadedUrl = uploadImage(userId, imageUri)
 
                 if (uploadedUrl != null) {
                     _uiState.value = _uiState.value.copy(
@@ -136,7 +132,11 @@ class EditProfileViewModel(
         viewModelScope.launch {
             try {
                 val userId = currentUserId ?: return@launch
-                _uiState.value = _uiState.value.copy(isSaving = true, error = null, savedMessage = null)
+                _uiState.value = _uiState.value.copy(
+                    isSaving = true,
+                    error = null,
+                    savedMessage = null
+                )
 
                 val success = profileRepository.updateProfile(
                     userId = userId,

@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.network.outfit.OutfitApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,12 +65,16 @@ fun AddOutfitScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return AddOutfitViewModel(tokenManager) as T
+                return AddOutfitViewModel(
+                    tokenManager = tokenManager,
+                    outfitApi = OutfitApi()
+                ) as T
             }
         }
     )
 ) {
     val context = LocalContext.current
+    val outfitApi = remember { OutfitApi() }
     val state by viewModel.state.collectAsState()
 
     var weatherExpanded by rememberSaveable { mutableStateOf(false) }
@@ -343,9 +349,17 @@ fun AddOutfitScreen(
 
             Button(
                 onClick = {
-                    viewModel.submit(context) {
-                        navController.popBackStack()
-                    }
+                    viewModel.submit(
+                        uploadImage = { uri ->
+                            outfitApi.uploadOutfitImage(
+                                contentResolver = context.contentResolver,
+                                imageUri = uri.toString()
+                            )
+                        },
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
+                    )
                 },
                 enabled = state.canSubmit && !state.isUploading,
                 modifier = Modifier

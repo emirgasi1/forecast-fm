@@ -1,7 +1,6 @@
 package com.emirgasic.forecastfm.feature.style.posts
 
-import android.content.ContentResolver
-import android.util.Log
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
@@ -16,12 +15,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class NewPostViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val newPostRepository: NewPostRepository,
+    private val postApi: PostApi,
+    private val imageUploadApi: ImageUploadApi
 ) : ViewModel() {
-
-    private val repository = NewPostRepository()
-    private val postApi = PostApi()
-    private val imageUploadApi = ImageUploadApi()
 
     private val _newPost = MutableStateFlow<NewPost?>(null)
     val newPost: StateFlow<NewPost?> = _newPost.asStateFlow()
@@ -32,12 +30,8 @@ class NewPostViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    init {
-        loadNewPost()
-    }
-
-    private fun loadNewPost() {
-        _newPost.value = repository.getNewPostData()
+    fun loadNewPost() {
+        _newPost.value = newPostRepository.getNewPostData()
     }
 
     fun updateImage(image: String?) {
@@ -60,7 +54,18 @@ class NewPostViewModel(
         _newPost.value = _newPost.value?.copy(selectedPlaylist = value)
     }
 
-    fun createPost(onSuccess: () -> Unit, contentResolver: ContentResolver) {
+    /**
+     * Creates the post and, if an image URI is set, uploads it.
+     *
+     * @param uploadImage a suspend lambda that uploads the image to the given
+     *                    post ID. Implemented by the UI layer so this ViewModel
+     *                    stays free of android.content.ContentResolver.
+     * @param onSuccess   invoked on the main thread once the post is created.
+     */
+    fun createPost(
+        uploadImage: suspend (postId: String, imageUri: Uri) -> Unit,
+        onSuccess: () -> Unit
+    ) {
         val post = _newPost.value ?: return
 
         if (post.caption.isBlank()) {
@@ -87,24 +92,20 @@ class NewPostViewModel(
                     imageUrl = null
                 )
 
-                Log.d("NewPost", "Post created: ${response.id}")
-
-                post.image?.let { imageUri ->
+                val imageUriString = post.image
+                if (!imageUriString.isNullOrBlank()) {
                     try {
-                        imageUploadApi.uploadImage(response.id, contentResolver, imageUri)
-                        Log.d("NewPost", "Image uploaded successfully")
-                    } catch (e: Exception) {
-                        Log.e("NewPost", "Image upload failed: ${e.message}")
+                        uploadImage(response.id, Uri.parse(imageUriString))
+                    } catch (_: Exception) {
+                        // Non-critical — the post exists even if the image failed
                     }
                 }
 
                 _isLoading.value = false
                 onSuccess()
-
             } catch (e: Exception) {
                 _isLoading.value = false
                 _errorMessage.value = e.message ?: "Failed to create post"
-                Log.e("NewPost", "Error: ${e.message}", e)
             }
         }
     }

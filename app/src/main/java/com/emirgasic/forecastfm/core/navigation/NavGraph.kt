@@ -188,7 +188,8 @@ fun NavGraph(
             val playlistId = backStackEntry.arguments?.getString("playlistId")?.let { Uri.decode(it) }
             PlaylistScreen(
                 navController = navController,
-                playlistId = playlistId
+                playlistId = playlistId,
+                tokenManager = tokenManager
             )
         }
 

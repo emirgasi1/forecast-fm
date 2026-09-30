@@ -28,9 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
@@ -40,7 +43,10 @@ import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistHeader
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCard
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
 import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
+import com.emirgasic.forecastfm.network.youtube.YouTubeApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import com.emirgasic.forecastfm.utils.TagIconMapper
 
@@ -48,12 +54,26 @@ import com.emirgasic.forecastfm.utils.TagIconMapper
 fun PlaylistScreen(
     navController: NavController,
     playlistId: String?,
+    tokenManager: TokenManager,
     modifier: Modifier = Modifier,
     weatherViewModel: WeatherViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val forecastColors = LocalForecastColors.current
-    val viewModel: PlaylistViewModel = viewModel()
+
+    val viewModel: PlaylistViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                val playlistApi = PlaylistApi()
+                return PlaylistViewModel(
+                    tokenManager = tokenManager,
+                    playlistRepository = PlaylistRepository(playlistApi),
+                    youTubeApi = YouTubeApi()
+                ) as T
+            }
+        }
+    )
 
     val uiState by viewModel.uiState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
@@ -148,8 +168,7 @@ fun PlaylistScreen(
                             longitude = it.longitude
                         )
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                } catch (_: Exception) {
                 }
             }
 

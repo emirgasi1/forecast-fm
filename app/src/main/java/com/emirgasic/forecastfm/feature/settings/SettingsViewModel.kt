@@ -59,7 +59,10 @@ class SettingsViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            tokenManager.clearTokens()
+            try {
+                tokenManager.clearTokens()
+            } catch (_: Exception) {
+            }
         }
     }
 

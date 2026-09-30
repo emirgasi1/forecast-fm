@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -33,6 +34,7 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
+import com.emirgasic.forecastfm.data.repository.SavedPostRepository
 
 @Composable
 fun SavedPostsScreen(
@@ -41,16 +43,21 @@ fun SavedPostsScreen(
     modifier: Modifier = Modifier,
     viewModel: SavedPostsViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return SavedPostsViewModel(tokenManager) as T
+                return SavedPostsViewModel(
+                    tokenManager = tokenManager,
+                    savedPostRepository = SavedPostRepository()
+                ) as T
             }
         }
     )
 ) {
     val savedPosts by viewModel.savedPosts.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedPosts()   // or loadSavedStyles() or loadSavedPosts()
+    }
     Box(
         modifier = modifier
             .fillMaxSize()

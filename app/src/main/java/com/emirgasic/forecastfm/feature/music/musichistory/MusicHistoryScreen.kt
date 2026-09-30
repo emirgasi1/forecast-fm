@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.musichistory.MusicHistoryEntryCard
+import com.emirgasic.forecastfm.data.repository.MusicHistoryRepository
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -36,7 +38,10 @@ fun MusicHistoryScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return MusicHistoryViewModel(tokenManager) as T
+                return MusicHistoryViewModel(
+                    tokenManager = tokenManager,
+                    musicHistoryRepository = MusicHistoryRepository()
+                ) as T
             }
         }
     )
@@ -45,6 +50,10 @@ fun MusicHistoryScreen(
     val isLoading by viewModel.isLoading.collectAsState()
 
     val forecastColors = LocalForecastColors.current
+
+    LaunchedEffect(Unit) {
+        viewModel.loadHistory()
+    }
 
     Box(
         modifier = modifier

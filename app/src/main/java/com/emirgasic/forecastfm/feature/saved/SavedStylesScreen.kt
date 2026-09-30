@@ -16,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
+import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 
 @Composable
 fun SavedStylesScreen(
@@ -37,16 +40,21 @@ fun SavedStylesScreen(
     modifier: Modifier = Modifier,
     viewModel: SavedStylesViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return SavedStylesViewModel(tokenManager) as T
+                return SavedStylesViewModel(
+                    tokenManager = tokenManager,
+                    savedOutfitRepository = SavedOutfitRepository()
+                ) as T
             }
         }
     )
 ) {
     val savedStyles by viewModel.savedStyles.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedStyles() // or loadSavedStyles() or loadSavedPosts()
+    }
     Box(
         modifier = modifier
             .fillMaxSize()

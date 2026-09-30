@@ -2,22 +2,23 @@ package com.emirgasic.forecastfm.feature.music.playlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.utils.YouTubeMapper
 import com.emirgasic.forecastfm.core.utils.YouTubeUtils
 import com.emirgasic.forecastfm.data.model.Playlist
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.network.youtube.YouTubeApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel : ViewModel() {
-
-    private val playlistApi = PlaylistApi()
-    private val playlistRepository = PlaylistRepository(playlistApi)
-    private val youTubeApi = YouTubeApi()
+class PlaylistViewModel(
+    private val tokenManager: TokenManager,
+    private val playlistRepository: PlaylistRepository,
+    private val youTubeApi: YouTubeApi
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PlaylistUiState>(PlaylistUiState.Loading)
     val uiState: StateFlow<PlaylistUiState> = _uiState.asStateFlow()
@@ -39,11 +40,10 @@ class PlaylistViewModel : ViewModel() {
 
                 val youtubePlaylistId = YouTubeUtils.extractPlaylistId(playlist.youtubeUrl)
 
-                if (youtubePlaylistId != null) {
+                if (youtubePlaylistId != null && youtubePlaylistId.isNotBlank()) {
                     val items = try {
                         youTubeApi.getPlaylistItems(youtubePlaylistId)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } catch (_: Exception) {
                         emptyList()
                     }
 
@@ -56,9 +56,9 @@ class PlaylistViewModel : ViewModel() {
                             if (!thumbnail.isNullOrBlank()) {
                                 imageUrl = thumbnail
                                 try {
-                                    playlistApi.updatePlaylistImage(playlistId, thumbnail)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                                    playlistRepository.updatePlaylistImage(playlistId, thumbnail)
+                                } catch (_: Exception) {
+                                    // Non-critical — image persistence failed
                                 }
                             }
                         }
@@ -72,10 +72,23 @@ class PlaylistViewModel : ViewModel() {
 
                 _uiState.value = PlaylistUiState.Success(updatedPlaylist)
 
+                // Load initial favorite state
+                val userId = tokenManager.getUserId().first()
+                if (userId != null) {
+                    val favorites = try {
+                        playlistRepository.getFavoritePlaylistIds(userId)
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                    _isFavorite.value = playlistId in favorites
+                }
+
                 loadSimilarPlaylists(playlist)
 
             } catch (e: Exception) {
-                _uiState.value = PlaylistUiState.Error(e.message ?: "Failed to load playlist")
+                _uiState.value = PlaylistUiState.Error(
+                    e.message ?: "Failed to load playlist"
+                )
             }
         }
     }
@@ -99,12 +112,27 @@ class PlaylistViewModel : ViewModel() {
                 .map { it.first }
 
             _similarPlaylists.value = similar
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
     fun toggleFavorite(playlistId: String) {
-        _isFavorite.value = !_isFavorite.value
+        viewModelScope.launch {
+            try {
+                val userId = tokenManager.getUserId().first() ?: return@launch
+
+                val currentlyFavorite = _isFavorite.value
+
+                if (currentlyFavorite) {
+                    playlistRepository.unfavoritePlaylist(userId, playlistId)
+                } else {
+                    playlistRepository.favoritePlaylist(userId, playlistId)
+                }
+
+                _isFavorite.value = !currentlyFavorite
+            } catch (_: Exception) {
+                // Silent failure — isFavorite state unchanged
+            }
+        }
     }
 }

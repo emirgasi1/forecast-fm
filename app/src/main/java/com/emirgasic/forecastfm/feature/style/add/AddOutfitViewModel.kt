@@ -1,6 +1,5 @@
 package com.emirgasic.forecastfm.feature.style.add
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,10 +32,9 @@ data class AddOutfitState(
 }
 
 class AddOutfitViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val outfitApi: OutfitApi
 ) : ViewModel() {
-
-    private val outfitApi = OutfitApi()
 
     private val _state = MutableStateFlow(AddOutfitState())
     val state: StateFlow<AddOutfitState> = _state.asStateFlow()
@@ -77,7 +75,11 @@ class AddOutfitViewModel(
         _state.value = _state.value.copy(productUrl = value)
     }
 
-    fun submit(context: Context, onSuccess: () -> Unit) {
+
+    fun submit(
+        uploadImage: suspend (Uri) -> String,
+        onSuccess: () -> Unit
+    ) {
         val s = _state.value
         val imageUri = s.imageUri ?: return
 
@@ -88,10 +90,7 @@ class AddOutfitViewModel(
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                val uploadedUrl = outfitApi.uploadOutfitImage(
-                    contentResolver = context.contentResolver,
-                    imageUri = imageUri.toString()
-                )
+                val uploadedUrl = uploadImage(imageUri)
 
                 outfitApi.createOutfit(
                     userId = userId,

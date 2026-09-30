@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -28,6 +30,8 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.music.MusicPlaylistCard
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 
 @Composable
 fun SavedPlaylistsScreen(
@@ -36,9 +40,12 @@ fun SavedPlaylistsScreen(
     modifier: Modifier = Modifier,
     viewModel: SavedPlaylistsViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return SavedPlaylistsViewModel(tokenManager) as T
+                return SavedPlaylistsViewModel(
+                    tokenManager = tokenManager,
+                    playlistRepository = PlaylistRepository(PlaylistApi())
+                ) as T
             }
         }
     )
@@ -46,7 +53,9 @@ fun SavedPlaylistsScreen(
     val savedPlaylists by viewModel.savedPlaylists.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val favoritePlaylistIds by viewModel.favoritePlaylistIds.collectAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedPlaylists()   // or loadSavedStyles() or loadSavedPosts()
+    }
     Box(
         modifier = modifier
             .fillMaxSize()

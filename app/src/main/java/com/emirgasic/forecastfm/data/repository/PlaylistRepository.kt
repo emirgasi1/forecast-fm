@@ -170,4 +170,7 @@ class PlaylistRepository(
             )
         }
     }
+    suspend fun updatePlaylistImage(playlistId: String, imageUrl: String) {
+        playlistApi.updatePlaylistImage(playlistId, imageUrl)
+    }
 }

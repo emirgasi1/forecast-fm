@@ -12,10 +12,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SavedPostsViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val savedPostRepository: SavedPostRepository
 ) : ViewModel() {
-
-    private val savedPostRepository = SavedPostRepository()
 
     private val _savedPosts = MutableStateFlow<List<PostResponse>>(emptyList())
     val savedPosts: StateFlow<List<PostResponse>> = _savedPosts.asStateFlow()
@@ -23,21 +22,16 @@ class SavedPostsViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        loadSavedPosts()
-    }
-
     fun loadSavedPosts() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
-                    val posts = savedPostRepository.getSavedPosts(userId)
-                    _savedPosts.value = posts
+                    _savedPosts.value = savedPostRepository.getSavedPosts(userId)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
             _isLoading.value = false
         }
@@ -46,13 +40,12 @@ class SavedPostsViewModel(
     fun unsavePost(postId: String) {
         viewModelScope.launch {
             try {
-                val userId = tokenManager.getUserId().first()
-                if (userId != null) {
-                    savedPostRepository.unsavePost(postId, userId)
-                    _savedPosts.value = _savedPosts.value.filter { it.id != postId }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                val userId = tokenManager.getUserId().first() ?: return@launch
+
+                savedPostRepository.unsavePost(postId, userId)
+                _savedPosts.value = _savedPosts.value.filter { it.id != postId }
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }

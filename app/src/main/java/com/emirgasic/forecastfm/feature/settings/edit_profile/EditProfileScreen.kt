@@ -41,6 +41,11 @@ import com.emirgasic.forecastfm.core.ui.components.editprofile.ProfileTextField
 import com.emirgasic.forecastfm.core.ui.components.map.LocationDropdown
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import kotlinx.coroutines.delay
+import com.emirgasic.forecastfm.data.repository.ProfileRepository
+import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.network.location.LocationApi
+import com.emirgasic.forecastfm.network.profile.ProfileApi
+import com.emirgasic.forecastfm.network.user.UserApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +57,12 @@ fun EditProfileScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return EditProfileViewModel(tokenManager) as T
+                return EditProfileViewModel(
+                    tokenManager = tokenManager,
+                    profileRepository = ProfileRepository(ProfileApi()),
+                    userRepository = UserRepository(UserApi()),
+                    locationApi = LocationApi()
+                ) as T
             }
         }
     )
@@ -61,13 +71,27 @@ fun EditProfileScreen(
     val context = LocalContext.current
     val forecastColors = LocalForecastColors.current
 
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+        viewModel.loadLocations()
+    }
+
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
-            viewModel.uploadImage(context.contentResolver, it.toString())
+            viewModel.uploadImage(
+                imageUri = it.toString(),
+                uploadImage = { userId, imageUri ->
+                    ProfileRepository(ProfileApi()).uploadProfileImage(
+                        userId = userId,
+                        contentResolver = context.contentResolver,
+                        imageUri = imageUri
+                    )
+                }
+            )
         }
     }
 

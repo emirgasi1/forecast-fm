@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,6 +39,8 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
 import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
+import com.emirgasic.forecastfm.data.repository.OutfitRepository
+import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -49,7 +52,11 @@ fun StyleScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return StyleViewModel(tokenManager) as T
+                return StyleViewModel(
+                    tokenManager = tokenManager,
+                    outfitRepository = OutfitRepository(),
+                    savedOutfitRepository = SavedOutfitRepository()
+                ) as T
             }
         }
     )
@@ -61,6 +68,10 @@ fun StyleScreen(
 
     val forecastColors = LocalForecastColors.current
 
+    LaunchedEffect(Unit) {
+        viewModel.loadStyle()
+        viewModel.loadSavedOutfits()
+    }
     Box(
         modifier = modifier
             .fillMaxSize()

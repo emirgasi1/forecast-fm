@@ -1,8 +1,5 @@
 package com.emirgasic.forecastfm.feature.music.musichistory
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
@@ -15,10 +12,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MusicHistoryViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val musicHistoryRepository: MusicHistoryRepository
 ) : ViewModel() {
-
-    private val repository = MusicHistoryRepository()
 
     private val _history = MutableStateFlow<List<MusicHistory>>(emptyList())
     val history: StateFlow<List<MusicHistory>> = _history.asStateFlow()
@@ -26,40 +22,35 @@ class MusicHistoryViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        loadHistory()
-    }
-
     fun loadHistory() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
-                    val historyData = repository.getMusicHistory(userId)
-                    _history.value = historyData
+                    _history.value = musicHistoryRepository.getMusicHistory(userId)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — screen shows empty state
             }
             _isLoading.value = false
         }
     }
 
-    fun openPlaylist(playlistId: String, url: String?, context: Context) {
+
+    fun openPlaylist(playlistId: String, url: String?, onReadyToOpen: (String) -> Unit) {
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
-                    repository.addHistory(userId, playlistId)
-                    loadHistory() // Refresh history
+                    musicHistoryRepository.addHistory(userId, playlistId)
+                    loadHistory()
                 }
                 if (!url.isNullOrBlank()) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    context.startActivity(intent)
+                    onReadyToOpen(url)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }

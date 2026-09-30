@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.model.Playlist
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,10 +12,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SavedPlaylistsViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
-
-    private val playlistRepository = PlaylistRepository(PlaylistApi())
 
     private val _savedPlaylists = MutableStateFlow<List<Playlist>>(emptyList())
     val savedPlaylists: StateFlow<List<Playlist>> = _savedPlaylists.asStateFlow()
@@ -26,10 +24,6 @@ class SavedPlaylistsViewModel(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    init {
-        loadSavedPlaylists()
-    }
 
     fun loadSavedPlaylists() {
         viewModelScope.launch {
@@ -41,8 +35,8 @@ class SavedPlaylistsViewModel(
                     _savedPlaylists.value = playlists
                     _favoritePlaylistIds.value = playlists.map { it.id }.toSet()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — screen shows empty state
             }
             _isLoading.value = false
         }
@@ -51,28 +45,20 @@ class SavedPlaylistsViewModel(
     fun unsavePlaylist(playlistId: String) {
         viewModelScope.launch {
             try {
-                val userId = tokenManager.getUserId().first()
-                if (userId != null) {
-                    playlistRepository.unfavoritePlaylist(userId, playlistId)
-                    _savedPlaylists.value = _savedPlaylists.value.filter { it.id != playlistId }
-                    _favoritePlaylistIds.value = _favoritePlaylistIds.value - playlistId
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                val userId = tokenManager.getUserId().first() ?: return@launch
+
+                playlistRepository.unfavoritePlaylist(userId, playlistId)
+                _savedPlaylists.value = _savedPlaylists.value.filter { it.id != playlistId }
+                _favoritePlaylistIds.value = _favoritePlaylistIds.value - playlistId
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
 
+
+    @Suppress("UNUSED_PARAMETER")
     fun openPlaylist(playlist: Playlist) {
-        viewModelScope.launch {
-            try {
-                val userId = tokenManager.getUserId().first()
-                if (userId != null) {
-                    // Optionally log history
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        // Intentionally empty. See note above.
     }
 }

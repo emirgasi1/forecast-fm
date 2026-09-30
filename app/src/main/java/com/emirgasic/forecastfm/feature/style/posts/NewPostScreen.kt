@@ -11,8 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +31,9 @@ import com.emirgasic.forecastfm.core.ui.components.style.posts.ImagePickerCard
 import com.emirgasic.forecastfm.core.ui.components.style.posts.PostActionButtons
 import com.emirgasic.forecastfm.core.ui.components.style.posts.ProfileInputField
 import com.emirgasic.forecastfm.core.utils.rememberImagePicker
+import com.emirgasic.forecastfm.data.repository.NewPostRepository
+import com.emirgasic.forecastfm.network.image.ImageUploadApi
+import com.emirgasic.forecastfm.network.post.PostApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -40,7 +45,12 @@ fun NewPostScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return NewPostViewModel(tokenManager) as T
+                return NewPostViewModel(
+                    tokenManager = tokenManager,
+                    newPostRepository = NewPostRepository(),
+                    postApi = PostApi(),
+                    imageUploadApi = ImageUploadApi()
+                ) as T
             }
         }
     )
@@ -48,6 +58,10 @@ fun NewPostScreen(
     val newPost by viewModel.newPost.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadNewPost()
+    }
 
     val post = newPost ?: return
 
@@ -58,7 +72,7 @@ fun NewPostScreen(
     }
     val context = LocalContext.current
     val contentResolver = context.contentResolver
-
+    val imageUploadApi = remember { ImageUploadApi() }
     val forecastColors = LocalForecastColors.current
 
     Box(
@@ -152,10 +166,12 @@ fun NewPostScreen(
                 PostActionButtons(
                     onPostClick = {
                         viewModel.createPost(
+                            uploadImage = { postId, imageUri ->
+                                imageUploadApi.uploadImage(postId, contentResolver, imageUri.toString())
+                            },
                             onSuccess = {
                                 navController.popBackStack()
-                            },
-                            contentResolver = contentResolver
+                            }
                         )
                     },
                     onDeleteClick = {

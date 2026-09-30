@@ -25,6 +25,10 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentCard
 import com.emirgasic.forecastfm.core.ui.components.feed.comment.CommentInputField
+import com.emirgasic.forecastfm.data.repository.CommentRepository
+import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.network.comment.CommentApi
+import com.emirgasic.forecastfm.network.user.UserApi
 
 @Composable
 fun CommentsScreen(
@@ -36,7 +40,15 @@ fun CommentsScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return CommentsViewModel(tokenManager) as T
+                val userRepository = UserRepository(UserApi())
+                val commentRepository = CommentRepository(
+                    commentApi = CommentApi(),
+                    userRepository = userRepository
+                )
+                return CommentsViewModel(
+                    tokenManager = tokenManager,
+                    commentRepository = commentRepository
+                ) as T
             }
         }
     )
