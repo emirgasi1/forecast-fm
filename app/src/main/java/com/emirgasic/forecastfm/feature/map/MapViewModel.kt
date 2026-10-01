@@ -7,6 +7,7 @@ import com.emirgasic.forecastfm.data.model.BusStation
 import com.emirgasic.forecastfm.data.model.MapMarker
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.model.Place
+import com.emirgasic.forecastfm.data.recommender.PlaceRanker
 import com.emirgasic.forecastfm.data.repository.BusStationRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
@@ -72,13 +73,9 @@ class MapViewModel(
         _venueCategoryFilter
     ) { places, location, category ->
         places.filter { place ->
-            val locationMatch =
-                location == null || place.venueId == location.id
-
-            val categoryMatch =
-                category == null ||
-                        canonicalCategory(place.category) == canonicalCategory(category)
-
+            val locationMatch = location == null || place.venueId == location.id
+            val categoryMatch = category == null ||
+                    PlaceRanker.categoriesMatch(place.category, category)
             locationMatch && categoryMatch
         }
     }.stateIn(
@@ -87,117 +84,58 @@ class MapViewModel(
         emptyList()
     )
 
-    private val markerLocationCategoryFilter: StateFlow<Pair<LocationResponse?, String?>> =
-        combine(
-            _selectedLocation,
-            _venueCategoryFilter
-        ) { location, category ->
-            location to category
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            null to null
-        )
-
     val filteredMarkers: StateFlow<List<MapMarker>> =
         combine(
             _markers,
             _searchQuery,
             _selectedFilters,
-            _enabledLayers
-        ) { markers, query, filters, layers ->
+            _enabledLayers,
+            _selectedLocation,
+            _venueCategoryFilter,
+            _allPlaces
+        ) { values ->
+            val markers = values[0] as List<MapMarker>
+            val query = values[1] as String
+            val filters = values[2] as Set<String>
+            val layers = values[3] as Set<String>
+            val location = values[4] as LocationResponse?
+            val category = values[5] as String?
+            val places = values[6] as List<Place>
 
-            FilterBaseData(
-                markers = markers,
-                query = query,
-                filters = filters,
-                layers = layers
-            )
-        }.combine(
-            combine(
-                _selectedLocation,
-                _venueCategoryFilter,
-                _allPlaces
-            ) { location, category, places ->
-                FilterLocationData(
-                    location = location,
-                    category = category,
-                    places = places
-                )
-            }
-        ) { base, locationData ->
+            val placesById = places.associateBy { it.id }
 
-            val placesById = locationData.places.associateBy { it.id }
-
-            base.markers.filter { marker ->
-
+            markers.filter { marker ->
                 val layerMatch = when (marker.type) {
-                    "venue" -> "Venues" in base.layers
-                    "place" -> "Places" in base.layers
-                    "bus_station" -> "Bus Stops" in base.layers
+                    "venue" -> "Venues" in layers
+                    "place" -> "Places" in layers
+                    "bus_station" -> "Bus Stops" in layers
                     else -> true
                 }
 
                 val place = placesById[marker.id]
 
                 val locationMatch = when (marker.type) {
-                    "venue" ->
-                        locationData.location == null ||
-                                marker.id == locationData.location.id
-
-                    "place" ->
-                        locationData.location == null ||
-                                place?.venueId == locationData.location.id
-
+                    "venue" -> location == null || marker.id == location.id
+                    "place" -> location == null || place?.venueId == location.id
                     else -> true
                 }
 
-                val categoryMatch =
-                    marker.type != "place" ||
-                            locationData.category == null ||
-                            canonicalCategory(marker.category) ==
-                            canonicalCategory(locationData.category)
+                val categoryMatch = marker.type != "place" ||
+                        category == null ||
+                        PlaceRanker.categoriesMatch(marker.category, category)
 
-                val filterMatch =
-                    base.filters.isEmpty() ||
-                            base.filters.any { filter: String ->
-                                canonicalCategory(marker.category) ==
-                                        canonicalCategory(filter) ||
-                                        (
-                                                filter.equals(
-                                                    "Venues",
-                                                    ignoreCase = true
-                                                ) &&
-                                                        marker.type == "venue"
-                                                ) ||
-                                        (
-                                                filter.equals(
-                                                    "Places",
-                                                    ignoreCase = true
-                                                ) &&
-                                                        marker.type == "place"
-                                                ) ||
-                                        (
-                                                filter.equals(
-                                                    "Bus Stops",
-                                                    ignoreCase = true
-                                                ) &&
-                                                        marker.type == "bus_station"
-                                                )
-                            }
+                val filterMatch = filters.isEmpty() ||
+                        filters.any { filter ->
+                            PlaceRanker.categoriesMatch(marker.category, filter) ||
+                                    (filter.equals("Venues", true) && marker.type == "venue") ||
+                                    (filter.equals("Places", true) && marker.type == "place") ||
+                                    (filter.equals("Bus Stops", true) && marker.type == "bus_station")
+                        }
 
-                val searchMatch =
-                    base.query.isBlank() ||
-                            marker.name.contains(
-                                base.query,
-                                ignoreCase = true
-                            )
+                val searchMatch = query.isBlank() ||
+                        marker.name.contains(query, ignoreCase = true)
 
-                layerMatch &&
-                        locationMatch &&
-                        categoryMatch &&
-                        filterMatch &&
-                        searchMatch
+                layerMatch && locationMatch && categoryMatch && filterMatch && searchMatch
             }
         }.stateIn(
             viewModelScope,
@@ -205,45 +143,43 @@ class MapViewModel(
             emptyList()
         )
 
-    init {
-        loadLocations()
-        loadAllPlaces()
-        loadBusStations()
-    }
-
-    private fun loadLocations() {
+    fun loadLocations() {
         viewModelScope.launch {
             try {
                 val locations = locationRepository.getLocations()
                 _locations.value = locations
                 _selectedLocation.value = locations.firstOrNull()
                 updateMarkers()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
 
-    private fun loadAllPlaces() {
+    fun loadAllPlaces() {
         viewModelScope.launch {
             try {
                 val allPlaces = placeRepository.getAllPlaces()
                 val prefs = onboardingPrefs.placeCategories.first()
-
-                val sorted = if (prefs.isEmpty()) {
-                    allPlaces.sortedByDescending { it.rating }
-                } else {
-                    allPlaces.sortedWith(
-                        compareByDescending<Place> { scorePlace(it, prefs) }
-                            .thenByDescending { it.rating }
-                    )
-                }
+                val sorted = PlaceRanker.rankByPreferences(allPlaces, prefs)
 
                 _allPlaces.value = sorted
                 _selectedPlace.value = sorted.firstOrNull()
                 updateMarkers()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
+            }
+        }
+    }
+
+    fun loadBusStations() {
+        viewModelScope.launch {
+            try {
+                val stations = busStationRepository.getAllBusStations()
+                _busStations.value = stations
+                updateMarkers()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -255,13 +191,12 @@ class MapViewModel(
 
                 _selectedPlace.value = places.firstOrNull {
                     _venueCategoryFilter.value == null ||
-                            canonicalCategory(it.category) ==
-                            canonicalCategory(_venueCategoryFilter.value)
+                            PlaceRanker.categoriesMatch(it.category, _venueCategoryFilter.value)
                 }
 
                 updateMarkers()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -272,11 +207,8 @@ class MapViewModel(
         viewModelScope.launch {
             _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
                 place.venueId == location.id &&
-                        (
-                                _venueCategoryFilter.value == null ||
-                                        canonicalCategory(place.category) ==
-                                        canonicalCategory(_venueCategoryFilter.value)
-                                )
+                        (_venueCategoryFilter.value == null ||
+                                PlaceRanker.categoriesMatch(place.category, _venueCategoryFilter.value))
             }
         }
 
@@ -292,20 +224,17 @@ class MapViewModel(
         viewModelScope.launch {
             try {
                 val location = _locations.value.firstOrNull { it.id == locationId }
-
                 if (location != null) {
                     val playlist = playlistRepository.getRecommendedPlaylist(
                         location = location.name,
                         weather = weather
                     )
-
                     if (playlist != null) {
-                        _playlistMap.value =
-                            _playlistMap.value + (locationId to playlist.title)
+                        _playlistMap.value = _playlistMap.value + (locationId to playlist.title)
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -313,10 +242,9 @@ class MapViewModel(
     fun loadOutfits(weather: String) {
         viewModelScope.launch {
             try {
-                val outfits = outfitRepository.getOutfitsByWeather(weather)
-                _outfits.value = outfits
-            } catch (e: Exception) {
-                e.printStackTrace()
+                _outfits.value = outfitRepository.getOutfitsByWeather(weather)
+            } catch (_: Exception) {
+                // Silent failure
             }
         }
     }
@@ -372,21 +300,19 @@ class MapViewModel(
     }
 
     fun toggleFilter(filter: String) {
-        _selectedFilters.value =
-            if (filter in _selectedFilters.value) {
-                _selectedFilters.value - filter
-            } else {
-                _selectedFilters.value + filter
-            }
+        _selectedFilters.value = if (filter in _selectedFilters.value) {
+            _selectedFilters.value - filter
+        } else {
+            _selectedFilters.value + filter
+        }
     }
 
     fun toggleLayer(layer: String) {
-        _enabledLayers.value =
-            if (layer in _enabledLayers.value) {
-                _enabledLayers.value - layer
-            } else {
-                _enabledLayers.value + layer
-            }
+        _enabledLayers.value = if (layer in _enabledLayers.value) {
+            _enabledLayers.value - layer
+        } else {
+            _enabledLayers.value + layer
+        }
     }
 
     fun setVenueCategoryFilter(category: String?) {
@@ -394,71 +320,13 @@ class MapViewModel(
 
         viewModelScope.launch {
             val currentLocation = _selectedLocation.value
-
             _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
                 place.venueId == currentLocation?.id &&
-                        (
-                                category == null ||
-                                        canonicalCategory(place.category) ==
-                                        canonicalCategory(category)
-                                )
+                        (category == null ||
+                                PlaceRanker.categoriesMatch(place.category, category))
             }
         }
 
         updateMarkers()
     }
-
-    private fun scorePlace(place: Place, prefs: Set<String>): Int {
-        return if (
-            prefs.any {
-                canonicalCategory(place.category) == canonicalCategory(it)
-            }
-        ) {
-            10
-        } else {
-            0
-        }
-    }
-
-    private fun canonicalCategory(category: String?): String {
-        return when (category?.trim()?.lowercase()) {
-            null -> ""
-            "all" -> ""
-            "cafe", "cafes" -> "cafe"
-            "restaurant", "restaurants" -> "restaurant"
-            "shop", "shops", "shopping" -> "shop"
-            "nightlife", "nightclub", "nightclubs" -> "nightlife"
-            "park", "parks", "parks & nature" -> "park"
-            "outdoor", "outdoors" -> "outdoor"
-            "viewpoint", "viewpoints" -> "viewpoint"
-            "attraction", "attractions" -> "attraction"
-            "culture", "cultures", "historic & culture" -> "culture"
-            "bus stop", "bus stops" -> "bus stop"
-            else -> category.trim().lowercase()
-        }
-    }
-
-    private fun loadBusStations() {
-        viewModelScope.launch {
-            try {
-                val stations = busStationRepository.getAllBusStations()
-                _busStations.value = stations
-                updateMarkers()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-    private data class FilterBaseData(
-        val markers: List<MapMarker>,
-        val query: String,
-        val filters: Set<String>,
-        val layers: Set<String>
-    )
-
-    private data class FilterLocationData(
-        val location: LocationResponse?,
-        val category: String?,
-        val places: List<Place>
-    )
 }

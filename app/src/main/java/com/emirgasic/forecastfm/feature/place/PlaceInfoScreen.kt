@@ -40,6 +40,9 @@ import com.emirgasic.forecastfm.core.ui.components.place.PlaceInfoHeader
 import com.emirgasic.forecastfm.core.ui.components.place.PlaceInfoHero
 import com.emirgasic.forecastfm.core.ui.components.place.PlaceInfoMapPreview
 import com.emirgasic.forecastfm.data.model.WeatherReading
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.PlaceRepository
+import com.emirgasic.forecastfm.data.repository.SavedPlaceRepository
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -52,7 +55,12 @@ fun PlaceInfoScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return PlaceInfoViewModel(tokenManager) as T
+                return PlaceInfoViewModel(
+                    tokenManager = tokenManager,
+                    placeRepository = PlaceRepository(),
+                    savedPlaceRepository = SavedPlaceRepository(),
+                    locationRepository = LocationRepository()
+                ) as T
             }
         }
     )

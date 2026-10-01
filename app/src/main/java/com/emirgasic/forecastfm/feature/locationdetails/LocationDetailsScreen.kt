@@ -25,6 +25,12 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationMusic
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationOutfitCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.LocationWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.PlaceDiscoveryCard
+import com.emirgasic.forecastfm.data.repository.LocationRepository
+import com.emirgasic.forecastfm.data.repository.OutfitRepository
+import com.emirgasic.forecastfm.data.repository.PlaceRepository
+import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -32,7 +38,20 @@ fun LocationDetailsScreen(
     navController: NavController,
     locationId: String?,
     modifier: Modifier = Modifier,
-    viewModel: LocationDetailsViewModel = viewModel()
+    viewModel: LocationDetailsViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return LocationDetailsViewModel(
+                    locationRepository = LocationRepository(),
+                    weatherRepository = WeatherRepository(),
+                    playlistRepository = PlaylistRepository(PlaylistApi()),
+                    outfitRepository = OutfitRepository(),
+                    placeRepository = PlaceRepository()
+                ) as T
+            }
+        }
+    )
 ) {
 
     val locationDetails by viewModel.locationDetails.collectAsState()

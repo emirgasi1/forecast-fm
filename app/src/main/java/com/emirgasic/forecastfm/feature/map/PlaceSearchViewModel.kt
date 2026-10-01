@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class PlaceSearchViewModel : ViewModel() {
-
-    private val repository = PlaceRepository()
+class PlaceSearchViewModel(
+    private val repository: PlaceRepository
+) : ViewModel() {
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
@@ -46,8 +46,7 @@ class PlaceSearchViewModel : ViewModel() {
             _error.value = null
 
             try {
-                val response = repository.searchPlaces(value)
-                _results.value = response
+                _results.value = repository.searchPlaces(value)
             } catch (e: Exception) {
                 _error.value = e.message ?: "Search failed"
                 _results.value = emptyList()

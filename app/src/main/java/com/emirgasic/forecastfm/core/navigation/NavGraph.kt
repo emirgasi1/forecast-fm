@@ -19,6 +19,7 @@ import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.locationdetails.LocationDetailsScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationDetailScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationScreen
+import com.emirgasic.forecastfm.feature.map.FullMapScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.map.route.RouteScreen
 import com.emirgasic.forecastfm.feature.music.MusicScreen
@@ -289,6 +290,9 @@ fun NavGraph(
                 navController = navController,
                 tokenManager = tokenManager
             )
+        }
+        composable(Routes.FullMap) {
+            FullMapScreen(navController = navController)
         }
 
         composable(

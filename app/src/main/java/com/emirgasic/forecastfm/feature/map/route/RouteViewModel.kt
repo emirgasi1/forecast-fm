@@ -1,9 +1,7 @@
 package com.emirgasic.forecastfm.feature.map.route
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.route.RouteApi
 import com.emirgasic.forecastfm.network.route.RouteRequest
 import com.emirgasic.forecastfm.network.route.RouteResponse
@@ -45,29 +43,35 @@ class RouteViewModel(
         _actualOrigin.value = lat to lng
     }
 
-    fun setMode(newMode: TravelMode, context: Context) {
+    fun setMode(
+        newMode: TravelMode,
+        resolveLocation: suspend () -> Pair<Double, Double>?
+    ) {
         if (_mode.value == newMode) return
         _mode.value = newMode
 
         val dest = currentDestination ?: return
-        fetchRoute(context, dest.first, dest.second)
+        fetchRoute(resolveLocation, dest.first, dest.second)
     }
 
-    fun fetchRoute(context: Context, destLat: Double, destLng: Double) {
+    fun fetchRoute(
+        resolveLocation: suspend () -> Pair<Double, Double>?,
+        destLat: Double,
+        destLng: Double
+    ) {
         currentDestination = destLat to destLng
 
         viewModelScope.launch {
             _state.value = RouteState.Loading
 
             val origin = lastKnownOrigin ?: run {
-                val location = LocationManager(context).getCurrentLocation()
-                if (location == null) {
+                val resolved = resolveLocation()
+                if (resolved == null) {
                     _state.value = RouteState.Error("Could not get your location")
                     return@launch
                 }
-                val pair = location.latitude to location.longitude
-                lastKnownOrigin = pair
-                pair
+                lastKnownOrigin = resolved
+                resolved
             }
 
             _actualOrigin.value = origin

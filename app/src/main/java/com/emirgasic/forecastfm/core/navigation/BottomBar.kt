@@ -84,7 +84,7 @@ fun BottomBar(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(forecastColors.card)
+            .background(forecastColors.background, indicatorShape)
             .navigationBarsPadding()
     ) {
         Box(
@@ -99,7 +99,7 @@ fun BottomBar(navController: NavController) {
                     .width(indicatorWidth)
                     .height(indicatorHeight)
                     .clip(indicatorShape)
-                    .background(forecastColors.background, indicatorShape)
+                    .background(forecastColors.card)
                     .border(1.dp, forecastColors.border, indicatorShape)
             )
 

@@ -65,7 +65,11 @@ fun LoginScreen(
     val isLoading by loginViewModel.isLoading.collectAsState()
     val errorMessage by loginViewModel.errorMessage.collectAsState()
 
-    Box(modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    )  {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -81,10 +85,9 @@ fun LoginScreen(
             Text(
                 text = "Welcome Back",
                 color = forecastColors.title,
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.offset(y = (-30).dp)
+                style = MaterialTheme.typography.headlineLarge
             )
-            Spacer(modifier = modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Continue your Sarajevo vibe.",
                 color = forecastColors.body,

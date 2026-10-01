@@ -14,12 +14,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class PlaceInfoViewModel(
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val placeRepository: PlaceRepository,
+    private val savedPlaceRepository: SavedPlaceRepository,
+    private val locationRepository: LocationRepository
 ) : ViewModel() {
-
-    private val placeRepository = PlaceRepository()
-    private val savedPlaceRepository = SavedPlaceRepository()
-    private val locationRepository = LocationRepository()
 
     private val _place = MutableStateFlow<Place?>(null)
     val place: StateFlow<Place?> = _place.asStateFlow()
@@ -49,8 +48,8 @@ class PlaceInfoViewModel(
                 if (userId != null) {
                     _isSaved.value = savedPlaceRepository.isPlaceSaved(placeId, userId)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — screen shows "place not found" state
             }
             _isLoading.value = false
         }
@@ -69,8 +68,8 @@ class PlaceInfoViewModel(
                     savedPlaceRepository.savePlace(placeId, userId)
                     _isSaved.value = true
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — state unchanged
             }
         }
     }

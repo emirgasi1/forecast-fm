@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -48,6 +49,9 @@ fun AdminScreen(
 
     val forecastColors = LocalForecastColors.current
 
+    LaunchedEffect(Unit) {
+        viewModel.loadUserInfo()
+    }
     val currentTheme by viewModel.currentTheme.collectAsState()
     val currentApiUrl by viewModel.currentApiUrl.collectAsState()
     val userId by viewModel.userId.collectAsState()

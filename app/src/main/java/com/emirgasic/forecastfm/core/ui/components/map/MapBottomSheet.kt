@@ -48,8 +48,8 @@ fun MapBottomSheet(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val expandedHeight = screenHeight * 0.5f
-    val collapsedHeight = 40.dp
+    val expandedHeight = screenHeight * 0.55f
+    val collapsedHeight = 100.dp
 
     var dragOffset by remember { mutableFloatStateOf(0f) }
     var isExpanded by remember { mutableStateOf(false) }
@@ -73,6 +73,9 @@ fun MapBottomSheet(
         modifier = modifier
             .fillMaxWidth()
             .height(currentHeight)
+            .then(
+                if (isExpanded) Modifier else Modifier.padding(bottom = 48.dp)
+            )
             .offset(y = animatedOffset.dp)
             .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             .background(MaterialTheme.colorScheme.surface)

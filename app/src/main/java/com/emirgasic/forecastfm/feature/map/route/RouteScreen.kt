@@ -41,6 +41,7 @@ import com.emirgasic.forecastfm.core.ui.components.route.ModeChip
 import com.emirgasic.forecastfm.core.ui.components.route.RouteMap
 import com.emirgasic.forecastfm.core.utils.PolylineDecoder
 import com.emirgasic.forecastfm.core.utils.RouteFormatter
+import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.route.RouteApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -77,7 +78,15 @@ fun RouteScreen(
         if (originLat != 0.0 && originLng != 0.0) {
             viewModel.setOrigin(originLat, originLng)
         }
-        viewModel.fetchRoute(context, destinationLat, destinationLng)
+        viewModel.fetchRoute(
+            resolveLocation = {
+                LocationManager(context).getCurrentLocation()?.let {
+                    it.latitude to it.longitude
+                }
+            },
+            destLat = destinationLat,
+            destLng = destinationLng
+        )
     }
 
     val routePoints = remember(state) {
@@ -169,12 +178,30 @@ fun RouteScreen(
                 ModeChip(
                     text = "Walk",
                     selected = mode == TravelMode.WALKING,
-                    onClick = { viewModel.setMode(TravelMode.WALKING, context) }
+                    onClick = {
+                        viewModel.setMode(
+                            newMode = TravelMode.WALKING,
+                            resolveLocation = {
+                                LocationManager(context).getCurrentLocation()?.let {
+                                    it.latitude to it.longitude
+                                }
+                            }
+                        )
+                    }
                 )
                 ModeChip(
                     text = "Drive",
                     selected = mode == TravelMode.DRIVING,
-                    onClick = { viewModel.setMode(TravelMode.DRIVING, context) }
+                    onClick = {
+                        viewModel.setMode(
+                            newMode = TravelMode.DRIVING,
+                            resolveLocation = {
+                                LocationManager(context).getCurrentLocation()?.let {
+                                    it.latitude to it.longitude
+                                }
+                            }
+                        )
+                    }
                 )
             }
 

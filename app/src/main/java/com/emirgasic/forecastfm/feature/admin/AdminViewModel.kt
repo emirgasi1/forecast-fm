@@ -35,14 +35,22 @@ class AdminViewModel(
     private val _currentHour = MutableStateFlow(ThemeManager.currentHour())
     val currentHour: StateFlow<Int> = _currentHour.asStateFlow()
 
-    init {
-        loadUserInfo()
+    fun loadUserInfo() {
+        viewModelScope.launch {
+            tokenManager.getUserId().collect { id ->
+                _userId.value = id ?: "N/A"
+            }
+        }
+        viewModelScope.launch {
+            tokenManager.getUserEmail().collect { email ->
+                _userEmail.value = email ?: "N/A"
+            }
+        }
     }
 
     fun setTheme(theme: AppTheme) {
         ThemeManager.setTheme(theme)
         _currentTheme.value = theme
-        android.util.Log.d("AdminTheme", "Theme set to $theme")
     }
 
     fun setApiUrl(url: String) {
@@ -60,8 +68,7 @@ class AdminViewModel(
             _backendStatus.value = "Pinging..."
             try {
                 val start = System.currentTimeMillis()
-                val client = ApiClient.client
-                val response = client.get(ApiConfig.current())
+                val response = ApiClient.client.get(ApiConfig.current())
                 val elapsed = System.currentTimeMillis() - start
                 _backendStatus.value = "OK (${response.status.value}) in ${elapsed}ms"
             } catch (e: Exception) {
@@ -72,19 +79,10 @@ class AdminViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            tokenManager.clearTokens()
-        }
-    }
-
-    private fun loadUserInfo() {
-        viewModelScope.launch {
-            tokenManager.getUserId().collect { id ->
-                _userId.value = id ?: "N/A"
-            }
-        }
-        viewModelScope.launch {
-            tokenManager.getUserEmail().collect { email ->
-                _userEmail.value = email ?: "N/A"
+            try {
+                tokenManager.clearTokens()
+            } catch (_: Exception) {
+                // Silent failure — logout is best-effort
             }
         }
     }

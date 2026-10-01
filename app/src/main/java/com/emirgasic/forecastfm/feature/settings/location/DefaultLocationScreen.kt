@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,15 +21,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emirgasic.forecastfm.core.ui.components.settings.LocationRow
+import com.emirgasic.forecastfm.network.location.LocationApi
 
 @Composable
 fun DefaultLocationScreen(
     modifier: Modifier = Modifier,
-    viewModel: DefaultLocationViewModel = viewModel()
-) {
+    viewModel: DefaultLocationViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return DefaultLocationViewModel(
+                    locationApi = LocationApi()
+                ) as T
+            }
+        }
+    )) {
     val locations by viewModel.locations.collectAsState()
     val selected by viewModel.selected.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadLocations()
+    }
 
     Column(
         modifier = modifier

@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class DefaultLocationViewModel : ViewModel() {
-
-    private val locationApi = LocationApi()
+class DefaultLocationViewModel(
+    private val locationApi: LocationApi
+) : ViewModel() {
 
     private val _locations = MutableStateFlow<List<String>>(emptyList())
     val locations: StateFlow<List<String>> = _locations.asStateFlow()
@@ -21,11 +21,7 @@ class DefaultLocationViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        loadLocations()
-    }
-
-    private fun loadLocations() {
+    fun loadLocations() {
         viewModelScope.launch {
             try {
                 val response = locationApi.getLocations()
@@ -34,8 +30,8 @@ class DefaultLocationViewModel : ViewModel() {
                 if (_selected.value.isBlank()) {
                     _selected.value = names.firstOrNull() ?: ""
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — screen stays in loading state cleaned by finally
             } finally {
                 _isLoading.value = false
             }

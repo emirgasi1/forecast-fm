@@ -26,13 +26,23 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecom
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.PlaceCategorySelector
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.PlaceRecommendationCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.WeatherSelector
+import com.emirgasic.forecastfm.data.repository.PlaceRecommendationRepository
 
 @Composable
 fun PlaceRecommendationScreen(
     navController: NavController,
     venueId: String?,
     modifier: Modifier = Modifier,
-    viewModel: PlaceRecommendationViewModel = viewModel()
+    viewModel: PlaceRecommendationViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return PlaceRecommendationViewModel(
+                    repository = PlaceRecommendationRepository()
+                ) as T
+            }
+        }
+    )
 ) {
     val recommendations by viewModel.recommendations.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()

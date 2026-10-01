@@ -109,11 +109,7 @@ fun MainScreen(
                     tokenManager = tokenManager
                 )
             }
-            composable(Routes.FullMap) {
-                FullMapScreen(
-                    navController = rootNavController
-                )
-            }
+
         }
     }
 }

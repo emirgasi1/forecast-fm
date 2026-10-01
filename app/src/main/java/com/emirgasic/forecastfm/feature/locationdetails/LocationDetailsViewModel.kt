@@ -9,28 +9,27 @@ import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LocationDetailsViewModel : ViewModel() {
-
-    private val locationRepository = LocationRepository()
-    private val weatherRepository = WeatherRepository()
-    private val playlistRepository = PlaylistRepository(PlaylistApi())
-    private val outfitRepository = OutfitRepository()
-    private val placeRepository = PlaceRepository()
+class LocationDetailsViewModel(
+    private val locationRepository: LocationRepository,
+    private val weatherRepository: WeatherRepository,
+    private val playlistRepository: PlaylistRepository,
+    private val outfitRepository: OutfitRepository,
+    private val placeRepository: PlaceRepository
+) : ViewModel() {
 
     private val _locationDetails = MutableStateFlow<LocationDetailsUi?>(null)
-    val locationDetails = _locationDetails.asStateFlow()
+    val locationDetails: StateFlow<LocationDetailsUi?> = _locationDetails.asStateFlow()
 
     private val _outfits = MutableStateFlow<List<Outfit>>(emptyList())
-    val outfits = _outfits.asStateFlow()
+    val outfits: StateFlow<List<Outfit>> = _outfits.asStateFlow()
 
     private val _placesCount = MutableStateFlow(0)
-    val placesCount = _placesCount.asStateFlow()
+    val placesCount: StateFlow<Int> = _placesCount.asStateFlow()
 
     fun loadLocation(locationId: String) {
         viewModelScope.launch {
@@ -60,9 +59,8 @@ class LocationDetailsViewModel : ViewModel() {
                 _outfits.value = outfits
 
                 _placesCount.value = placeRepository.getPlacesCountByVenue(location.id)
-
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // Silent failure — screen shows empty state
             }
         }
     }

@@ -64,6 +64,7 @@ import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import org.maplibre.compose.camera.CameraPosition
@@ -83,8 +84,26 @@ fun MapScreen(
     mainNavController: NavController,
     rootNavController: NavController,
     modifier: Modifier = Modifier,
-    searchViewModel: PlaceSearchViewModel = viewModel(),
-    weatherViewModel: WeatherViewModel = viewModel()
+    searchViewModel: PlaceSearchViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return PlaceSearchViewModel(
+                    repository = PlaceRepository()
+                ) as T
+            }
+        }
+    ),
+    weatherViewModel: WeatherViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return WeatherViewModel(
+                    repository = WeatherRepository()
+                ) as T
+            }
+        }
+    )
 ) {
     val context = LocalContext.current
 
@@ -204,6 +223,10 @@ fun MapScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.loadLocations()
+        viewModel.loadAllPlaces()
+        viewModel.loadBusStations()
+
         if (!hasLocationPermission) {
             locationPermissionLauncher.launch(
                 arrayOf(
@@ -402,10 +425,10 @@ fun MapScreen(
                                 data = GeoJsonData.JsonString(markerJson)
                             )
 
-                            val markerColor = if (marker.isSelected) {
-                                Color(0xFF4CAF50)
-                            } else {
-                                Color(0xFF9C27B0)
+                            val markerColor = when {
+                                marker.isSelected && marker.type == "venue" -> Color(0xFFE53935)  // red — selected venue
+                                marker.isSelected && marker.type == "place" -> Color(0xFF43A047)  // green — selected place
+                                else -> Color(0xFF9C27B0)                                         // purple — unselected
                             }
 
                             CircleLayer(
@@ -458,7 +481,7 @@ fun MapScreen(
                     icon = Icons.Default.Fullscreen,
                     contentDescription = "Expand map",
                     onClick = {
-                        mainNavController.navigate(Routes.FullMap)
+                        rootNavController.navigate(Routes.FullMap)
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

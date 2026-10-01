@@ -14,12 +14,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Explore
@@ -64,6 +65,8 @@ import com.emirgasic.forecastfm.data.model.Place
 import com.emirgasic.forecastfm.data.repository.BusStationRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.asString
@@ -84,16 +87,32 @@ import org.maplibre.spatialk.geojson.Position
 fun FullMapScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    searchViewModel: PlaceSearchViewModel = viewModel(),
-    weatherViewModel: com.emirgasic.forecastfm.feature.weather.WeatherViewModel = viewModel()
+    searchViewModel: PlaceSearchViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return PlaceSearchViewModel(
+                    repository = PlaceRepository()
+                ) as T
+            }
+        }
+    ),
+    weatherViewModel: WeatherViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return WeatherViewModel(
+                    repository = WeatherRepository()
+                ) as T
+            }
+        }
+    )
 ) {
     val context = LocalContext.current
 
     val viewModel: FullMapViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(
-                modelClass: Class<T>
-            ): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return FullMapViewModel(
                     locationRepository = LocationRepository(),
@@ -104,9 +123,7 @@ fun FullMapScreen(
         }
     )
 
-    var userLocation by remember {
-        mutableStateOf<Location?>(null)
-    }
+    var userLocation by remember { mutableStateOf<Location?>(null) }
 
     var hasLocationPermission by remember {
         mutableStateOf(
@@ -121,9 +138,7 @@ fun FullMapScreen(
         )
     }
 
-    val locationManager = remember {
-        LocationManager(context)
-    }
+    val locationManager = remember { LocationManager(context) }
 
     val locations by viewModel.locations.collectAsState()
     val places by viewModel.places.collectAsState()
@@ -136,13 +151,8 @@ fun FullMapScreen(
     val isSearching by searchViewModel.isLoading.collectAsState()
     val searchError by searchViewModel.error.collectAsState()
 
-    var selectedTab by remember {
-        mutableStateOf(MapTab.Search)
-    }
-
-    var selectedSearchResult by remember {
-        mutableStateOf<Place?>(null)
-    }
+    var selectedTab by remember { mutableStateOf(MapTab.Search) }
+    var selectedSearchResult by remember { mutableStateOf<Place?>(null) }
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -164,6 +174,10 @@ fun FullMapScreen(
         }
 
     LaunchedEffect(Unit) {
+        viewModel.loadLocations()
+        viewModel.loadPlaces()
+        viewModel.loadBusStations()
+
         if (!hasLocationPermission) {
             locationPermissionLauncher.launch(
                 arrayOf(
@@ -177,10 +191,8 @@ fun FullMapScreen(
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
             val location = locationManager.getCurrentLocation()
-
             location?.let {
                 userLocation = it
-
                 cameraState.position = CameraPosition(
                     target = Position(
                         latitude = it.latitude,
@@ -266,112 +278,60 @@ fun FullMapScreen(
             CircleLayer(
                 id = "all-map-markers",
                 source = markerSource,
-                radius = const(7.dp),
+                radius = switch(
+                    input = feature["colorKey"].asString(),
+                    case(label = "selected_venue", output = const(10.dp)),
+                    case(label = "selected_place", output = const(10.dp)),
+                    fallback = const(7.dp)
+                ),
                 color = switch(
-                    input = feature["category"].asString(),
-                    case(
-                        label = "cafe",
-                        output = const(Color(0xFFC47A44))
-                    ),
-                    case(
-                        label = "restaurant",
-                        output = const(Color(0xFFE05A47))
-                    ),
-                    case(
-                        label = "bar",
-                        output = const(Color(0xFF8E5BB7))
-                    ),
-                    case(
-                        label = "nightlife",
-                        output = const(Color(0xFF5B4B9A))
-                    ),
-                    case(
-                        label = "park",
-                        output = const(Color(0xFF5E9C62))
-                    ),
-                    case(
-                        label = "museum",
-                        output = const(Color(0xFFD39B3D))
-                    ),
-                    case(
-                        label = "shop",
-                        output = const(Color(0xFF4F86C6))
-                    ),
-                    case(
-                        label = "hotel",
-                        output = const(Color(0xFFB86B77))
-                    ),
-                    case(
-                        label = "landmark",
-                        output = const(Color(0xFF9A6B3F))
-                    ),
-                    case(
-                        label = "culture",
-                        output = const(Color(0xFFB35C9E))
-                    ),
-                    case(
-                        label = "activity",
-                        output = const(Color(0xFF3E9B91))
-                    ),
-                    case(
-                        label = "outdoor",
-                        output = const(Color(0xFF4F966B))
-                    ),
-                    case(
-                        label = "viewpoint",
-                        output = const(Color(0xFF607D8B))
-                    ),
-                    case(
-                        label = "attraction",
-                        output = const(Color(0xFFD07842))
-                    ),
-                    case(
-                        label = "Bus Stops",
-                        output = const(Color(0xFF7B61FF))
-                    ),
-                    fallback = const(MaterialTheme.colorScheme.primary)
+                    input = feature["colorKey"].asString(),
+                    case(label = "selected_venue", output = const(Color(0xFFE53935))),
+                    case(label = "selected_place", output = const(Color(0xFF43A047))),
+                    case(label = "cafe", output = const(Color(0xFFC47A44))),
+                    case(label = "restaurant", output = const(Color(0xFFE05A47))),
+                    case(label = "bar", output = const(Color(0xFF8E5BB7))),
+                    case(label = "nightlife", output = const(Color(0xFF5B4B9A))),
+                    case(label = "park", output = const(Color(0xFF5E9C62))),
+                    case(label = "museum", output = const(Color(0xFFD39B3D))),
+                    case(label = "shop", output = const(Color(0xFF4F86C6))),
+                    case(label = "hotel", output = const(Color(0xFFB86B77))),
+                    case(label = "landmark", output = const(Color(0xFF9A6B3F))),
+                    case(label = "culture", output = const(Color(0xFFB35C9E))),
+                    case(label = "activity", output = const(Color(0xFF3E9B91))),
+                    case(label = "outdoor", output = const(Color(0xFF4F966B))),
+                    case(label = "viewpoint", output = const(Color(0xFF607D8B))),
+                    case(label = "attraction", output = const(Color(0xFFD07842))),
+                    case(label = "bus_stop", output = const(Color(0xFF7B61FF))),
+                    fallback = const(Color(0xFF9C27B0))
                 ),
                 strokeWidth = const(2.dp),
                 strokeColor = const(Color.White),
                 strokeOpacity = const(1f),
                 onClick = { features ->
-                    val properties =
-                        features
-                            .firstOrNull()
-                            ?.properties
+                    val properties = features.firstOrNull()?.properties
 
-                    val markerId =
-                        properties
-                            ?.get("id")
-                            ?.toString()
-                            ?.removeSurrounding("\"")
+                    val markerId = properties
+                        ?.get("id")
+                        ?.toString()
+                        ?.removeSurrounding("\"")
 
-                    val markerType =
-                        properties
-                            ?.get("type")
-                            ?.toString()
-                            ?.removeSurrounding("\"")
+                    val markerType = properties
+                        ?.get("type")
+                        ?.toString()
+                        ?.removeSurrounding("\"")
 
                     if (markerId != null) {
                         when (markerType) {
                             "venue" -> {
                                 locations
-                                    .firstOrNull {
-                                        it.id == markerId
-                                    }
-                                    ?.let {
-                                        viewModel.selectLocation(it)
-                                    }
+                                    .firstOrNull { it.id == markerId }
+                                    ?.let { viewModel.selectLocation(it) }
                             }
-
                             "place" -> {
                                 places
-                                    .firstOrNull {
-                                        it.id == markerId
-                                    }
-                                    ?.let {
-                                        viewModel.selectPlace(it)
-                                    }
+                                    .firstOrNull { it.id == markerId }
+                                    ?.let { viewModel.selectPlace(it) }
                             }
                         }
                     }
@@ -392,18 +352,9 @@ fun FullMapScreen(
                 .align(Alignment.TopStart)
                 .padding(16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(
-                    MaterialTheme.colorScheme.background.copy(
-                        alpha = 0.7f
-                    )
-                )
-                .clickable {
-                    navController.popBackStack()
-                }
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 8.dp
-                )
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                .clickable { navController.popBackStack() }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
         Column(
@@ -417,11 +368,7 @@ fun FullMapScreen(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(
-                            alpha = 0.9f
-                        )
-                    )
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
@@ -443,23 +390,12 @@ fun FullMapScreen(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 12.dp,
-                            topEnd = 12.dp
-                        )
-                    )
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(
-                            alpha = 0.9f
-                        )
-                    )
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
-                            zoom = (
-                                    cameraState.position.zoom + 1.0
-                                    ).coerceAtMost(22.0),
+                            zoom = (cameraState.position.zoom + 1.0).coerceAtMost(22.0),
                             bearing = cameraState.position.bearing,
                             tilt = cameraState.position.tilt
                         )
@@ -477,23 +413,12 @@ fun FullMapScreen(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(
-                        RoundedCornerShape(
-                            bottomStart = 12.dp,
-                            bottomEnd = 12.dp
-                        )
-                    )
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(
-                            alpha = 0.9f
-                        )
-                    )
+                    .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
                     .clickable {
                         cameraState.position = CameraPosition(
                             target = cameraState.position.target,
-                            zoom = (
-                                    cameraState.position.zoom - 1.0
-                                    ).coerceAtLeast(1.0),
+                            zoom = (cameraState.position.zoom - 1.0).coerceAtLeast(1.0),
                             bearing = cameraState.position.bearing,
                             tilt = cameraState.position.tilt
                         )
@@ -518,11 +443,8 @@ fun FullMapScreen(
                     PlaceDetailSlider(
                         place = detail,
                         onGetDirectionsClick = {
-                            val originLat =
-                                userLocation?.latitude ?: 0.0
-
-                            val originLng =
-                                userLocation?.longitude ?: 0.0
+                            val originLat = userLocation?.latitude ?: 0.0
+                            val originLng = userLocation?.longitude ?: 0.0
 
                             navController.navigate(
                                 Routes.routeRoute(
@@ -535,43 +457,31 @@ fun FullMapScreen(
                         }
                     )
                 } else {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         MapBottomSheetTabs(
                             selectedTab = selectedTab,
-                            onTabSelected = {
-                                selectedTab = it
-                            }
+                            onTabSelected = { selectedTab = it }
                         )
 
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .verticalScroll(
-                                    rememberScrollState()
-                                )
+                                .verticalScroll(rememberScrollState())
                         ) {
                             when (selectedTab) {
                                 MapTab.Search -> SearchTabContent(
                                     query = searchQuery,
-                                    onQueryChange = {
-                                        searchViewModel.updateQuery(it)
-                                    },
+                                    onQueryChange = { searchViewModel.updateQuery(it) },
                                     results = searchResults,
                                     isLoading = isSearching,
                                     error = searchError,
-                                    onPlaceClick = { place ->
-                                        selectedSearchResult = place
-                                    }
+                                    onPlaceClick = { place -> selectedSearchResult = place }
                                 )
 
                                 MapTab.Filters -> FiltersTabContent(
                                     selectedCategory = venueCategoryFilter,
                                     onCategorySelected = { category ->
-                                        viewModel.setVenueCategoryFilter(
-                                            category
-                                        )
+                                        viewModel.setVenueCategoryFilter(category)
                                     }
                                 )
 
@@ -579,15 +489,11 @@ fun FullMapScreen(
 
                                 MapTab.Layers -> LayersTabContent(
                                     enabledLayers = enabledLayers,
-                                    onLayerToggle = {
-                                        viewModel.toggleLayer(it)
-                                    }
+                                    onLayerToggle = { viewModel.toggleLayer(it) }
                                 )
                             }
 
-                            Spacer(
-                                modifier = Modifier.height(16.dp)
-                            )
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
                 }
