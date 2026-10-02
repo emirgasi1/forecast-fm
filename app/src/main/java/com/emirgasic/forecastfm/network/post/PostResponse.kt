@@ -10,5 +10,7 @@ data class PostResponse(
     val imageUrl: String?,
     val createdAt: String,
     val likes: Int? = 0,
-    val commentCount: Int? = 0
+    val commentCount: Int? = 0,
+    val outfitId: String? = null,
+    val outfitTitle: String? = null
 )

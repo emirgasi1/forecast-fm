@@ -50,7 +50,6 @@ class FeedViewModel(
                             likedSet.add(post.id)
                         }
                     } catch (_: Exception) {
-                        // Skip this post — treat as not liked
                     }
                 }
                 _likedPosts.value = likedSet
@@ -91,7 +90,6 @@ class FeedViewModel(
                     _uiState.value = FeedUiState.Success(updatedPosts)
                 }
 
-                // Perform the API call after the optimistic update
                 if (wasLiked) {
                     likeRepository.unlikePost(postId, userId)
                 } else {
@@ -99,7 +97,6 @@ class FeedViewModel(
                 }
 
             } catch (e: Exception) {
-                // Revert by reloading from the source of truth
                 loadFeed()
             }
         }
@@ -114,7 +111,6 @@ class FeedViewModel(
                 savedPostRepository.savePost(postId, userId)
                 _savedPosts.value = _savedPosts.value + postId
             } catch (_: Exception) {
-                // Silent failure — UI already shows the save button state
             }
         }
     }
@@ -147,15 +143,13 @@ class FeedViewModel(
                 val state = _uiState.value
                 if (state is FeedUiState.Success) {
                     val post = state.posts.find { it.id == postId }
-                    post?.weather?.condition?.let { weather ->
-                        val outfits = outfitRepository.getOutfitsByWeather(weather)
-                        outfits.firstOrNull()?.let { outfit ->
-                            savedOutfitRepository.saveOutfit(userId, outfit.id)
-                        }
+                    val outfitId = post?.outfitId
+                    if (outfitId.isNullOrBlank()) {
+                        return@launch
                     }
+                    savedOutfitRepository.saveOutfit(outfitId, userId)
                 }
             } catch (_: Exception) {
-                // Silent failure
             }
         }
     }

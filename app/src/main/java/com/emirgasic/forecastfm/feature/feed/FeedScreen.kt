@@ -149,6 +149,7 @@ fun FeedScreen(
                             caption = post.caption,
                             likes = post.likes.toString(),
                             comments = post.comments.toString(),
+                            outfitTitle = post.outfitTitle,
                             isLiked = isLiked,
                             isSaved = isSaved,
                             onLikeClick = {

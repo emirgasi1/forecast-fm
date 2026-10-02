@@ -93,6 +93,8 @@ class FeedRepository(
                 caption = post.caption ?: "",
                 weather = weather,
                 playlist = matchingPlaylist,
+                outfitId = post.outfitId,
+                outfitTitle = post.outfitTitle,
                 time = formatDate(post.createdAt),
                 likes = 0,
                 comments = commentCount
@@ -123,6 +125,7 @@ class FeedRepository(
             else -> R.drawable.sun
         }
     }
+
     private fun formatDate(iso: String): String {
         return try {
             val instant = java.time.Instant.parse(iso)

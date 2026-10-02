@@ -121,12 +121,7 @@ fun NavGraph(
             )
         }
 
-        composable(Routes.Profile) {
-            ProfileScreen(
-                rootNavController = navController,
-                tokenManager = tokenManager
-            )
-        }
+
 
         composable(Routes.Feed) {
             FeedScreen(
@@ -254,12 +249,6 @@ fun NavGraph(
             )
         }
 
-        composable(Routes.NewPost) {
-            NewPostScreen(
-                navController = navController,
-                tokenManager = tokenManager
-            )
-        }
 
         composable(Routes.Weather) {
             WeatherScreen(

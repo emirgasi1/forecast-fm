@@ -37,7 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -55,6 +55,7 @@ fun FeedPostCard(
     caption: String,
     likes: String,
     comments: String,
+    outfitTitle: String? = null,
     isLiked: Boolean = false,
     isSaved: Boolean = false,
     modifier: Modifier = Modifier,
@@ -208,6 +209,16 @@ fun FeedPostCard(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
+
+        if (!outfitTitle.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "👕 $outfitTitle",
+                style = MaterialTheme.typography.bodySmall,
+                color = forecastColors.muted,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 

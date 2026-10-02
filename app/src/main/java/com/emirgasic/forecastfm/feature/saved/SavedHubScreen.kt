@@ -44,9 +44,8 @@ fun SavedHubScreen(
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Back button
             Text(
-                text = "← Back",
+                text = "Back",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium

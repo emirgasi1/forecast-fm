@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.data.model.NewPost
+import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.repository.NewPostRepository
+import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.network.image.ImageUploadApi
 import com.emirgasic.forecastfm.network.post.PostApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,11 +20,15 @@ class NewPostViewModel(
     private val tokenManager: TokenManager,
     private val newPostRepository: NewPostRepository,
     private val postApi: PostApi,
-    private val imageUploadApi: ImageUploadApi
+    private val imageUploadApi: ImageUploadApi,
+    private val outfitRepository: OutfitRepository
 ) : ViewModel() {
 
     private val _newPost = MutableStateFlow<NewPost?>(null)
     val newPost: StateFlow<NewPost?> = _newPost.asStateFlow()
+
+    private val _availableOutfits = MutableStateFlow<List<Outfit>>(emptyList())
+    val availableOutfits: StateFlow<List<Outfit>> = _availableOutfits.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -32,6 +38,56 @@ class NewPostViewModel(
 
     fun loadNewPost() {
         _newPost.value = newPostRepository.getNewPostData()
+    }
+
+    fun loadAvailableOutfits() {
+        viewModelScope.launch {
+            try {
+                val userId = tokenManager.getUserId().first()
+                if (userId == null) {
+                    _availableOutfits.value = emptyList()
+                    return@launch
+                }
+                _availableOutfits.value = outfitRepository
+                    .getTrendingOutfits()
+                    .filter { it.userId == userId }
+            } catch (_: Exception) {
+                _availableOutfits.value = emptyList()
+            }
+        }
+    }
+
+    /**
+     * Called when AddOutfitScreen returns with a newly-created outfit ID.
+     * Fetches the outfit and auto-selects it on the post being composed.
+     */
+    fun onOutfitCreated(outfitId: String) {
+        viewModelScope.launch {
+            try {
+                val outfit = outfitRepository.getOutfitById(outfitId)
+                _newPost.value = _newPost.value?.copy(
+                    selectedOutfitId = outfit.id,
+                    selectedOutfitTitle = outfit.title
+                )
+                loadAvailableOutfits()
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Failed to attach outfit"
+            }
+        }
+    }
+
+    fun selectOutfit(outfit: Outfit) {
+        _newPost.value = _newPost.value?.copy(
+            selectedOutfitId = outfit.id,
+            selectedOutfitTitle = outfit.title
+        )
+    }
+
+    fun clearOutfit() {
+        _newPost.value = _newPost.value?.copy(
+            selectedOutfitId = null,
+            selectedOutfitTitle = null
+        )
     }
 
     fun updateImage(image: String?) {
@@ -54,14 +110,6 @@ class NewPostViewModel(
         _newPost.value = _newPost.value?.copy(selectedPlaylist = value)
     }
 
-    /**
-     * Creates the post and, if an image URI is set, uploads it.
-     *
-     * @param uploadImage a suspend lambda that uploads the image to the given
-     *                    post ID. Implemented by the UI layer so this ViewModel
-     *                    stays free of android.content.ContentResolver.
-     * @param onSuccess   invoked on the main thread once the post is created.
-     */
     fun createPost(
         uploadImage: suspend (postId: String, imageUri: Uri) -> Unit,
         onSuccess: () -> Unit
@@ -89,7 +137,8 @@ class NewPostViewModel(
                 val response = postApi.createPost(
                     userId = userId,
                     caption = post.caption,
-                    imageUrl = null
+                    imageUrl = null,
+                    outfitId = post.selectedOutfitId
                 )
 
                 val imageUriString = post.image
@@ -97,7 +146,6 @@ class NewPostViewModel(
                     try {
                         uploadImage(response.id, Uri.parse(imageUriString))
                     } catch (_: Exception) {
-                        // Non-critical — the post exists even if the image failed
                     }
                 }
 

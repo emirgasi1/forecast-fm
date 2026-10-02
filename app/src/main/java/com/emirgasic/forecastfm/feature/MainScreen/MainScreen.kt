@@ -21,6 +21,7 @@ import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
 import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
+import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
 
 @Composable
 fun MainScreen(
@@ -95,8 +96,9 @@ fun MainScreen(
                 )
             }
 
-            composable(Routes.Profile){
+            composable(Routes.Profile) {
                 ProfileScreen(
+                    mainNavController = mainNavController,
                     rootNavController = rootNavController,
                     tokenManager = tokenManager
                 )
@@ -109,7 +111,12 @@ fun MainScreen(
                     tokenManager = tokenManager
                 )
             }
-
+            composable(Routes.NewPost) {
+                NewPostScreen(
+                    navController = mainNavController,
+                    tokenManager = tokenManager
+                )
+            }
         }
     }
 }

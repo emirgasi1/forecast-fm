@@ -75,7 +75,7 @@ fun SavedPlaylistsScreen(
             ) {
                 item {
                     Text(
-                        text = "← Back",
+                        text = "Back",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium

@@ -51,6 +51,7 @@ import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun ProfileScreen(
+    mainNavController: NavController,
     rootNavController: NavController,
     modifier: Modifier = Modifier,
     tokenManager: TokenManager,
@@ -205,7 +206,7 @@ fun ProfileScreen(
 
                             IconButton(
                                 onClick = {
-                                    rootNavController.navigate(Routes.NewPost)
+                                    mainNavController.navigate(Routes.NewPost)
                                 }
                             ) {
                                 Icon(

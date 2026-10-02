@@ -30,7 +30,8 @@ class PostApi {
     suspend fun createPost(
         userId: String,
         caption: String?,
-        imageUrl: String?
+        imageUrl: String?,
+        outfitId: String? = null
     ): PostResponse {
         return ApiClient.client.post("${ApiClient.baseUrl()}/api/posts") {
             contentType(ContentType.Application.Json)
@@ -38,7 +39,8 @@ class PostApi {
                 CreatePostRequest(
                     userId = userId,
                     caption = caption,
-                    imageUrl = imageUrl
+                    imageUrl = imageUrl,
+                    outfitId = outfitId
                 )
             )
         }.body()

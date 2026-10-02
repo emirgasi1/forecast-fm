@@ -39,6 +39,9 @@ class AddOutfitViewModel(
     private val _state = MutableStateFlow(AddOutfitState())
     val state: StateFlow<AddOutfitState> = _state.asStateFlow()
 
+    private val _createdOutfitId = MutableStateFlow<String?>(null)
+    val createdOutfitId: StateFlow<String?> = _createdOutfitId.asStateFlow()
+
     fun setImage(uri: Uri) {
         _state.value = _state.value.copy(imageUri = uri, error = null)
     }
@@ -75,7 +78,6 @@ class AddOutfitViewModel(
         _state.value = _state.value.copy(productUrl = value)
     }
 
-
     fun submit(
         uploadImage: suspend (Uri) -> String,
         onSuccess: () -> Unit
@@ -92,7 +94,7 @@ class AddOutfitViewModel(
 
                 val uploadedUrl = uploadImage(imageUri)
 
-                outfitApi.createOutfit(
+                val created = outfitApi.createOutfit(
                     userId = userId,
                     imageUrl = uploadedUrl,
                     title = s.title.trim(),
@@ -105,6 +107,7 @@ class AddOutfitViewModel(
                     productUrl = s.productUrl.ifBlank { null }
                 )
 
+                _createdOutfitId.value = created.id
                 _state.value = _state.value.copy(isUploading = false)
                 onSuccess()
             } catch (e: Exception) {

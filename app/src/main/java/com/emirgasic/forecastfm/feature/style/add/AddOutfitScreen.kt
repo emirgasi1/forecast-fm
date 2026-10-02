@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +51,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.network.outfit.OutfitApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
@@ -76,6 +77,7 @@ fun AddOutfitScreen(
     val context = LocalContext.current
     val outfitApi = remember { OutfitApi() }
     val state by viewModel.state.collectAsState()
+    val createdOutfitId by viewModel.createdOutfitId.collectAsState()
 
     var weatherExpanded by rememberSaveable { mutableStateOf(false) }
     var seasonExpanded by rememberSaveable { mutableStateOf(false) }
@@ -90,6 +92,15 @@ fun AddOutfitScreen(
     ) { uri ->
         uri?.let {
             viewModel.setImage(it)
+        }
+    }
+
+    LaunchedEffect(createdOutfitId) {
+        createdOutfitId?.let { id ->
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("newOutfitId", id)
+            navController.popBackStack()
         }
     }
 
@@ -124,7 +135,7 @@ fun AddOutfitScreen(
                 .navigationBarsPadding()
         ) {
             Text(
-                text = "← Back",
+                text = "Back",
                 style = MaterialTheme.typography.titleMedium,
                 color = forecastColors.title,
                 modifier = Modifier
@@ -357,7 +368,6 @@ fun AddOutfitScreen(
                             )
                         },
                         onSuccess = {
-                            navController.popBackStack()
                         }
                     )
                 },

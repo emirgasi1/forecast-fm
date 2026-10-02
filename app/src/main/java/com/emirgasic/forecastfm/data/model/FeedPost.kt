@@ -6,7 +6,9 @@ data class FeedPost(
     val image: String,
     val caption: String,
     val weather: Weather,
-    val playlist: Playlist?=null,
+    val playlist: Playlist? = null,
+    val outfitId: String? = null,
+    val outfitTitle: String? = null,
     val time: String,
     val likes: Int,
     val comments: Int
