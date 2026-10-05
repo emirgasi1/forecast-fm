@@ -16,18 +16,9 @@ import kotlinx.serialization.json.Json
 class PlaylistApi {
 
     suspend fun getPlaylists(): List<PlaylistResponse> {
-
-        val response =
-            ApiClient.client.get(
-                "${ApiClient.baseUrl()}/api/playlists"
-            )
-
-        val body =
-            response.bodyAsText()
-
-        println("PLAYLIST BODY: $body")
-
-        return Json.decodeFromString(body)
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/playlists")
+            .body()
     }
 
     suspend fun getPlaylist(

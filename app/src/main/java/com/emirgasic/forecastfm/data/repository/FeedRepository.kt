@@ -5,8 +5,9 @@ import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
 import com.emirgasic.forecastfm.network.ApiClient
-import com.emirgasic.forecastfm.network.location.LocationApi
 import com.emirgasic.forecastfm.network.weather.WeatherApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class FeedRepository(
     private val userRepository: UserRepository,
@@ -17,12 +18,9 @@ class FeedRepository(
     private val weatherApi: WeatherApi = WeatherApi()
 ) {
 
-    suspend fun getPosts(userId: String): List<FeedPost> {
+    suspend fun getPosts(userId: String): List<FeedPost> = withContext(Dispatchers.IO) {
         val userResponse = userRepository.getUser(userId)
-
-        if (userResponse == null) {
-            return emptyList()
-        }
+            ?: return@withContext emptyList()
 
         val user = User(
             id = userResponse.id,
@@ -40,48 +38,42 @@ class FeedRepository(
         )
 
         val postResponses = postRepository.getPosts()
-
         val locations = locationRepository.getLocations()
         val location = locations.firstOrNull()
         val allPlaylists = playlistRepository.getPlaylists()
 
-        return postResponses.map { post ->
-            val weather = if (location != null) {
-                try {
-                    val weatherData = weatherApi.getWeather(
-                        location = location.name,
-                        latitude = location.latitude,
-                        longitude = location.longitude
-                    )
-
-                    Weather(
-                        location = weatherData.location,
-                        temperature = weatherData.temperature,
-                        condition = weatherData.condition,
-                        feelsLike = weatherData.feelsLike,
-                        humidity = weatherData.humidity,
-                        wind = weatherData.wind,
-                        uvIndex = weatherData.uvIndex,
-                        airQuality = weatherData.airQuality,
-                        icon = getWeatherIcon(weatherData.condition)
-                    )
-                } catch (e: Exception) {
-                    getDefaultWeather()
-                }
-            } else {
+        // Fetch weather ONCE for the feed, not per post.
+        val weather = if (location != null) {
+            try {
+                val weatherData = weatherApi.getWeather(
+                    location = location.name,
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+                Weather(
+                    location = weatherData.location,
+                    temperature = weatherData.temperature,
+                    condition = weatherData.condition,
+                    feelsLike = weatherData.feelsLike,
+                    humidity = weatherData.humidity,
+                    wind = weatherData.wind,
+                    uvIndex = weatherData.uvIndex,
+                    airQuality = weatherData.airQuality,
+                    icon = getWeatherIcon(weatherData.condition)
+                )
+            } catch (e: Exception) {
                 getDefaultWeather()
             }
+        } else {
+            getDefaultWeather()
+        }
 
-            val matchingPlaylist = allPlaylists.find {
-                it.weather.equals(weather.condition, ignoreCase = true)
-            } ?: allPlaylists.firstOrNull()
+        val matchingPlaylist = allPlaylists.find {
+            it.weather.equals(weather.condition, ignoreCase = true)
+        } ?: allPlaylists.firstOrNull()
 
-            val commentCount = try {
-                commentRepository.getComments(post.id).size
-            } catch (e: Exception) {
-                0
-            }
-
+        // No more per-post API calls. Likes and comment counts come from the payload.
+        postResponses.map { post ->
             FeedPost(
                 id = post.id,
                 user = user,
@@ -96,8 +88,8 @@ class FeedRepository(
                 outfitId = post.outfitId,
                 outfitTitle = post.outfitTitle,
                 time = formatDate(post.createdAt),
-                likes = 0,
-                comments = commentCount
+                likes = post.likes ?: 0,
+                comments = post.commentCount ?: 0
             )
         }
     }

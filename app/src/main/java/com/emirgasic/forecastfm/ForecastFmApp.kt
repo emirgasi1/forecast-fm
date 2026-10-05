@@ -11,13 +11,24 @@ import com.emirgasic.forecastfm.core.notifications.DailyOutfitWorker
 import com.emirgasic.forecastfm.core.notifications.DailyPlaylistWorker
 import com.emirgasic.forecastfm.core.notifications.NotificationHelper
 import com.emirgasic.forecastfm.core.notifications.WeatherAlertWorker
+import com.emirgasic.forecastfm.network.ApiClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class ForecastFmApp : Application() {
 
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
+
+        appScope.launch {
+            runCatching { ApiClient.client }
+        }
 
         NotificationHelper.createChannels(this)
 

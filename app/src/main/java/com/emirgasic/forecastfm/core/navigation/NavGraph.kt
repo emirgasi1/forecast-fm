@@ -14,20 +14,15 @@ import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
 import com.emirgasic.forecastfm.feature.comments.CommentsScreen
-import com.emirgasic.forecastfm.feature.feed.FeedScreen
-import com.emirgasic.forecastfm.feature.home.HomeScreen
 import com.emirgasic.forecastfm.feature.locationdetails.LocationDetailsScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationDetailScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationScreen
 import com.emirgasic.forecastfm.feature.map.FullMapScreen
-import com.emirgasic.forecastfm.feature.map.MapScreen
 import com.emirgasic.forecastfm.feature.map.route.RouteScreen
-import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.music.musichistory.MusicHistoryScreen
 import com.emirgasic.forecastfm.feature.music.playlist.PlaylistScreen
 import com.emirgasic.forecastfm.feature.onboarding.OnboardingScreen
 import com.emirgasic.forecastfm.feature.place.PlaceInfoScreen
-import com.emirgasic.forecastfm.feature.profile.ProfileScreen
 import com.emirgasic.forecastfm.feature.saved.SavedHubScreen
 import com.emirgasic.forecastfm.feature.saved.SavedPlaylistsScreen
 import com.emirgasic.forecastfm.feature.saved.SavedPostsScreen
@@ -38,10 +33,6 @@ import com.emirgasic.forecastfm.feature.settings.info.AboutAppScreen
 import com.emirgasic.forecastfm.feature.settings.info.PrivacyPolicyScreen
 import com.emirgasic.forecastfm.feature.settings.location.DefaultLocationScreen
 import com.emirgasic.forecastfm.feature.settings.notifications.NotificationsScreen
-import com.emirgasic.forecastfm.feature.style.StyleScreen
-import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
-import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
-import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
 import com.emirgasic.forecastfm.feature.weather.WeatherScreen
 
 @Composable
@@ -86,46 +77,6 @@ fun NavGraph(
 
         composable(Routes.Main) {
             MainScreen(
-                rootNavController = navController,
-                tokenManager = tokenManager
-            )
-        }
-
-        composable(Routes.Home) {
-            HomeScreen(
-                mainNavController = navController,
-                rootNavController = navController,
-                tokenManager = tokenManager
-            )
-        }
-
-        composable(Routes.Music) {
-            MusicScreen(
-                mainNavController = navController,
-                rootNavController = navController,
-                tokenManager = tokenManager
-            )
-        }
-
-        composable(Routes.Map) {
-            MapScreen(
-                mainNavController = navController,
-                rootNavController = navController
-            )
-        }
-
-        composable(Routes.Style) {
-            StyleScreen(
-                navController = navController,
-                tokenManager = tokenManager
-            )
-        }
-
-
-
-        composable(Routes.Feed) {
-            FeedScreen(
-                mainNavController = navController,
                 rootNavController = navController,
                 tokenManager = tokenManager
             )

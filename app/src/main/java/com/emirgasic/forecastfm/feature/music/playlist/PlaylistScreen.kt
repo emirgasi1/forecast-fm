@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,8 +45,10 @@ import com.emirgasic.forecastfm.core.ui.components.music.playlist.PlaylistTagCar
 import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylistCard
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
+import com.emirgasic.forecastfm.network.weather.WeatherApi
 import com.emirgasic.forecastfm.network.youtube.YouTubeApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import com.emirgasic.forecastfm.utils.TagIconMapper
@@ -55,8 +58,7 @@ fun PlaylistScreen(
     navController: NavController,
     playlistId: String?,
     tokenManager: TokenManager,
-    modifier: Modifier = Modifier,
-    weatherViewModel: WeatherViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val forecastColors = LocalForecastColors.current
@@ -75,12 +77,23 @@ fun PlaylistScreen(
         }
     )
 
+    val weatherViewModel: WeatherViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return WeatherViewModel(
+                    repository = WeatherRepository(WeatherApi())
+                ) as T
+            }
+        }
+    )
+
     val uiState by viewModel.uiState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val similarPlaylists by viewModel.similarPlaylists.collectAsState()
     val weather by weatherViewModel.weather.collectAsState()
 
-    val locationRepository = LocationRepository()
+    val locationRepository = remember { LocationRepository() }
 
     LaunchedEffect(playlistId) {
         playlistId?.let {

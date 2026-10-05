@@ -74,7 +74,7 @@ dependencies {
 
     // Coil 3 only — Coil 2 lines removed
     implementation(libs.coil.compose)
-
+    implementation("androidx.compose.runtime:runtime-tracing")
     // Ktor
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.android)
