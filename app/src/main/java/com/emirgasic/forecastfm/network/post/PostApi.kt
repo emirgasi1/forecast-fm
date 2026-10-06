@@ -26,6 +26,11 @@ class PostApi {
             "${ApiClient.baseUrl()}/api/users/$userId/posts"
         ).body()
     }
+    suspend fun getPostById(id: String): PostResponse {
+        return ApiClient.client.get(
+            "${ApiClient.baseUrl()}/api/posts/$id"
+        ).body()
+    }
 
     suspend fun createPost(
         userId: String,

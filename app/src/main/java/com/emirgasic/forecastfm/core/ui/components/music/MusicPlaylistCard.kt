@@ -2,7 +2,6 @@ package com.emirgasic.forecastfm.core.ui.components.music
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,16 +14,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
-import com.emirgasic.forecastfm.R
-import com.emirgasic.forecastfm.core.ui.components.common.IconText
-import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.components.common.IconText
+import com.emirgasic.forecastfm.core.ui.components.common.InfoRow
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -47,7 +47,10 @@ fun MusicPlaylistCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .pressScale {
+                onClick()
+            },
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(
             width = 1.dp,
@@ -63,11 +66,7 @@ fun MusicPlaylistCard(
         ) {
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onClick()
-                    },
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -103,10 +102,6 @@ fun MusicPlaylistCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                IconText(
-                    icon = painterResource(R.drawable.heart),
-                    text = likes
-                )
 
                 Spacer(
                     modifier = Modifier.weight(1f)
@@ -115,7 +110,6 @@ fun MusicPlaylistCard(
                 IconButton(
                     onClick = onFavoriteClick
                 ) {
-
                     Icon(
                         imageVector =
                             if (isFavorite) {

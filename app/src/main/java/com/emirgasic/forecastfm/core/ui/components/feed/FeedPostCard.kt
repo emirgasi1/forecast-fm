@@ -155,7 +155,8 @@ fun FeedPostCard(
                     },
                     tint = if (isLiked) forecastColors.error else Color.White,
                     count = likes,
-                    onClick = onLikeClick
+                    onClick = onLikeClick,
+                    bounceTrigger = isLiked
                 )
 
                 ActionIcon(
@@ -166,14 +167,11 @@ fun FeedPostCard(
                 )
 
                 ActionIcon(
-                    painter = if (isSaved) {
-                        painterResource(R.drawable.bookmark_filled)
-                    } else {
-                        painterResource(R.drawable.bookmark)
-                    },
+                    painter = if (isSaved) painterResource(R.drawable.bookmark_filled) else painterResource(R.drawable.bookmark),
                     tint = if (isSaved) forecastColors.accent else Color.White,
                     count = null,
-                    onClick = onSaveClick
+                    onClick = onSaveClick,
+                    bounceOnTap = true
                 )
             }
         }

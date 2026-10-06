@@ -1,5 +1,7 @@
 package com.emirgasic.forecastfm.feature.weather
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,8 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
@@ -37,8 +41,10 @@ import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.weather.CurrentWeatherCard
 import com.emirgasic.forecastfm.core.ui.components.weather.ForecastRowItem
 import com.emirgasic.forecastfm.core.ui.components.weather.WeatherDetailsCard
+import com.emirgasic.forecastfm.data.recommender.HomeRecommender
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.location.LocationResponse
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -55,14 +61,15 @@ fun WeatherScreen(
                 ) as T
             }
         }
-    )) {
-    val locationRepository = remember {
-        LocationRepository()
-    }
+    )
+) {
+    val context = LocalContext.current
 
-    var location by remember {
-        mutableStateOf<LocationResponse?>(null)
-    }
+    val locationRepository = remember { LocationRepository() }
+    val locationManager = remember { LocationManager(context) }
+
+    var location by remember { mutableStateOf<LocationResponse?>(null) }
+
     val weather by viewModel.weather.collectAsState()
     val hourlyForecast by viewModel.hourlyForecast.collectAsState()
     val dailyForecast by viewModel.dailyForecast.collectAsState()
@@ -71,8 +78,28 @@ fun WeatherScreen(
     val forecastColors = LocalForecastColors.current
 
     LaunchedEffect(Unit) {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
         val locations = locationRepository.getLocations()
-        location = locations.firstOrNull()
+        if (locations.isEmpty()) return@LaunchedEffect
+
+        location = if (fineGranted || coarseGranted) {
+            val userLoc = locationManager.getCurrentLocation()
+            HomeRecommender.pickNearestLocation(
+                locations = locations,
+                userLat = userLoc?.latitude,
+                userLng = userLoc?.longitude
+            )
+        } else {
+            locations.firstOrNull()
+        }
     }
 
     LaunchedEffect(location) {

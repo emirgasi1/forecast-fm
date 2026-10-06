@@ -3,6 +3,7 @@ package com.emirgasic.forecastfm.feature.saved
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 import com.emirgasic.forecastfm.network.ApiClient
@@ -31,14 +32,7 @@ class SavedStylesViewModel(
                 if (userId != null) {
                     val responses = savedOutfitRepository.getSavedOutfits(userId)
                     _savedStyles.value = responses.map { response ->
-                        val fullImageUrl = if (
-                            response.imageUrl.startsWith("http://") ||
-                            response.imageUrl.startsWith("https://")
-                        ) {
-                            response.imageUrl
-                        } else {
-                            "${ApiClient.baseUrl()}${response.imageUrl}"
-                        }
+                        val fullImageUrl = resolveImageUrlOr(response.imageUrl, response.imageUrl)
 
                         Outfit(
                             id = response.id,

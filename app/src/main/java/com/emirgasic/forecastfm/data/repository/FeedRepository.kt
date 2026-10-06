@@ -1,6 +1,7 @@
 package com.emirgasic.forecastfm.data.repository
 
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
@@ -26,11 +27,10 @@ class FeedRepository(
             id = userResponse.id,
             username = userResponse.username,
             bio = userResponse.bio ?: "",
-            profileImage = if (!userResponse.profileImageUrl.isNullOrBlank()) {
-                "${ApiClient.baseUrl()}${userResponse.profileImageUrl}"
-            } else {
+            profileImage = resolveImageUrlOr(
+                userResponse.profileImageUrl,
                 "https://picsum.photos/seed/${userResponse.username}/200/200"
-            },
+            ),
             favoriteLocation = userResponse.favoriteLocation ?: "",
             likes = 0,
             posts = 0,
@@ -77,11 +77,10 @@ class FeedRepository(
             FeedPost(
                 id = post.id,
                 user = user,
-                image = if (!post.imageUrl.isNullOrBlank()) {
-                    "${ApiClient.baseUrl()}${post.imageUrl}"
-                } else {
+                image = resolveImageUrlOr(
+                    post.imageUrl,
                     "https://picsum.photos/seed/${post.id}/400/400"
-                },
+                ),
                 caption = post.caption ?: "",
                 weather = weather,
                 playlist = matchingPlaylist,

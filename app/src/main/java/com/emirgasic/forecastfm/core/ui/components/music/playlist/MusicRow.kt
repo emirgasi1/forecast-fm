@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
+import com.emirgasic.forecastfm.core.utils.formatDuration
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -37,7 +37,8 @@ fun MusicRow(
     title: String,
     artist: String,
     duration: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
 
     val forecastColors = LocalForecastColors.current
@@ -45,6 +46,9 @@ fun MusicRow(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .pressScale {
+                onClick()
+            }
             .shadow(
                 elevation = 3.dp,
                 shape = MaterialTheme.shapes.medium,
@@ -119,15 +123,5 @@ fun MusicRow(
                 color = forecastColors.muted
             )
         }
-    }
-}
-
-private fun formatDuration(seconds: Int): String {
-    val minutes = seconds / 60
-    val remainingSeconds = seconds % 60
-    return if (remainingSeconds > 0) {
-        "$minutes:${remainingSeconds.toString().padStart(2, '0')}"
-    } else {
-        "$minutes:00"
     }
 }

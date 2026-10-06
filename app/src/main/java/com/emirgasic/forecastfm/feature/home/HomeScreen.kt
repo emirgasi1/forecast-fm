@@ -4,10 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,8 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -47,16 +47,17 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
 import com.emirgasic.forecastfm.core.ui.components.common.ForecastItem
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
-import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
+import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.data.repository.HomeRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
-import kotlin.toString
+import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
 fun HomeScreen(
@@ -66,6 +67,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val forecastColors = LocalForecastColors.current
 
     val viewModel: HomeViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -161,15 +163,20 @@ fun HomeScreen(
             val home = state.home
 
             Box(
-                modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background)
             ) {
                 LazyColumn(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top,
-                    modifier = modifier.fillMaxSize().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
                 ) {
                     item {
                         Spacer(modifier = Modifier.height(40.dp))
+
                         Row(
                             horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically,
@@ -187,13 +194,17 @@ fun HomeScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+
                         Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
                             text = home.weather.location,
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.headlineMedium
                         )
+
                         Spacer(modifier = Modifier.height(10.dp))
+
                         WeatherCard(
                             temperature = home.weather.temperature,
                             weather = home.weather.condition,
@@ -201,29 +212,29 @@ fun HomeScreen(
                             humidity = home.weather.humidity,
                             wind = home.weather.wind
                         )
-                        Spacer(modifier.height(26.dp))
+
+                        Spacer(modifier = Modifier.height(26.dp))
+
                         SectionTitle(title = "5-day Forecast")
-                        Spacer(modifier.height(38.dp))
-                        Box(
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(MaterialTheme.shapes.medium)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.surfaceVariant,
-                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
-                                            MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
-                                            MaterialTheme.colorScheme.background
-                                        )
-                                    )
-                                )
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                                .clickable { rootNavController.navigate(Routes.Weather) }
+                                .shadow(
+                                    elevation = 3.dp,
+                                    shape = MaterialTheme.shapes.medium,
+                                    ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
+                                    spotColor = forecastColors.shadow.copy(alpha = 0.4f)
+                                ),
+                            shape = MaterialTheme.shapes.medium,
+                            border = BorderStroke(1.dp, forecastColors.border),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = forecastColors.card
+                            ),
+                            onClick = { rootNavController.navigate(Routes.Weather) }
                         ) {
                             LazyRow(
                                 modifier = Modifier
@@ -241,9 +252,12 @@ fun HomeScreen(
                                 }
                             }
                         }
-                        Spacer(modifier.height(26.dp))
+                        Spacer(modifier = Modifier.height(26.dp))
+
                         SectionTitle(title = "Today's Soundtrack")
-                        Spacer(modifier = modifier.height(20.dp))
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(20.dp)
                         ) {

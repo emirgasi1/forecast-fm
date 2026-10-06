@@ -1,5 +1,7 @@
 package com.emirgasic.forecastfm.data.repository
 
+import com.emirgasic.forecastfm.core.utils.resolveImageUrl
+import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.network.ApiClient
 import com.emirgasic.forecastfm.network.outfit.OutfitApi
@@ -27,11 +29,8 @@ class OutfitRepository(
     }
 
     private fun com.emirgasic.forecastfm.network.outfit.OutfitResponse.toOutfit(): Outfit {
-        val fullImageUrl = if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-            imageUrl
-        } else {
-            "${ApiClient.baseUrl()}$imageUrl"
-        }
+
+        val fullImageUrl = resolveImageUrlOr(imageUrl, imageUrl)
 
         return Outfit(
             id = id,

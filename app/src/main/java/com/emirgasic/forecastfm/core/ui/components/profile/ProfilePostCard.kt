@@ -2,7 +2,6 @@ package com.emirgasic.forecastfm.core.ui.components.profile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -45,6 +45,9 @@ fun ProfilePostCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .pressScale {
+                onClick()
+            }
             .shadow(
                 elevation = 3.dp,
                 shape = MaterialTheme.shapes.medium,
@@ -56,8 +59,7 @@ fun ProfilePostCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = forecastColors.card
-        ),
-        onClick = onClick
+        )
     ) {
 
         Column(

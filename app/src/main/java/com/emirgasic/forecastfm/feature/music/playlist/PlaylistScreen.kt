@@ -223,22 +223,17 @@ fun PlaylistScreen(
                     }
 
                     items(playlist.songs.take(3)) { song ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val url = "https://www.youtube.com/watch?v=${song.id}"
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                    context.startActivity(intent)
-                                }
-                        ) {
-                            MusicRow(
-                                title = song.title,
-                                artist = song.artist,
-                                duration = song.duration,
-                                image = song.albumImageUrl
-                            )
-                        }
+                        MusicRow(
+                            title = song.title,
+                            artist = song.artist,
+                            duration = song.duration,
+                            image = song.albumImageUrl,
+                            onClick = {
+                                val url = "https://www.youtube.com/watch?v=${song.id}"
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                context.startActivity(intent)
+                            }
+                        )
                     }
 
                     if (playlist.bestFor.isNotEmpty()) {

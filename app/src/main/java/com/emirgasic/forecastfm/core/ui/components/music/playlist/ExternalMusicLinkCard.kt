@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -33,13 +34,15 @@ fun ExternalMusicLinkCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .pressScale {
+                onClick()
+            }
             .shadow(
                 elevation = 3.dp,
                 shape = MaterialTheme.shapes.medium,
                 ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
                 spotColor = forecastColors.shadow.copy(alpha = 0.4f)
             ),
-        onClick = onClick,
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, forecastColors.border),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),

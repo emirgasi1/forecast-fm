@@ -3,24 +3,24 @@ package com.emirgasic.forecastfm.core.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.feature.feed.FeedScreen
 import com.emirgasic.forecastfm.feature.home.HomeScreen
-import com.emirgasic.forecastfm.feature.map.FullMapScreen
-import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.map.MapScreen
-import com.emirgasic.forecastfm.feature.style.StyleScreen
-import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
+import com.emirgasic.forecastfm.feature.music.MusicScreen
 import com.emirgasic.forecastfm.feature.profile.ProfileScreen
+import com.emirgasic.forecastfm.feature.style.StyleScreen
 import com.emirgasic.forecastfm.feature.style.add.AddOutfitScreen
+import com.emirgasic.forecastfm.feature.style.detail.StyleDetailScreen
 import com.emirgasic.forecastfm.feature.style.posts.NewPostScreen
 
 @Composable
@@ -28,24 +28,39 @@ fun MainScreen(
     rootNavController: NavHostController,
     tokenManager: TokenManager,
     modifier: Modifier = Modifier
-){
+) {
     val mainNavController = rememberNavController()
+
+    val backStackEntry by mainNavController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+
+    val hideOnRoutes = setOf(
+        Routes.AddOutfit,
+        Routes.StyleDetail,
+        Routes.NewPost
+    )
+    val showBottomBar = currentRoute == null || currentRoute !in hideOnRoutes
 
     Scaffold(
         bottomBar = {
-            BottomBar(
-                navController = mainNavController
-            )
+            if (showBottomBar) {
+                BottomBar(navController = mainNavController)
+            }
         }
-    ){ paddingValues ->
-
+    ) { paddingValues ->
         NavHost(
             navController = mainNavController,
             startDestination = Routes.Home,
-            modifier = Modifier.padding(paddingValues)
-        ){
+            modifier = Modifier.padding(paddingValues),
 
-            composable(Routes.Home){
+            // Tab-to-tab default: instant
+            enterTransition = { tabEnter() },
+            exitTransition = { tabExit() },
+            popEnterTransition = { tabEnter() },
+            popExitTransition = { tabExit() }
+        ) {
+
+            composable(Routes.Home) {
                 HomeScreen(
                     mainNavController = mainNavController,
                     rootNavController = rootNavController,
@@ -53,15 +68,15 @@ fun MainScreen(
                 )
             }
 
-            composable(Routes.Music){
+            composable(Routes.Music) {
                 MusicScreen(
                     mainNavController = mainNavController,
                     rootNavController = rootNavController,
-                    tokenManager=tokenManager
+                    tokenManager = tokenManager
                 )
             }
 
-            composable(Routes.Map){
+            composable(Routes.Map) {
                 MapScreen(
                     mainNavController = mainNavController,
                     rootNavController = rootNavController
@@ -74,7 +89,14 @@ fun MainScreen(
                     tokenManager = tokenManager
                 )
             }
-            composable(Routes.AddOutfit) {
+
+            composable(
+                route = Routes.AddOutfit,
+                enterTransition = { modalEnter() },
+                exitTransition = { modalExit() },
+                popEnterTransition = { modalPopEnter() },
+                popExitTransition = { modalPopExit() }
+            ) {
                 AddOutfitScreen(
                     navController = mainNavController,
                     tokenManager = tokenManager
@@ -84,10 +106,12 @@ fun MainScreen(
             composable(
                 route = Routes.StyleDetail,
                 arguments = listOf(
-                    navArgument("outfitId") {
-                        type = NavType.StringType
-                    }
-                )
+                    navArgument("outfitId") { type = NavType.StringType }
+                ),
+                enterTransition = { drillDownEnter() },
+                exitTransition = { drillDownExit() },
+                popEnterTransition = { drillDownPopEnter() },
+                popExitTransition = { drillDownPopExit() }
             ) { backStackEntry ->
                 val outfitId = backStackEntry.arguments?.getString("outfitId")
                 StyleDetailScreen(
@@ -111,7 +135,14 @@ fun MainScreen(
                     tokenManager = tokenManager
                 )
             }
-            composable(Routes.NewPost) {
+
+            composable(
+                route = Routes.NewPost,
+                enterTransition = { modalEnter() },
+                exitTransition = { modalExit() },
+                popEnterTransition = { modalPopEnter() },
+                popExitTransition = { modalPopExit() }
+            ) {
                 NewPostScreen(
                     navController = mainNavController,
                     tokenManager = tokenManager

@@ -1,6 +1,11 @@
 package com.emirgasic.forecastfm.core.navigation
 
 import android.net.Uri
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -14,6 +19,7 @@ import com.emirgasic.forecastfm.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.emirgasic.forecastfm.feature.auth.login.LoginScreen
 import com.emirgasic.forecastfm.feature.auth.register.RegisterScreen
 import com.emirgasic.forecastfm.feature.comments.CommentsScreen
+import com.emirgasic.forecastfm.feature.feed.postdetail.PostDetailScreen
 import com.emirgasic.forecastfm.feature.locationdetails.LocationDetailsScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationDetailScreen
 import com.emirgasic.forecastfm.feature.locationdetails.placerecommendation.PlaceRecommendationScreen
@@ -43,7 +49,11 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        enterTransition = { drillDownEnter() },
+        exitTransition = { drillDownExit() },
+        popEnterTransition = { drillDownPopEnter() },
+        popExitTransition = { drillDownPopExit() }
     ) {
 
         composable(Routes.Login) {
@@ -233,6 +243,30 @@ fun NavGraph(
         }
         composable(Routes.FullMap) {
             FullMapScreen(navController = navController)
+        }
+        composable(
+            route = Routes.PostDetail,
+            arguments = listOf(
+                navArgument("postId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val postId = backStackEntry.arguments?.getString("postId")?.let { Uri.decode(it) }
+            PostDetailScreen(
+                navController = navController,
+                postId = postId
+            )
+        }
+        composable(
+            route = Routes.Main,
+            enterTransition = { fadeIn(tween(300)) },
+            exitTransition = { fadeOut(tween(200)) },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
+        ) {
+            MainScreen(
+                rootNavController = navController,
+                tokenManager = tokenManager
+            )
         }
 
         composable(

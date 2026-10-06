@@ -3,7 +3,6 @@ package com.emirgasic.forecastfm.core.ui.components.style
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -52,13 +52,15 @@ fun OutfitCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .pressScale {
+                onClick()
+            }
             .shadow(
                 elevation = 3.dp,
                 shape = MaterialTheme.shapes.medium,
                 ambientColor = forecastColors.shadow.copy(alpha = 0.25f),
                 spotColor = forecastColors.shadow.copy(alpha = 0.4f)
-            )
-            .clickable(onClick = onClick),
+            ),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, forecastColors.border),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),

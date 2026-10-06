@@ -14,6 +14,12 @@ object Routes {
     const val ForgotPassword = "forgotpassword"
     const val Home = "home"
     const val Profile = "profile"
+
+    const val PostDetail = "post_detail/{postId}"
+
+    fun postDetailRoute(postId: String): String {
+        return "post_detail/${Uri.encode(postId)}"
+    }
     const val Settings = "settings"
 
     const val EditProfile = "editprofile"

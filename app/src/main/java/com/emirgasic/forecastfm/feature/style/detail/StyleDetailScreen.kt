@@ -90,7 +90,7 @@ fun StyleDetailScreen(
                         .navigationBarsPadding()
                 ) {
                     Text(
-                        text = "← Back",
+                        text = "Back",
                         style = MaterialTheme.typography.titleMedium,
                         color = forecastColors.title,
                         modifier = Modifier

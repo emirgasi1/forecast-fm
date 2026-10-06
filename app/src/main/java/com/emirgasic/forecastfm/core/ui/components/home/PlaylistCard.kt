@@ -1,7 +1,6 @@
 package com.emirgasic.forecastfm.core.ui.components.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.R
+import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -40,6 +40,9 @@ fun PlaylistCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .pressScale {
+                onClick()
+            }
             .shadow(
                 elevation = 3.dp,
                 shape = MaterialTheme.shapes.medium,
@@ -48,9 +51,7 @@ fun PlaylistCard(
             )
             .clip(MaterialTheme.shapes.medium)
             .background(forecastColors.card)
-            .clickable {
-                onClick()
-            }
+
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

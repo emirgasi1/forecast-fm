@@ -131,8 +131,7 @@ fun ProfileScreen(
 
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding(),
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(bottom = 24.dp)
@@ -229,7 +228,9 @@ fun ProfileScreen(
                                     modifier = Modifier.weight(1f),
                                     title = post.caption,
                                     imageUrl = post.imageUrl,
-                                    onClick = { }
+                                    onClick = {
+                                        rootNavController.navigate(Routes.postDetailRoute(post.id))
+                                    }
                                 )
                             }
 

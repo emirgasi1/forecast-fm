@@ -118,7 +118,6 @@ fun MusicScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             ScreenTitle(
-                icon = painterResource(R.drawable.music),
                 title = "Music"
             )
 

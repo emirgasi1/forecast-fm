@@ -174,13 +174,6 @@ fun MapScreen(
     val playlistMap by viewModel.playlistMap.collectAsState()
     val venueFilter by viewModel.venueCategoryFilter.collectAsState()
 
-    LaunchedEffect(venueFilter, selectedLocation, places) {
-        Log.d(
-            "MAPDEBUG",
-            "location=${selectedLocation?.name} filter=$venueFilter places=${places.size} names=${places.map { it.name }}"
-        )
-    }
-
     val searchQuery by searchViewModel.query.collectAsState()
     val searchResults by searchViewModel.results.collectAsState()
     val isSearching by searchViewModel.isLoading.collectAsState()
@@ -321,7 +314,6 @@ fun MapScreen(
             ) {
                 ScreenTitle(
                     title = "Map",
-                    icon = painterResource(R.drawable.mappin)
                 )
 
                 IconButton(

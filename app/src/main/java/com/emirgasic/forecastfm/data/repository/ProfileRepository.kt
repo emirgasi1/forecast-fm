@@ -1,6 +1,7 @@
 package com.emirgasic.forecastfm.data.repository
 
 import android.content.ContentResolver
+import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.Profile
 import com.emirgasic.forecastfm.data.model.ProfilePost
 import com.emirgasic.forecastfm.network.ApiClient
@@ -17,11 +18,10 @@ class ProfileRepository(
         val profilePosts = response.posts.map { post ->
             ProfilePost(
                 id = post.id,
-                imageUrl = if (!post.imageUrl.isNullOrBlank()) {
-                    "${ApiClient.baseUrl()}${post.imageUrl}"
-                } else {
+                imageUrl = resolveImageUrlOr(
+                    post.imageUrl,
                     "https://picsum.photos/seed/${post.id}/400/400"
-                },
+                ),
                 caption = post.caption ?: ""
             )
         }
@@ -29,11 +29,10 @@ class ProfileRepository(
         return Profile(
             username = response.username,
             bio = response.bio ?: "",
-            profileImage = if (!response.profileImageUrl.isNullOrBlank()) {
-                "${ApiClient.baseUrl()}${response.profileImageUrl}"
-            } else {
+            profileImage = resolveImageUrlOr(
+                response.profileImageUrl,
                 "https://picsum.photos/seed/${response.username}/400/400"
-            },
+            ),
             likes = response.likes,
             saved = response.saved,
             posts = response.posts.size,

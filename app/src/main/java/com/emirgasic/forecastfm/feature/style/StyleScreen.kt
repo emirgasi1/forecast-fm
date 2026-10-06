@@ -129,7 +129,6 @@ fun StyleScreen(
                     ) {
                         ScreenTitle(
                             title = "Style",
-                            icon = painterResource(R.drawable.clothes)
                         )
 
                         IconButton(
@@ -160,8 +159,7 @@ fun StyleScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding(),
+                            .fillMaxWidth(),
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         items(style!!.outfits) { outfit ->
