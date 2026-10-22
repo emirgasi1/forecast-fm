@@ -3,9 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-}
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"}
 
-// Read API key outside android block
 val youtubeApiKey: String = project.rootProject.file("local.properties")
     .takeIf { it.exists() }
     ?.readLines()
@@ -57,7 +56,6 @@ android {
 }
 
 dependencies {
-    // Compose — BOM-managed only, no explicit versions
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
@@ -72,9 +70,16 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation("androidx.compose.material:material-icons-extended")
 
+    val roomVersion = "2.8.5"
+
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
     // Coil 3 only — Coil 2 lines removed
     implementation(libs.coil.compose)
     implementation("androidx.compose.runtime:runtime-tracing")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
     // Ktor
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.android)

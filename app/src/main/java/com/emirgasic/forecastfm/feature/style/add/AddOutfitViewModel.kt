@@ -87,12 +87,17 @@ class AddOutfitViewModel(
 
         viewModelScope.launch {
             _state.value = s.copy(isUploading = true, error = null)
+            android.util.Log.d("AddOutfitDebug", "Starting submit process...")
 
             try {
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
+                android.util.Log.d("AddOutfitDebug", "Uploading image to B2...")
                 val uploadedUrl = uploadImage(imageUri)
+                android.util.Log.d("AddOutfitDebug", "Image uploaded successfully! Key: $uploadedUrl")
+
+                android.util.Log.d("AddOutfitDebug", "Saving outfit to database...")
 
                 val created = outfitApi.createOutfit(
                     userId = userId,
@@ -106,6 +111,8 @@ class AddOutfitViewModel(
                     storePhone = s.storePhone.ifBlank { null },
                     productUrl = s.productUrl.ifBlank { null }
                 )
+                android.util.Log.d("AddOutfitDebug", "Outfit created successfully! ID: ${created.id}")
+
 
                 _createdOutfitId.value = created.id
                 _state.value = _state.value.copy(isUploading = false)

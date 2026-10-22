@@ -21,7 +21,6 @@ import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 fun PlaceInfoHeader(
     name: String,
     category: String,
-    rating: Double,
     isSaved: Boolean,
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit,

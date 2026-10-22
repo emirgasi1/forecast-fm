@@ -6,11 +6,6 @@ object PlaceRanker {
 
     private const val SCORE_CATEGORY_MATCH = 10
 
-    /**
-     * Canonicalizes a category string into one of a fixed set of tokens.
-     * Returns null for null / blank / "all" inputs, which callers should
-     * interpret as "no category filter".
-     */
     fun canonicalCategory(category: String?): String? {
         return when (category?.trim()?.lowercase()) {
             null, "", "all" -> null
@@ -35,10 +30,6 @@ object PlaceRanker {
         }
     }
 
-    /**
-     * Returns true if both categories canonicalize to the same token.
-     * Two nulls (or two "all" inputs) match each other.
-     */
     fun categoriesMatch(a: String?, b: String?): Boolean {
         return canonicalCategory(a) == canonicalCategory(b)
     }
@@ -58,11 +49,11 @@ object PlaceRanker {
         if (places.isEmpty()) return emptyList()
 
         return if (preferredCategories.isEmpty()) {
-            places.sortedByDescending { it.rating }
+            places.sortedBy { it.name }
         } else {
             places.sortedWith(
                 compareByDescending<Place> { scorePlace(it, preferredCategories) }
-                    .thenByDescending { it.rating }
+                    .thenBy { it.name }
             )
         }
     }

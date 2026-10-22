@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -67,17 +69,43 @@ class MapViewModel(
     private val _venueCategoryFilter = MutableStateFlow<String?>(null)
     val venueCategoryFilter: StateFlow<String?> = _venueCategoryFilter.asStateFlow()
 
+    init {
+        observeLocalLocations()
+
+        viewModelScope.launch {
+            locationRepository.syncLocationsFromApi()
+        }
+    }
+
+    private fun observeLocalLocations() {
+        locationRepository.getLocalLocations()
+            .onEach { locations ->
+                _locations.value = locations
+                // Only auto-select the first location if we haven't selected one yet
+                if (_selectedLocation.value == null) {
+                    _selectedLocation.value = locations.firstOrNull()
+                }
+                updateMarkers()
+            }
+            .launchIn(viewModelScope)
+    }
+
     val visiblePlaces: StateFlow<List<Place>> = combine(
         _allPlaces,
         _selectedLocation,
         _venueCategoryFilter
     ) { places, location, category ->
-        places.filter { place ->
-            val locationMatch = location == null || place.venueId == location.id
+        val kept = places.filter { place ->
+            val locationMatch = location == null || place.venueId == null || place.venueId == location.id
             val categoryMatch = category == null ||
                     PlaceRanker.categoriesMatch(place.category, category)
             locationMatch && categoryMatch
         }
+        android.util.Log.d(
+            "MapDebug",
+            "visiblePlaces: total=${places.size} locationId=${location?.id} category=$category kept=${kept.size}"
+        )
+        kept
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
@@ -116,7 +144,8 @@ class MapViewModel(
 
                 val locationMatch = when (marker.type) {
                     "venue" -> location == null || marker.id == location.id
-                    "place" -> location == null || place?.venueId == location.id
+                    // FIXED: Allow null venueId so they don't get filtered out
+                    "place" -> location == null || place?.venueId == null || place?.venueId == location.id
                     else -> true
                 }
 
@@ -143,19 +172,6 @@ class MapViewModel(
             emptyList()
         )
 
-    fun loadLocations() {
-        viewModelScope.launch {
-            try {
-                val locations = locationRepository.getLocations()
-                _locations.value = locations
-                _selectedLocation.value = locations.firstOrNull()
-                updateMarkers()
-            } catch (_: Exception) {
-                // Silent failure
-            }
-        }
-    }
-
     fun loadAllPlaces() {
         viewModelScope.launch {
             try {
@@ -164,10 +180,11 @@ class MapViewModel(
                 val sorted = PlaceRanker.rankByPreferences(allPlaces, prefs)
 
                 _allPlaces.value = sorted
+                android.util.Log.d("MapDebug", "loadAllPlaces: fetched=${allPlaces.size} sorted=${sorted.size} first=${sorted.firstOrNull()?.name}")
                 _selectedPlace.value = sorted.firstOrNull()
                 updateMarkers()
-            } catch (_: Exception) {
-                // Silent failure
+            } catch (e: Exception) {
+                android.util.Log.e("MapDebug", "loadAllPlaces failed", e)
             }
         }
     }
@@ -178,8 +195,8 @@ class MapViewModel(
                 val stations = busStationRepository.getAllBusStations()
                 _busStations.value = stations
                 updateMarkers()
-            } catch (_: Exception) {
-                // Silent failure
+            } catch (e: Exception) {
+                android.util.Log.e("MapDebug", "loadBusStations failed", e)
             }
         }
     }
@@ -195,8 +212,8 @@ class MapViewModel(
                 }
 
                 updateMarkers()
-            } catch (_: Exception) {
-                // Silent failure
+            } catch (e: Exception) {
+                android.util.Log.e("MapDebug", "loadPlacesForVenue failed", e)
             }
         }
     }
@@ -206,7 +223,8 @@ class MapViewModel(
 
         viewModelScope.launch {
             _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
-                place.venueId == location.id &&
+                // FIXED: Allow null venueId
+                (place.venueId == null || place.venueId == location.id) &&
                         (_venueCategoryFilter.value == null ||
                                 PlaceRanker.categoriesMatch(place.category, _venueCategoryFilter.value))
             }
@@ -233,8 +251,8 @@ class MapViewModel(
                         _playlistMap.value = _playlistMap.value + (locationId to playlist.title)
                     }
                 }
-            } catch (_: Exception) {
-                // Silent failure
+            } catch (e: Exception) {
+                android.util.Log.e("MapDebug", "loadPlaylist failed", e)
             }
         }
     }
@@ -243,8 +261,8 @@ class MapViewModel(
         viewModelScope.launch {
             try {
                 _outfits.value = outfitRepository.getOutfitsByWeather(weather)
-            } catch (_: Exception) {
-                // Silent failure
+            } catch (e: Exception) {
+                android.util.Log.e("MapDebug", "loadOutfits failed", e)
             }
         }
     }
@@ -292,7 +310,8 @@ class MapViewModel(
             )
         }
 
-        _markers.value = venueMarkers + placeMarkers + busMarkers
+        // 🚨 THE FIX FOR THE CRASH: Limit to 100 markers
+        _markers.value = (venueMarkers + placeMarkers + busMarkers).take(100)
     }
 
     fun updateSearchQuery(query: String) {
@@ -321,7 +340,8 @@ class MapViewModel(
         viewModelScope.launch {
             val currentLocation = _selectedLocation.value
             _selectedPlace.value = _allPlaces.value.firstOrNull { place ->
-                place.venueId == currentLocation?.id &&
+                // FIXED: Allow null venueId
+                (place.venueId == null || place.venueId == currentLocation?.id) &&
                         (category == null ||
                                 PlaceRanker.categoriesMatch(place.category, category))
             }

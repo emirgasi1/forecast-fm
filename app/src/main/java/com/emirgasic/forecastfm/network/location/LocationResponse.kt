@@ -8,5 +8,9 @@ data class LocationResponse(
     val name: String,
     val description: String,
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    val category: String = "general",
+    val address: String? = null,
+    val openingHours: String? = null,
+    val outdoorSeating: Boolean = false
 )

@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +45,7 @@ import com.emirgasic.forecastfm.data.model.WeatherReading
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.SavedPlaceRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -59,7 +62,7 @@ fun PlaceInfoScreen(
                     tokenManager = tokenManager,
                     placeRepository = PlaceRepository(),
                     savedPlaceRepository = SavedPlaceRepository(),
-                    locationRepository = LocationRepository()
+                    locationRepository = ServiceLocator.provideLocationRepository()
                 ) as T
             }
         }
@@ -112,7 +115,6 @@ fun PlaceInfoScreen(
                         PlaceInfoHeader(
                             name = item.name,
                             category = item.category,
-                            rating = item.rating,
                             isSaved = isSaved,
                             onBackClick = { navController.popBackStack() },
                             onSaveClick = { viewModel.toggleSave() }
@@ -123,8 +125,9 @@ fun PlaceInfoScreen(
                         PlaceInfoHero(
                             name = item.name,
                             category = item.category,
-                            rating = item.rating,
-                            locationName = locationName
+                            locationName = locationName,
+                            openingHours = item.openingHours,
+                            outdoorSeating = item.outdoorSeating
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -140,28 +143,39 @@ fun PlaceInfoScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         PlaceInfoAbout(
-                            description = item.description
+                            description = item.description ?: "No description available."
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
                         WeatherReadingsGrid(
-                            readings = listOf(
-                                WeatherReading(
-                                    label = "Rating",
-                                    value = item.rating.toString(),
-                                    icon = Icons.Default.Star
-                                ),
+                            readings = listOfNotNull(
                                 WeatherReading(
                                     label = "Category",
-                                    value = item.category,
+                                    value = item.category.replaceFirstChar { it.uppercase() },
                                     icon = Icons.Default.Category
                                 ),
-                                WeatherReading(
-                                    label = "Address",
-                                    value = item.address.ifBlank { "Unknown" },
-                                    icon = Icons.Default.LocationOn
-                                ),
+                                item.address?.takeIf { it.isNotBlank() }?.let {
+                                    WeatherReading(
+                                        label = "Address",
+                                        value = it,
+                                        icon = Icons.Default.LocationOn
+                                    )
+                                },
+                                item.openingHours?.takeIf { it.isNotBlank() }?.let {
+                                    WeatherReading(
+                                        label = "Opening Hours",
+                                        value = it,
+                                        icon = Icons.Default.AccessTime
+                                    )
+                                },
+                                if (item.outdoorSeating) {
+                                    WeatherReading(
+                                        label = "Seating",
+                                        value = "Outdoor available",
+                                        icon = Icons.Default.WbSunny
+                                    )
+                                } else null,
                                 WeatherReading(
                                     label = "Coordinates",
                                     value = "${"%.4f".format(item.latitude)}, ${"%.4f".format(item.longitude)}",

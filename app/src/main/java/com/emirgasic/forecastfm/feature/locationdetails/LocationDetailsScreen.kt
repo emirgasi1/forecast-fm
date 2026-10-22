@@ -30,6 +30,7 @@ import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.PlaceRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -43,7 +44,7 @@ fun LocationDetailsScreen(
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return LocationDetailsViewModel(
-                    locationRepository = LocationRepository(),
+                    locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED
                     weatherRepository = WeatherRepository(),
                     playlistRepository = PlaylistRepository(PlaylistApi()),
                     outfitRepository = OutfitRepository(),
@@ -88,7 +89,7 @@ fun LocationDetailsScreen(
             item {
                 LocationHeader(
                     location = details.location.name,
-                    description = details.location.description
+                    description = details.location.description ?: "Sarajevo location"
                 )
             }
 

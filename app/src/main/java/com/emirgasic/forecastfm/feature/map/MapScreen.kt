@@ -48,6 +48,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.emirgasic.forecastfm.ForecastFmApp
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.onboarding.OnboardingPreferences
@@ -106,6 +107,8 @@ fun MapScreen(
     )
 ) {
     val context = LocalContext.current
+    val app = context.applicationContext as ForecastFmApp
+    val locationDao = app.database.locationDao()
 
     val viewModel: MapViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -113,12 +116,10 @@ fun MapScreen(
                 @Suppress("UNCHECKED_CAST")
                 return MapViewModel(
                     onboardingPrefs = OnboardingPreferences(context),
-                    locationRepository = LocationRepository(),
+                    locationRepository = LocationRepository(locationDao = locationDao), // Pass it here!
                     outfitRepository = OutfitRepository(),
                     placeRepository = PlaceRepository(),
-                    playlistRepository = PlaylistRepository(
-                        playlistApi = PlaylistApi()
-                    ),
+                    playlistRepository = PlaylistRepository(PlaylistApi()),
                     busStationRepository = BusStationRepository()
                 ) as T
             }
@@ -184,8 +185,8 @@ fun MapScreen(
     var expanded by remember { mutableStateOf(false) }
     var placesExpanded by remember { mutableStateOf(false) }
 
-    val locationNames = locations.map { it.name }
-    val placeNames = places.map { it.name }
+    val locationNames = locations.take(50).map { it.name }
+    val placeNames = places.take(50).map { it.name }
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -216,7 +217,6 @@ fun MapScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.loadLocations()
         viewModel.loadAllPlaces()
         viewModel.loadBusStations()
 
@@ -592,7 +592,7 @@ fun MapScreen(
                 PlaceCard(
                     name = place.name,
                     category = place.category,
-                    rating = place.rating,
+                    openingHours = place.openingHours,
                     onViewPlaceClick = {
                         rootNavController.navigate(
                             Routes.placeInfoRoute(place.id)

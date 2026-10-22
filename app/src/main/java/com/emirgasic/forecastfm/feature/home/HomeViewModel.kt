@@ -40,7 +40,7 @@ class HomeViewModel(
                 @Suppress("UNUSED_EXPRESSION")
                 userId
 
-                val locations = locationRepository.getLocations()
+                val locations = locationRepository.getLocalLocations().first()
                 if (locations.isEmpty()) throw Exception("No locations available")
 
                 val location = HomeRecommender.pickNearestLocation(

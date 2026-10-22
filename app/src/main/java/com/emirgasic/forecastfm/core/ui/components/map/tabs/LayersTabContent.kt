@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -23,20 +22,27 @@ fun LayersTabContent(
     onLayerToggle: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val layers = listOf(
-        "Venues",
-        "Places",
-        "Bus Stops",
-        "Areas",
-        "Routes",
-        "Traffic"
+    val layerDescriptions = linkedMapOf(
+        "Neighborhoods" to "Suburbs, quarters & general areas",
+        "Food & Drink" to "Cafes, restaurants & bakeries",
+        "Bars & Nightlife" to "Bars, pubs, clubs & casinos",
+        "Shopping" to "Shops, markets & services",
+        "Accommodation" to "Hotels, hostels & apartments",
+        "Health" to "Hospitals, clinics & pharmacies",
+        "Finance & Post" to "Banks, ATMs & post offices",
+        "Culture & Education" to "Museums, schools & libraries",
+        "Parks & Nature" to "Parks, gardens & viewpoints",
+        "Worship" to "Places of worship & monasteries",
+        "Transit" to "Bus stops, parking & fuel",
+        "Emergency" to "Police & fire stations",
+        "Others" to "Uncategorized places"
     )
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Map Layers",
@@ -44,19 +50,25 @@ fun LayersTabContent(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        layers.forEach { layer ->
+        layerDescriptions.forEach { (layer, description) ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = layer,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = layer,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 Switch(
                     checked = layer in enabledLayers,

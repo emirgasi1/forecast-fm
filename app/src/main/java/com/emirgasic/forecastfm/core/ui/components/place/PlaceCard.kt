@@ -7,10 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +29,8 @@ import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 fun PlaceCard(
     name: String,
     category: String,
-    rating: Double = 0.0,
+    openingHours: String? = null,
+    outdoorSeating: Boolean = false,
     modifier: Modifier = Modifier,
     onViewPlaceClick: () -> Unit = {}
 ) {
@@ -63,18 +69,40 @@ fun PlaceCard(
             )
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = category,
                     style = MaterialTheme.typography.bodyMedium,
                     color = forecastColors.muted
                 )
-                if (rating > 0) {
-                    Text(
-                        text = " • ⭐ $rating",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = forecastColors.muted
+
+                if (!openingHours.isNullOrBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = forecastColors.muted
+                        )
+                        Text(
+                            text = openingHours,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = forecastColors.muted
+                        )
+                    }
+                }
+
+                if (outdoorSeating) {
+                    Icon(
+                        imageVector = Icons.Default.WbSunny,
+                        contentDescription = "Outdoor Seating",
+                        modifier = Modifier.size(16.dp),
+                        tint = forecastColors.primary
                     )
                 }
             }

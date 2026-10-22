@@ -30,7 +30,11 @@ class OutfitRepository(
 
     private fun com.emirgasic.forecastfm.network.outfit.OutfitResponse.toOutfit(): Outfit {
 
-        val fullImageUrl = resolveImageUrlOr(imageUrl, imageUrl)
+        val cleanUrl = imageUrl.replace("\\u0026", "&")
+
+        val fullImageUrl = resolveImageUrlOr(cleanUrl, cleanUrl)
+
+        android.util.Log.d("ImageDebug", "Loading Outfit Image: $fullImageUrl")
 
         return Outfit(
             id = id,

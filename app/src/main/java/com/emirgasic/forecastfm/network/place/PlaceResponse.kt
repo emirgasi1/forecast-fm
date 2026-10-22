@@ -7,13 +7,14 @@ data class PlaceResponse(
     val id: String,
     val name: String,
     val category: String,
-    val venueId: String?,
-    val address: String,
+    val venueId: String? = null,
+    val address: String? = null,
     val latitude: Double,
     val longitude: Double,
-    val description: String,
+    val description: String? = null,
     val imageUrl: String? = null,
-    val rating: Double = 0.0,
+    val openingHours: String? = null,
+    val outdoorSeating: Boolean = false,
     val createdAt: String
 )
 

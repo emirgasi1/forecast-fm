@@ -55,6 +55,7 @@ import com.emirgasic.forecastfm.data.repository.HomeRepository
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
@@ -77,7 +78,7 @@ fun HomeScreen(
                     tokenManager = tokenManager,
                     onboardingPrefs = OnboardingPreferences(context),
                     homeRepository = HomeRepository(),
-                    locationRepository = LocationRepository(),
+                    locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED HERE
                     weatherRepository = WeatherRepository(),
                     playlistRepository = PlaylistRepository(PlaylistApi())
                 ) as T

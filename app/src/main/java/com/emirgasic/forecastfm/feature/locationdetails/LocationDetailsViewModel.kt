@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 class LocationDetailsViewModel(
     private val locationRepository: LocationRepository,
@@ -34,7 +35,8 @@ class LocationDetailsViewModel(
     fun loadLocation(locationId: String) {
         viewModelScope.launch {
             try {
-                val locations = locationRepository.getLocations()
+                // 👈 FIXED: Read from Room
+                val locations = locationRepository.getLocalLocations().first()
                 val location = locations.firstOrNull { it.id == locationId }
                     ?: return@launch
 

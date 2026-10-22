@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,14 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
@@ -68,10 +67,24 @@ fun StyleScreen(
 
     val forecastColors = LocalForecastColors.current
 
-    LaunchedEffect(Unit) {
+    // 1. Listen for the refresh signal from AddOutfitScreen
+    val shouldRefresh by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("refresh_style", false)
+        ?.collectAsState() ?: remember { mutableStateOf(false) }
+
+    // 2. This single effect runs on FIRST load (shouldRefresh is false)
+    // AND runs when returning from AddOutfit (shouldRefresh is true)
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            // Clear the flag so it doesn't loop
+            navController.currentBackStackEntry?.savedStateHandle?.set("refresh_style", false)
+        }
+        // Always load the data
         viewModel.loadStyle()
         viewModel.loadSavedOutfits()
     }
+
     Box(
         modifier = modifier
             .fillMaxSize()

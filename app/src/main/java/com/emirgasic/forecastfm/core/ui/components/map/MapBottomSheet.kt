@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import com.emirgasic.forecastfm.core.ui.components.map.MapBottomSheetTabs
 import com.emirgasic.forecastfm.core.ui.components.map.MapTab
-import com.emirgasic.forecastfm.core.ui.components.map.tabs.FiltersTabContent
 import com.emirgasic.forecastfm.core.ui.components.map.tabs.LayersTabContent
 import com.emirgasic.forecastfm.core.ui.components.map.tabs.LegendTabContent
 import com.emirgasic.forecastfm.core.ui.components.map.tabs.SearchTabContent
@@ -55,7 +54,6 @@ fun MapBottomSheet(
     var isExpanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(MapTab.Search) }
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilters by remember { mutableStateOf(setOf<String>()) }
     var enabledLayers by remember { mutableStateOf(setOf("Venues", "Places")) }
 
     val maxDrag = (expandedHeight - collapsedHeight).value

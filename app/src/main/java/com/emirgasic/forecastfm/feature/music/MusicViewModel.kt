@@ -81,7 +81,7 @@ class MusicViewModel(
     fun loadPlaylists() {
         viewModelScope.launch {
             try {
-                val locations = locationRepository.getLocations()
+                val locations = locationRepository.getLocalLocations().first()
                 val location = locations.firstOrNull()
                     ?: throw Exception("No locations available")
 

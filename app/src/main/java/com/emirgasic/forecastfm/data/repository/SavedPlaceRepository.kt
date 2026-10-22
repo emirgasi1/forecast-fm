@@ -44,7 +44,8 @@ class SavedPlaceRepository(
                 longitude = response.longitude,
                 description = response.description,
                 imageUrl = fullImageUrl,
-                rating = response.rating
+                openingHours = response.openingHours,
+                outdoorSeating = response.outdoorSeating
             )
         }
     }

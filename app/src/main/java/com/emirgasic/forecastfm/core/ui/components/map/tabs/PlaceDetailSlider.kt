@@ -1,8 +1,6 @@
 package com.emirgasic.forecastfm.core.ui.components.map.tabs
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,15 +51,24 @@ fun PlaceDetailSlider(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "${place.category} • ${place.address}",
+            text = "${place.category} • ${place.address ?: "Sarajevo"}",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium
         )
 
+        if (!place.openingHours.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "🕒 ${place.openingHours}",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = place.description,
+            text = place.description ?: "No description available.",
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyLarge
         )

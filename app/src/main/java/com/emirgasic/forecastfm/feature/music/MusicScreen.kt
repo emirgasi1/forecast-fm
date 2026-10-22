@@ -55,6 +55,7 @@ import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.UserRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.data.repository.YouTubeRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.network.user.UserApi
 @Composable
@@ -80,7 +81,7 @@ fun MusicScreen(
                     tokenManager = tokenManager,
                     onboardingPrefs = OnboardingPreferences(context),
                     playlistRepository = playlistRepository,
-                    locationRepository = LocationRepository(),
+                    locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED
                     weatherRepository = WeatherRepository(),
                     musicHistoryRepository = MusicHistoryRepository(),
                     userRepository = userRepository,

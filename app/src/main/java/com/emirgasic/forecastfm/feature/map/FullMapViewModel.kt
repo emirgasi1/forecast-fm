@@ -13,6 +13,8 @@ import com.emirgasic.forecastfm.network.location.LocationResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -31,15 +33,10 @@ class FullMapViewModel(
     private val _busStations = MutableStateFlow<List<BusStation>>(emptyList())
     val busStations: StateFlow<List<BusStation>> = _busStations.asStateFlow()
 
-    private val _markers = MutableStateFlow<List<MapMarker>>(emptyList())
-    val markers: StateFlow<List<MapMarker>> = _markers.asStateFlow()
-
     private val _filteredMarkers = MutableStateFlow<List<MapMarker>>(emptyList())
-    val filteredMarkers: StateFlow<List<MapMarker>> = _filteredMarkers.asStateFlow()
 
-    private val _markerGeoJson = MutableStateFlow(
-        """{"type":"FeatureCollection","features":[]}"""
-    )
+    // 🔴 changed to single String
+    private val _markerGeoJson = MutableStateFlow("""{"type":"FeatureCollection","features":[]}""")
     val markerGeoJson: StateFlow<String> = _markerGeoJson.asStateFlow()
 
     private val _selectedLocation = MutableStateFlow<LocationResponse?>(null)
@@ -51,24 +48,49 @@ class FullMapViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _selectedFilters = MutableStateFlow<Set<String>>(emptySet())
-    val selectedFilters: StateFlow<Set<String>> = _selectedFilters.asStateFlow()
+    private val _enabledLayers = MutableStateFlow(
+        setOf(
+            "Neighborhoods", "Food & Drink", "Bars & Nightlife", "Shopping",
+            "Accommodation", "Health", "Finance & Post", "Culture & Education",
+            "Parks & Nature", "Worship", "Transit", "Emergency","Others"
+        )
+    )
 
-    private val _enabledLayers = MutableStateFlow(setOf("Venues", "Places"))
     val enabledLayers: StateFlow<Set<String>> = _enabledLayers.asStateFlow()
 
     private val _venueCategoryFilter = MutableStateFlow<String?>(null)
     val venueCategoryFilter: StateFlow<String?> = _venueCategoryFilter.asStateFlow()
 
-    fun loadLocations() {
-        viewModelScope.launch {
-            try {
-                _locations.value = locationRepository.getLocations()
+    // Category -> group mapping (consistent with your original logic)
+    private val layerGroups: Map<String, Set<String>> = mapOf(
+        "Neighborhoods" to setOf("suburb", "neighbourhood", "quarter", "general"),
+        "Food & Drink" to setOf("cafe", "internet_cafe", "restaurant", "fast_food", "bakery"),
+        "Bars & Nightlife" to setOf("bar", "pub", "hookah_lounge", "nightclub", "nightlife", "casino"),
+        "Shopping" to setOf(
+            "shop", "supermarket", "marketplace", "clothes", "electronics",
+            "jewelry", "optician", "florist", "variety_store", "kiosk",
+            "stationery", "hairdresser", "car_rental", "bicycle_rental"
+        ),
+        "Accommodation" to setOf("hotel", "hostel", "motel", "guest_house", "apartment", "alpine_hut", "chalet"),
+        "Health" to setOf("hospital", "clinic", "pharmacy", "dentist", "doctors", "veterinary"),
+        "Finance & Post" to setOf("bank", "atm", "bureau_de_change", "post_office", "post_box", "parcel_locker"),
+        "Culture & Education" to setOf(
+            "museum", "gallery", "theatre", "cinema", "arts_centre",
+            "library", "school", "university", "kindergarten", "college"
+        ),
+        "Parks & Nature" to setOf("park", "garden", "picnic_site", "camp_site", "viewpoint", "attraction", "artwork"),
+        "Worship" to setOf("place_of_worship", "monastery"),
+        "Transit" to setOf("bus_stop", "bus_station", "taxi", "fuel", "charging_station", "parking"),
+        "Emergency" to setOf("police", "fire_station")
+    )
+
+    init {
+        locationRepository.getLocalLocations()
+            .onEach { locations ->
+                _locations.value = locations
                 rebuildMarkers()
-            } catch (_: Exception) {
-                // Silent failure
             }
-        }
+            .launchIn(viewModelScope)
     }
 
     fun loadPlaces() {
@@ -76,9 +98,7 @@ class FullMapViewModel(
             try {
                 _places.value = placeRepository.getAllPlaces()
                 rebuildMarkers()
-            } catch (_: Exception) {
-                // Silent failure
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -87,9 +107,7 @@ class FullMapViewModel(
             try {
                 _busStations.value = busStationRepository.getAllBusStations()
                 rebuildMarkers()
-            } catch (_: Exception) {
-                // Silent failure
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -101,129 +119,61 @@ class FullMapViewModel(
                 latitude = location.latitude,
                 longitude = location.longitude,
                 type = "venue",
-                category = "",
+                category = location.category,
                 isSelected = location.id == _selectedLocation.value?.id
             )
         }
 
         val placeMarkers = _places.value.map { place ->
             MapMarker(
-                id = place.id,
-                name = place.name,
-                latitude = place.latitude,
-                longitude = place.longitude,
-                type = "place",
-                category = place.category,
+                id = place.id, name = place.name, latitude = place.latitude, longitude = place.longitude,
+                type = "place", category = PlaceRanker.canonicalCategory(place.category) ?: "general",
                 isSelected = place.id == _selectedPlace.value?.id
             )
         }
 
         val busStationMarkers = _busStations.value.map { station ->
             MapMarker(
-                id = station.id,
-                name = station.name,
-                latitude = station.latitude,
-                longitude = station.longitude,
-                type = "bus_station",
-                category = "Bus Stops",
-                isSelected = false
+                id = station.id, name = station.name, latitude = station.latitude, longitude = station.longitude,
+                type = "bus_station", category = "bus_stop", isSelected = false
             )
         }
 
-        _markers.value = locationMarkers + placeMarkers + busStationMarkers
+        _filteredMarkers.value = locationMarkers + placeMarkers + busStationMarkers
         applyFilters()
+    }
+
+    private fun categoryEnabled(category: String): Boolean {
+        val group = layerGroups.entries.firstOrNull { category in it.value }?.key
+            ?: "Others"
+        return group in _enabledLayers.value
     }
 
     private fun applyFilters() {
         val query = _searchQuery.value.trim()
         val canonical = PlaceRanker.canonicalCategory(_venueCategoryFilter.value)
-
-        val filtered = _markers.value.filter { marker ->
-            val layerVisible = when (marker.type) {
-                "venue" -> "Venues" in _enabledLayers.value
-                "place" -> "Places" in _enabledLayers.value
-                "bus_station" -> "Bus Stops" in _enabledLayers.value
-                else -> true
-            }
-            if (!layerVisible) return@filter false
-
-            val categoryVisible = when (marker.type) {
-                "place" -> canonical == null ||
-                        PlaceRanker.canonicalCategory(marker.category) == canonical
-                else -> true
-            }
-            if (!categoryVisible) return@filter false
-
-            val searchVisible = query.isEmpty() ||
-                    marker.name.contains(query, ignoreCase = true)
-            if (!searchVisible) return@filter false
-
+        val categories = _filteredMarkers.value.map { it.category }.distinct()
+        android.util.Log.d("MapCategories", "Categories: $categories")
+        val filtered = _filteredMarkers.value.filter { marker ->
+            if (!categoryEnabled(marker.category)) return@filter false
+            if (marker.type == "place" && canonical != null && marker.category != canonical) return@filter false
+            if (query.isNotEmpty() && !marker.name.contains(query, ignoreCase = true)) return@filter false
             true
         }
 
-        _filteredMarkers.value = filtered
-        _markerGeoJson.value = buildMarkerGeoJson(filtered)
-    }
-
-    private fun buildMarkerGeoJson(markers: List<MapMarker>): String {
-        val features = markers.joinToString(",") { marker ->
+        val features = filtered.joinToString(",") { marker ->
             val id = Json.encodeToString(marker.id)
             val name = Json.encodeToString(marker.name)
             val type = Json.encodeToString(marker.type)
-            val category = Json.encodeToString(marker.category)
-            val colorKey = Json.encodeToString(computeColorKey(marker))
-
+            val cat = Json.encodeToString(marker.category)
+            val sel = marker.isSelected
             """
-            {
-                "type": "Feature",
-                "properties": {
-                    "id": $id,
-                    "name": $name,
-                    "type": $type,
-                    "category": $category,
-                    "colorKey": $colorKey
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        ${marker.longitude},
-                        ${marker.latitude}
-                    ]
-                }
-            }
+            {"type":"Feature",
+             "properties":{"id":$id,"name":$name,"type":$type,"category":$cat,"isSelected":$sel},
+             "geometry":{"type":"Point","coordinates":[${marker.longitude},${marker.latitude}]}}
             """.trimIndent()
         }
-
-        return """
-            {
-                "type": "FeatureCollection",
-                "features": [$features]
-            }
-        """.trimIndent()
-    }
-
-    private fun computeColorKey(marker: MapMarker): String {
-        if (marker.isSelected && marker.type == "venue") return "selected_venue"
-        if (marker.isSelected && marker.type == "place") return "selected_place"
-
-        return when (PlaceRanker.canonicalCategory(marker.category)) {
-            "cafe" -> "cafe"
-            "restaurant" -> "restaurant"
-            "bar" -> "bar"
-            "nightlife" -> "nightlife"
-            "park" -> "park"
-            "museum" -> "museum"
-            "shop" -> "shop"
-            "hotel" -> "hotel"
-            "landmark" -> "landmark"
-            "culture" -> "culture"
-            "activity" -> "activity"
-            "outdoor" -> "outdoor"
-            "viewpoint" -> "viewpoint"
-            "attraction" -> "attraction"
-            "bus stop" -> "bus_stop"
-            else -> "default"
-        }
+        _markerGeoJson.value = """{"type":"FeatureCollection","features":[$features]}"""
     }
 
     fun selectLocation(location: LocationResponse) {
@@ -234,36 +184,14 @@ class FullMapViewModel(
 
     fun selectPlace(place: Place) {
         _selectedPlace.value = place
-
         val location = _locations.value.firstOrNull { it.id == place.venueId }
-        if (location != null) {
-            _selectedLocation.value = location
-        }
-
+        if (location != null) _selectedLocation.value = location
         rebuildMarkers()
     }
 
     fun setVenueCategoryFilter(category: String?) {
-        _venueCategoryFilter.value =
-            if (category.isNullOrBlank() || category.equals("All", ignoreCase = true)) {
-                null
-            } else {
-                category
-            }
-
+        _venueCategoryFilter.value = if (category.isNullOrBlank() || category.equals("All", ignoreCase = true)) null else category
         _selectedPlace.value = null
-        applyFilters()
-    }
-
-    fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
-        applyFilters()
-    }
-
-    fun toggleFilter(filter: String) {
-        val current = _selectedFilters.value.toMutableSet()
-        if (filter in current) current.remove(filter) else current.add(filter)
-        _selectedFilters.value = current
         applyFilters()
     }
 

@@ -5,15 +5,16 @@ import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
-import com.emirgasic.forecastfm.network.ApiClient
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.weather.WeatherApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 class FeedRepository(
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
-    private val locationRepository: LocationRepository = LocationRepository(),
+    private val locationRepository: LocationRepository = ServiceLocator.provideLocationRepository(),
     private val playlistRepository: PlaylistRepository,
     private val commentRepository: CommentRepository,
     private val weatherApi: WeatherApi = WeatherApi()
@@ -38,12 +39,15 @@ class FeedRepository(
         )
 
         val postResponses = postRepository.getPosts()
-        val locations = locationRepository.getLocations()
+
+        // FIX 1 & 2: Get the first location from Room Flow
+        val locations = locationRepository.getLocalLocations().first()
         val location = locations.firstOrNull()
+
         val allPlaylists = playlistRepository.getPlaylists()
 
         // Fetch weather ONCE for the feed, not per post.
-        val weather = if (location != null) {
+        val weather = if (location != null) { // FIX 3: name, lat, long now exist
             try {
                 val weatherData = weatherApi.getWeather(
                     location = location.name,

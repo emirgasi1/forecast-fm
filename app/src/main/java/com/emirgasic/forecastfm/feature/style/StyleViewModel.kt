@@ -32,14 +32,21 @@ class StyleViewModel(
 
     fun loadStyle() {
         viewModelScope.launch {
-            _isLoading.value = true
+            // Only show the full-screen loading spinner if we don't have data yet.
+            // If we are just refreshing, it happens silently in the background.
+            if (_style.value == null) {
+                _isLoading.value = true
+            }
             _error.value = null
+
             try {
                 val outfits = outfitRepository.getTrendingOutfits()
+                android.util.Log.d("ImageDebug", "Loading URL: ${outfits.firstOrNull()?.imageUrl}")
                 _style.value = Style(outfits = outfits)
             } catch (e: Exception) {
                 _error.value = e.message
             }
+
             _isLoading.value = false
         }
     }

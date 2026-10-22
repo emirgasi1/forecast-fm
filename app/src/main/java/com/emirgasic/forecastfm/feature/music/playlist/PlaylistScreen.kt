@@ -46,13 +46,14 @@ import com.emirgasic.forecastfm.core.ui.components.music.playlist.SimilarPlaylis
 import com.emirgasic.forecastfm.data.repository.LocationRepository
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
 import com.emirgasic.forecastfm.data.repository.WeatherRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.feature.weather.WeatherViewModel
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.network.weather.WeatherApi
 import com.emirgasic.forecastfm.network.youtube.YouTubeApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 import com.emirgasic.forecastfm.utils.TagIconMapper
-
+import kotlinx.coroutines.flow.first
 @Composable
 fun PlaylistScreen(
     navController: NavController,
@@ -93,8 +94,7 @@ fun PlaylistScreen(
     val similarPlaylists by viewModel.similarPlaylists.collectAsState()
     val weather by weatherViewModel.weather.collectAsState()
 
-    val locationRepository = remember { LocationRepository() }
-
+    val locationRepository = remember { ServiceLocator.provideLocationRepository() }
     LaunchedEffect(playlistId) {
         playlistId?.let {
             viewModel.loadPlaylist(it)
@@ -153,7 +153,8 @@ fun PlaylistScreen(
 
             LaunchedEffect(playlist.location) {
                 try {
-                    val locations = locationRepository.getLocations()
+                    // 👈 FIXED: Read from Room
+                    val locations = locationRepository.getLocalLocations().first()
 
                     var location = locations.firstOrNull { it.name == playlist.location }
 

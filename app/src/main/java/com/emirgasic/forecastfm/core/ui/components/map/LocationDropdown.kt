@@ -66,8 +66,8 @@ fun LocationDropdown(
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
 
-            key(locations) {
-                locations.forEach { location ->
+
+                locations.take(50).forEach { location ->
 
                     DropdownMenuItem(
                         text = {
@@ -79,7 +79,7 @@ fun LocationDropdown(
                     )
 
                 }
-            }
+
 
         }
 

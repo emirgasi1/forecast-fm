@@ -59,7 +59,6 @@ fun MapBottomSheetTabs(
 
 enum class MapTab(val title: String) {
     Search("Search"),
-    Filters("Filters"),
     Legend("Legend"),
     Layers("Layers")
 }

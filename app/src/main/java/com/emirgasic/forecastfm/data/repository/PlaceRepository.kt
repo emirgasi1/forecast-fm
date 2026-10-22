@@ -23,7 +23,8 @@ class PlaceRepository(
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                rating = response.rating
+                openingHours = response.openingHours,
+                outdoorSeating = response.outdoorSeating
             )
         }
     }
@@ -43,7 +44,8 @@ class PlaceRepository(
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                rating = response.rating
+                openingHours = response.openingHours,
+                outdoorSeating = response.outdoorSeating
             )
         }
     }
@@ -63,7 +65,8 @@ class PlaceRepository(
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                rating = response.rating
+                openingHours = response.openingHours,
+                outdoorSeating = response.outdoorSeating
             )
         } catch (e: Exception) {
             null
@@ -85,7 +88,8 @@ class PlaceRepository(
                 imageUrl = if (response.imageUrl != null) {
                     "${ApiClient.baseUrl()}${response.imageUrl}"
                 } else null,
-                rating = response.rating
+                openingHours = response.openingHours,
+                outdoorSeating = response.outdoorSeating
             )
         }
     }

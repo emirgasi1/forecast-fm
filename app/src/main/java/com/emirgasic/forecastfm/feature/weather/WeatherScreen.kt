@@ -47,6 +47,8 @@ import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.feature.map.LocationManager
 import com.emirgasic.forecastfm.network.location.LocationResponse
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
+import kotlinx.coroutines.flow.first
+import com.emirgasic.forecastfm.di.ServiceLocator
 
 @Composable
 fun WeatherScreen(
@@ -65,7 +67,7 @@ fun WeatherScreen(
 ) {
     val context = LocalContext.current
 
-    val locationRepository = remember { LocationRepository() }
+    val locationRepository = remember { ServiceLocator.provideLocationRepository() }
     val locationManager = remember { LocationManager(context) }
 
     var location by remember { mutableStateOf<LocationResponse?>(null) }
@@ -87,7 +89,7 @@ fun WeatherScreen(
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        val locations = locationRepository.getLocations()
+        val locations = locationRepository.getLocalLocations().first()
         if (locations.isEmpty()) return@LaunchedEffect
 
         location = if (fineGranted || coarseGranted) {

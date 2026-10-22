@@ -368,6 +368,8 @@ fun AddOutfitScreen(
                             )
                         },
                         onSuccess = {
+                            navController.previousBackStackEntry?.savedStateHandle?.set("refresh_style", true)
+                            navController.popBackStack()
                         }
                     )
                 },

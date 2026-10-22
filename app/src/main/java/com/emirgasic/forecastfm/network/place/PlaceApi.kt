@@ -8,12 +8,14 @@ import io.ktor.http.encodeURLPathPart
 
 class PlaceApi {
 
+    // CHANGED: Pointing to /api/venues instead of /api/places
     suspend fun getAllPlaces(): List<PlaceResponse> {
         return ApiClient.client
-            .get("${ApiClient.baseUrl()}/api/places")
+            .get("${ApiClient.baseUrl()}/api/venues")
             .body()
     }
 
+    // (Leave the rest as-is, they handle specific places)
     suspend fun getPlacesByVenue(venueId: String): List<PlaceResponse> {
         return ApiClient.client
             .get("${ApiClient.baseUrl()}/api/places/venue/${venueId.encodeURLPathPart()}")

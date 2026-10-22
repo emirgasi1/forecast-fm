@@ -1,16 +1,24 @@
 package com.emirgasic.forecastfm
 
 import android.app.Application
+import androidx.room.Room
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.crossfade
 import com.emirgasic.forecastfm.core.notifications.DailyOutfitWorker
 import com.emirgasic.forecastfm.core.notifications.DailyPlaylistWorker
 import com.emirgasic.forecastfm.core.notifications.NotificationHelper
 import com.emirgasic.forecastfm.core.notifications.WeatherAlertWorker
+import com.emirgasic.forecastfm.data.local.AppDatabase
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,13 +27,19 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-class ForecastFmApp : Application() {
+class ForecastFmApp : Application(), SingletonImageLoader.Factory {
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
+    val database: AppDatabase by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "forecastfm_db"
+        ).build()
+    }
     override fun onCreate() {
         super.onCreate()
-
+        ServiceLocator.init(this)
         appScope.launch {
             runCatching { ApiClient.client }
         }
@@ -63,6 +77,15 @@ class ForecastFmApp : Application() {
                 )
                 .build()
         }
+    }
+
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
+        return ImageLoader.Builder(context)
+            .components {
+                add(OkHttpNetworkFetcherFactory())
+            }
+            .crossfade(true)
+            .build()
     }
 
     private fun scheduleWeatherWorker() {
@@ -106,4 +129,5 @@ class ForecastFmApp : Application() {
             request
         )
     }
+
 }
