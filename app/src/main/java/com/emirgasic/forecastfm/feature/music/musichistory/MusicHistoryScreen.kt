@@ -27,6 +27,7 @@ import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.music.musichistory.MusicHistoryEntryCard
 import com.emirgasic.forecastfm.data.repository.MusicHistoryRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -40,7 +41,7 @@ fun MusicHistoryScreen(
                 @Suppress("UNCHECKED_CAST")
                 return MusicHistoryViewModel(
                     tokenManager = tokenManager,
-                    musicHistoryRepository = MusicHistoryRepository()
+                    musicHistoryRepository = ServiceLocator.provideMusicHistoryRepository()
                 ) as T
             }
         }

@@ -1,5 +1,6 @@
 package com.emirgasic.forecastfm.network.place
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -7,7 +8,7 @@ data class PlaceResponse(
     val id: String,
     val name: String,
     val category: String,
-    val venueId: String? = null,
+    @SerialName("locationId") val venueId: String? = null, // <-- THE FIX
     val address: String? = null,
     val latitude: Double,
     val longitude: Double,

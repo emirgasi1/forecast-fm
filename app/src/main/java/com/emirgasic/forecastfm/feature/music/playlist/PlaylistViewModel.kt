@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
@@ -33,46 +34,37 @@ class PlaylistViewModel(
         viewModelScope.launch {
             _uiState.value = PlaylistUiState.Loading
             try {
-                val playlist = playlistRepository.getPlaylist(playlistId)
+                // 1. Try to load from Room first
+                var playlist = playlistRepository.getLocalPlaylistById(playlistId).firstOrNull()
 
+                if (playlist == null) {
+                    // 2. If not in Room, fetch from API
+                    playlist = playlistRepository.getPlaylist(playlistId)
+                }
+
+                // 3. Check for YouTube override (this still needs network)
                 var imageUrl = playlist.albumImageUrl
                 var songs = playlist.songs
 
                 val youtubePlaylistId = YouTubeUtils.extractPlaylistId(playlist.youtubeUrl)
-
                 if (youtubePlaylistId != null && youtubePlaylistId.isNotBlank()) {
                     val items = try {
                         youTubeApi.getPlaylistItems(youtubePlaylistId)
                     } catch (_: Exception) {
                         emptyList()
                     }
-
                     if (items.isNotEmpty()) {
                         songs = YouTubeMapper.playlistItemsToMusic(items)
-
                         if (imageUrl.isNullOrBlank()) {
-                            val thumbnail = items.firstOrNull()?.thumbnailUrl
-
-                            if (!thumbnail.isNullOrBlank()) {
-                                imageUrl = thumbnail
-                                try {
-                                    playlistRepository.updatePlaylistImage(playlistId, thumbnail)
-                                } catch (_: Exception) {
-                                    // Non-critical — image persistence failed
-                                }
-                            }
+                            imageUrl = items.firstOrNull()?.thumbnailUrl
                         }
                     }
                 }
 
-                val updatedPlaylist = playlist.copy(
-                    songs = songs,
-                    albumImageUrl = imageUrl
-                )
-
+                val updatedPlaylist = playlist.copy(songs = songs, albumImageUrl = imageUrl)
                 _uiState.value = PlaylistUiState.Success(updatedPlaylist)
 
-                // Load initial favorite state
+                // Load favorite state
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
                     val favorites = try {
@@ -86,9 +78,7 @@ class PlaylistViewModel(
                 loadSimilarPlaylists(playlist)
 
             } catch (e: Exception) {
-                _uiState.value = PlaylistUiState.Error(
-                    e.message ?: "Failed to load playlist"
-                )
+                _uiState.value = PlaylistUiState.Error(e.message ?: "Failed to load playlist")
             }
         }
     }

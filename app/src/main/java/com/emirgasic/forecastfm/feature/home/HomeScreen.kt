@@ -50,14 +50,9 @@ import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.SectionTitle
 import com.emirgasic.forecastfm.core.ui.components.common.WeatherCard
 import com.emirgasic.forecastfm.core.ui.components.home.PlaylistCard
-import com.emirgasic.forecastfm.core.ui.modifiers.pressScale
 import com.emirgasic.forecastfm.data.repository.HomeRepository
-import com.emirgasic.forecastfm.data.repository.LocationRepository
-import com.emirgasic.forecastfm.data.repository.PlaylistRepository
-import com.emirgasic.forecastfm.data.repository.WeatherRepository
 import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.feature.map.LocationManager
-import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -78,9 +73,9 @@ fun HomeScreen(
                     tokenManager = tokenManager,
                     onboardingPrefs = OnboardingPreferences(context),
                     homeRepository = HomeRepository(),
-                    locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED HERE
-                    weatherRepository = WeatherRepository(),
-                    playlistRepository = PlaylistRepository(PlaylistApi())
+                    locationRepository = ServiceLocator.provideLocationRepository(),
+                    weatherRepository = ServiceLocator.provideWeatherRepository(), // 👈 UPDATED
+                    playlistRepository = ServiceLocator.providePlaylistRepository()
                 ) as T
             }
         }

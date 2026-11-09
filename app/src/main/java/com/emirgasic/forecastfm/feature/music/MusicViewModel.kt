@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -70,6 +72,22 @@ class MusicViewModel(
     private val userMoods = MutableStateFlow<Set<String>>(emptySet())
     private val userWeather = MutableStateFlow<Set<String>>(emptySet())
 
+    init {
+        // 👈 Observe Room for Playlists instantly
+        playlistRepository.getLocalPlaylists()
+            .onEach { localPlaylists ->
+                _playlists.value = localPlaylists
+            }
+            .launchIn(viewModelScope)
+
+        // 👈 Observe Room for Music History instantly
+        musicHistoryRepository.getLocalHistory()
+            .onEach { localHistory ->
+                _musicHistory.value = localHistory
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun loadUserPreferences() {
         viewModelScope.launch {
             userGenres.value = onboardingPrefs.musicGenres.first()
@@ -82,17 +100,24 @@ class MusicViewModel(
         viewModelScope.launch {
             try {
                 val locations = locationRepository.getLocalLocations().first()
-                val location = locations.firstOrNull()
-                    ?: throw Exception("No locations available")
+                val location = locations.firstOrNull() ?: return@launch
 
-                val weatherData = weatherRepository.getWeather(
-                    location = location.name,
-                    latitude = location.latitude,
-                    longitude = location.longitude
-                )
+                // Try to get weather, but don't let it crash the whole flow
+                try {
+                    val weatherData = weatherRepository.getWeather(
+                        location = location.name,
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                    _weather.value = weatherData.weather
+                } catch (e: Exception) {
+                    // Offline and no cache: leave weather as null, but still load playlists
+                    android.util.Log.e("MusicDebug", "Weather failed offline", e)
+                }
 
-                _weather.value = weatherData.weather
-                _playlists.value = playlistRepository.getPlaylists()
+                // Load playlists from Room
+                playlistRepository.syncPlaylistsFromApi()
+
             } catch (_: Exception) {
             }
         }
@@ -149,8 +174,11 @@ class MusicViewModel(
                     playlistWeather = playlist.weather
                 )
             }
+
+            val playlistsToRank = if (matching.isEmpty()) playlists else matching
+
             RecommendationScorer.rankPlaylists(
-                allPlaylists = matching,
+                allPlaylists = playlistsToRank,
                 userGenres = genres,
                 userMoods = moods,
                 userWeather = weatherPrefs,
@@ -251,7 +279,8 @@ class MusicViewModel(
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
-                    _musicHistory.value = musicHistoryRepository.getMusicHistory(userId)
+                    // 👈 Sync API to Room (UI updates automatically via init block)
+                    musicHistoryRepository.syncHistoryFromApi(userId)
                 }
             } catch (_: Exception) {
             }

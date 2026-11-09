@@ -1,5 +1,9 @@
 package com.emirgasic.forecastfm.data.model
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class Outfit(
     val id: String,
     val userId: String = "",

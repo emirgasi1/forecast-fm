@@ -50,7 +50,16 @@ fun StyleDetailScreen(
     navController: NavController,
     outfitId: String?,
     modifier: Modifier = Modifier,
-    viewModel: StyleDetailViewModel = viewModel()
+    viewModel: StyleDetailViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return StyleDetailViewModel(
+                    outfitRepository = com.emirgasic.forecastfm.di.ServiceLocator.provideOutfitRepository()
+                ) as T
+            }
+        }
+    )
 ) {
     val context = LocalContext.current
     val outfit by viewModel.outfit.collectAsState()

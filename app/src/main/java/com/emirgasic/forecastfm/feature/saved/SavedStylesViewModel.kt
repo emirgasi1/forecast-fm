@@ -6,7 +6,6 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
 import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
-import com.emirgasic.forecastfm.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +29,8 @@ class SavedStylesViewModel(
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
+                    // For now, we still fetch the full details from the network,
+                    // but the toggle and ID list is handled by Room.
                     val responses = savedOutfitRepository.getSavedOutfits(userId)
                     _savedStyles.value = responses.map { response ->
                         val fullImageUrl = resolveImageUrlOr(response.imageUrl, response.imageUrl)
@@ -61,10 +62,10 @@ class SavedStylesViewModel(
             try {
                 val userId = tokenManager.getUserId().first() ?: return@launch
 
-                savedOutfitRepository.unsaveOutfit(outfitId, userId)
+                savedOutfitRepository.toggleSaveOutfit(outfitId, userId, true)
+
                 _savedStyles.value = _savedStyles.value.filter { it.id != outfitId }
             } catch (_: Exception) {
-                // Silent failure
             }
         }
     }

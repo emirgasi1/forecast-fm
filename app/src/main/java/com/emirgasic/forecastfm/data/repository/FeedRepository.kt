@@ -2,14 +2,19 @@ package com.emirgasic.forecastfm.data.repository
 
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
+import com.emirgasic.forecastfm.data.local.daos.feed.FeedDao
+import com.emirgasic.forecastfm.data.local.entities.feed.PostEntity
 import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.model.User
 import com.emirgasic.forecastfm.data.model.Weather
 import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.weather.WeatherApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 class FeedRepository(
     private val userRepository: UserRepository,
@@ -17,8 +22,43 @@ class FeedRepository(
     private val locationRepository: LocationRepository = ServiceLocator.provideLocationRepository(),
     private val playlistRepository: PlaylistRepository,
     private val commentRepository: CommentRepository,
-    private val weatherApi: WeatherApi = WeatherApi()
+    private val weatherApi: WeatherApi = WeatherApi(),
+    private val feedDao: FeedDao? = null // 👈 Injected Room DAO
 ) {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    // ==========================================
+    // 1. ROOM / LOCAL FIRST FUNCTIONS
+    // ==========================================
+
+    fun getLocalFeed(): Flow<List<FeedPost>> {
+        return feedDao?.getCachedPosts()?.map { entities ->
+            entities.mapNotNull {
+                try {
+                    json.decodeFromString<FeedPost>(it.jsonData)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        } ?: kotlinx.coroutines.flow.flowOf(emptyList())
+    }
+
+    suspend fun syncFeedFromApi(userId: String): List<FeedPost> = withContext(Dispatchers.IO) {
+        val posts = getPosts(userId)
+
+        val entities = posts.map { post ->
+            PostEntity(
+                id = post.id,
+                jsonData = json.encodeToString(FeedPost.serializer(), post)
+            )
+        }
+
+        feedDao?.clearPosts()
+        feedDao?.insertPosts(entities)
+
+        posts
+    }
+
 
     suspend fun getPosts(userId: String): List<FeedPost> = withContext(Dispatchers.IO) {
         val userResponse = userRepository.getUser(userId)
@@ -40,14 +80,14 @@ class FeedRepository(
 
         val postResponses = postRepository.getPosts()
 
-        // FIX 1 & 2: Get the first location from Room Flow
+        // Get the first location from Room Flow
         val locations = locationRepository.getLocalLocations().first()
         val location = locations.firstOrNull()
 
-        val allPlaylists = playlistRepository.getPlaylists()
+        val allPlaylists = playlistRepository.getLocalPlaylists().first()
 
         // Fetch weather ONCE for the feed, not per post.
-        val weather = if (location != null) { // FIX 3: name, lat, long now exist
+        val weather = if (location != null) {
             try {
                 val weatherData = weatherApi.getWeather(
                     location = location.name,
@@ -96,6 +136,7 @@ class FeedRepository(
             )
         }
     }
+
 
     private fun getDefaultWeather(): Weather {
         return Weather(

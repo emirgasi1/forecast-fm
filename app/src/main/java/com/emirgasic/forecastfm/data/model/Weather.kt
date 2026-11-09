@@ -1,6 +1,8 @@
 package com.emirgasic.forecastfm.data.model
 
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Weather(
     val location: String,
     val temperature: String,

@@ -1,11 +1,12 @@
 package com.emirgasic.forecastfm.data.repository
 
-import com.emirgasic.forecastfm.data.local.daos.LocationDao
-import com.emirgasic.forecastfm.data.local.entities.LocationEntity
+import com.emirgasic.forecastfm.data.local.daos.location.LocationDao
+import com.emirgasic.forecastfm.data.local.entities.location.LocationEntity
 import com.emirgasic.forecastfm.network.location.LocationApi
 import com.emirgasic.forecastfm.network.location.LocationResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -15,7 +16,7 @@ class LocationRepository(
 ) {
 
     fun getLocalLocations(): Flow<List<LocationResponse>> {
-        return locationDao.getVenuesOnly().map { entities ->
+        return locationDao.getAllLocations().map { entities ->
             entities.map { entity ->
                 LocationResponse(
                     id = entity.id,
@@ -51,13 +52,22 @@ class LocationRepository(
             locationDao.clearLocations()
             locationDao.insertLocations(entities)
         } catch (e: Exception) {
-            // If no internet, it silently fails and keeps the Room data
+            // Offline, keep Room data
         }
     }
 
-    // 3. Fallback for the specific PlaceInfo screen (reads from API directly for now)
+    // 👈 FIXED: Read from Room first!
     suspend fun getLocationById(id: String): LocationResponse? {
         return try {
+            // 1. Try to find in Room
+            val localLocations = getLocalLocations().first()
+            val localLocation = localLocations.firstOrNull { it.id == id }
+
+            if (localLocation != null) {
+                return localLocation
+            }
+
+            // 2. If not in Room, try API (fallback)
             api.getLocations().firstOrNull { it.id == id }
         } catch (e: Exception) {
             null

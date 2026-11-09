@@ -31,6 +31,7 @@ import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.music.MusicPlaylistCard
 import com.emirgasic.forecastfm.data.repository.PlaylistRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 
 @Composable
@@ -44,7 +45,7 @@ fun SavedPlaylistsScreen(
                 @Suppress("UNCHECKED_CAST")
                 return SavedPlaylistsViewModel(
                     tokenManager = tokenManager,
-                    playlistRepository = PlaylistRepository(PlaylistApi())
+                    playlistRepository = ServiceLocator.providePlaylistRepository()
                 ) as T
             }
         }

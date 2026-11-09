@@ -59,7 +59,7 @@ fun WeatherScreen(
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return WeatherViewModel(
-                    repository = WeatherRepository()
+                    repository = ServiceLocator.provideWeatherRepository()
                 ) as T
             }
         }

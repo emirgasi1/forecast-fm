@@ -71,7 +71,7 @@ fun PlaylistScreen(
                 val playlistApi = PlaylistApi()
                 return PlaylistViewModel(
                     tokenManager = tokenManager,
-                    playlistRepository = PlaylistRepository(playlistApi),
+                    playlistRepository = com.emirgasic.forecastfm.di.ServiceLocator.providePlaylistRepository(),
                     youTubeApi = YouTubeApi()
                 ) as T
             }

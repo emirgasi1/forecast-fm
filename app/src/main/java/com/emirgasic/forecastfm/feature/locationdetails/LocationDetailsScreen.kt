@@ -45,10 +45,10 @@ fun LocationDetailsScreen(
                 @Suppress("UNCHECKED_CAST")
                 return LocationDetailsViewModel(
                     locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED
-                    weatherRepository = WeatherRepository(),
-                    playlistRepository = PlaylistRepository(PlaylistApi()),
+                    weatherRepository = ServiceLocator.provideWeatherRepository(),
+                    playlistRepository = ServiceLocator.providePlaylistRepository(),
                     outfitRepository = OutfitRepository(),
-                    placeRepository = PlaceRepository()
+                    placeRepository = ServiceLocator.providePlaceRepository()
                 ) as T
             }
         }

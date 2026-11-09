@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +32,7 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.feed.FeedPostCard
-import com.emirgasic.forecastfm.data.repository.SavedPostRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 
 @Composable
 fun SavedPostsScreen(
@@ -47,7 +45,7 @@ fun SavedPostsScreen(
                 @Suppress("UNCHECKED_CAST")
                 return SavedPostsViewModel(
                     tokenManager = tokenManager,
-                    savedPostRepository = SavedPostRepository()
+                    savedPostRepository = ServiceLocator.provideSavedPostRepository() // 👈 UPDATED
                 ) as T
             }
         }
@@ -55,9 +53,11 @@ fun SavedPostsScreen(
 ) {
     val savedPosts by viewModel.savedPosts.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
     LaunchedEffect(Unit) {
-        viewModel.loadSavedPosts()   // or loadSavedStyles() or loadSavedPosts()
+        viewModel.loadSavedPosts()
     }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -65,43 +65,26 @@ fun SavedPostsScreen(
             .padding(top = 60.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 LoadingScreen()
             }
         } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item {
                     Text(
                         text = "Back",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
-                        ),
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .clickable {
-                                navController.popBackStack()
-                            }
+                        modifier = Modifier.padding(vertical = 8.dp).clickable { navController.popBackStack() }
                     )
                 }
-
                 item {
                     Text(
                         text = "Saved Posts",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
+                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 32.sp, fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-
                 if (savedPosts.isEmpty()) {
                     item {
                         Text(
@@ -129,12 +112,8 @@ fun SavedPostsScreen(
                             isLiked = false,
                             isSaved = true,
                             onLikeClick = {},
-                            onCommentClick = {
-                                navController.navigate(Routes.commentsRoute(post.id))
-                            },
-                            onSaveClick = {
-                                viewModel.unsavePost(post.id)
-                            }
+                            onCommentClick = { navController.navigate(Routes.commentsRoute(post.id)) },
+                            onSaveClick = { viewModel.unsavePost(post.id) }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

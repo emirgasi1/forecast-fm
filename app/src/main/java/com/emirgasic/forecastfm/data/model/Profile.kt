@@ -1,5 +1,8 @@
 package com.emirgasic.forecastfm.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Profile(
     val username: String,
     val bio: String,

@@ -3,6 +3,7 @@ package com.emirgasic.forecastfm.feature.feed
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.data.model.FeedPost
 import com.emirgasic.forecastfm.data.repository.FeedRepository
 import com.emirgasic.forecastfm.data.repository.LikeRepository
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class FeedViewModel(
@@ -33,32 +36,55 @@ class FeedViewModel(
     private val _uiState = MutableStateFlow<FeedUiState>(FeedUiState.Loading)
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
 
+    init {
+        // Observe Room for saved posts
+        savedPostRepository.getSavedPostIds()
+            .onEach { ids ->
+                _savedPosts.value = ids.toSet()
+            }
+            .launchIn(viewModelScope)
+
+        // 👈 Observe Room for Feed Posts
+        feedRepository.getLocalFeed()
+            .onEach { localPosts ->
+                if (localPosts.isNotEmpty()) {
+                    _uiState.value = FeedUiState.Success(localPosts)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun loadFeed() {
         viewModelScope.launch {
-            _uiState.value = FeedUiState.Loading
+            // Only show loading spinner if we don't have cached posts
+            if ((_uiState.value as? FeedUiState.Success)?.posts.isNullOrEmpty()) {
+                _uiState.value = FeedUiState.Loading
+            }
 
             try {
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                val posts = feedRepository.getPosts(userId)
+                // 👈 Sync network to Room (Room observer updates the UI)
+                feedRepository.syncFeedFromApi(userId)
 
+                // Fetch liked posts state (can be optimized later)
+                val posts = (_uiState.value as? FeedUiState.Success)?.posts ?: emptyList()
                 val likedSet = mutableSetOf<String>()
                 posts.forEach { post ->
                     try {
                         if (likeRepository.isPostLiked(post.id, userId)) {
                             likedSet.add(post.id)
                         }
-                    } catch (_: Exception) {
-                    }
+                    } catch (_: Exception) {}
                 }
                 _likedPosts.value = likedSet
 
-                _uiState.value = FeedUiState.Success(posts)
             } catch (e: Exception) {
-                _uiState.value = FeedUiState.Error(
-                    e.message ?: "Failed to load feed"
-                )
+                // If offline and no cache exists, show error
+                if ((_uiState.value as? FeedUiState.Success)?.posts.isNullOrEmpty()) {
+                    _uiState.value = FeedUiState.Error(e.message ?: "Failed to load feed")
+                }
             }
         }
     }
@@ -71,7 +97,6 @@ class FeedViewModel(
 
                 val wasLiked = _likedPosts.value.contains(postId)
 
-                // Optimistic update
                 _likedPosts.value = if (wasLiked) {
                     _likedPosts.value - postId
                 } else {
@@ -82,9 +107,7 @@ class FeedViewModel(
                 if (currentState is FeedUiState.Success) {
                     val updatedPosts = currentState.posts.map { post ->
                         if (post.id == postId) {
-                            post.copy(
-                                likes = if (wasLiked) post.likes - 1 else post.likes + 1
-                            )
+                            post.copy(likes = if (wasLiked) post.likes - 1 else post.likes + 1)
                         } else post
                     }
                     _uiState.value = FeedUiState.Success(updatedPosts)
@@ -105,22 +128,17 @@ class FeedViewModel(
     fun savePost(postId: String) {
         viewModelScope.launch {
             try {
-                val userId = tokenManager.getUserId().first()
-                    ?: throw Exception("User not logged in")
-
-                savedPostRepository.savePost(postId, userId)
-                _savedPosts.value = _savedPosts.value + postId
-            } catch (_: Exception) {
-            }
+                val userId = tokenManager.getUserId().first() ?: throw Exception("User not logged in")
+                val isCurrentlySaved = _savedPosts.value.contains(postId)
+                savedPostRepository.toggleSavePost(postId, userId, isCurrentlySaved)
+            } catch (_: Exception) {}
         }
     }
 
     fun savePlaylistFromPost(postId: String) {
         viewModelScope.launch {
             try {
-                val userId = tokenManager.getUserId().first()
-                    ?: throw Exception("User not logged in")
-
+                val userId = tokenManager.getUserId().first() ?: throw Exception("User not logged in")
                 val state = _uiState.value
                 if (state is FeedUiState.Success) {
                     val post = state.posts.find { it.id == postId }
@@ -128,29 +146,24 @@ class FeedViewModel(
                         playlistRepository.favoritePlaylist(userId, playlist.id)
                     }
                 }
-            } catch (_: Exception) {
-                // Silent failure
-            }
+            } catch (_: Exception) {}
         }
     }
 
     fun saveStyleFromPost(postId: String) {
         viewModelScope.launch {
             try {
-                val userId = tokenManager.getUserId().first()
-                    ?: throw Exception("User not logged in")
-
+                val userId = tokenManager.getUserId().first() ?: throw Exception("User not logged in")
                 val state = _uiState.value
                 if (state is FeedUiState.Success) {
                     val post = state.posts.find { it.id == postId }
                     val outfitId = post?.outfitId
-                    if (outfitId.isNullOrBlank()) {
-                        return@launch
-                    }
-                    savedOutfitRepository.saveOutfit(outfitId, userId)
+                    if (outfitId.isNullOrBlank()) return@launch
+
+                    val isCurrentlySaved = false
+                    savedOutfitRepository.toggleSaveOutfit(outfitId, userId, isCurrentlySaved)
                 }
-            } catch (_: Exception) {
-            }
+            } catch (_: Exception) {}
         }
     }
 }

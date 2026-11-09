@@ -27,6 +27,7 @@ import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecom
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.PlaceRecommendationCard
 import com.emirgasic.forecastfm.core.ui.components.locationdetails.locationrecommendation.WeatherSelector
 import com.emirgasic.forecastfm.data.repository.PlaceRecommendationRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 
 @Composable
 fun PlaceRecommendationScreen(
@@ -38,7 +39,7 @@ fun PlaceRecommendationScreen(
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return PlaceRecommendationViewModel(
-                    repository = PlaceRecommendationRepository()
+                    placeRepository = ServiceLocator.providePlaceRepository()
                 ) as T
             }
         }
@@ -157,10 +158,10 @@ fun PlaceRecommendationScreen(
                     PlaceRecommendationCard(
                         name = place.name,
                         category = place.category,
-                        location = place.location,
-                        description = place.description,
+                        location = "Sarajevo",
+                        description = place.description?: "No description available",
                         imageUrl = place.imageUrl,
-                        rating = place.rating,
+                        rating = 4.5,
                         onClick = {
                             navController.navigate(Routes.placeInfoRoute(place.id))
                         }

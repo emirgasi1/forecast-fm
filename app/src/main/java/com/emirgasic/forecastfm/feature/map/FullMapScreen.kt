@@ -84,7 +84,9 @@ fun FullMapScreen(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return PlaceSearchViewModel(repository = PlaceRepository()) as T
+                return PlaceSearchViewModel(
+                    repository = ServiceLocator.providePlaceRepository()
+                ) as T
             }
         }
     )
@@ -96,7 +98,7 @@ fun FullMapScreen(
                 @Suppress("UNCHECKED_CAST")
                 return FullMapViewModel(
                     locationRepository = ServiceLocator.provideLocationRepository(),
-                    placeRepository = PlaceRepository(),
+                    placeRepository = ServiceLocator.providePlaceRepository(),
                     busStationRepository = BusStationRepository()
                 ) as T
             }
@@ -134,7 +136,6 @@ fun FullMapScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.loadPlaces()
         viewModel.loadBusStations()
         if (!hasLocationPermission) {
             locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))

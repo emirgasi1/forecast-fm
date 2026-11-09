@@ -60,8 +60,8 @@ fun PlaceInfoScreen(
                 @Suppress("UNCHECKED_CAST")
                 return PlaceInfoViewModel(
                     tokenManager = tokenManager,
-                    placeRepository = PlaceRepository(),
-                    savedPlaceRepository = SavedPlaceRepository(),
+                    placeRepository = ServiceLocator.providePlaceRepository(),
+                    savedPlaceRepository = ServiceLocator.provideSavedPlaceRepository(),
                     locationRepository = ServiceLocator.provideLocationRepository()
                 ) as T
             }
@@ -142,45 +142,40 @@ fun PlaceInfoScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        PlaceInfoAbout(
+                      /*  PlaceInfoAbout(
                             description = item.description ?: "No description available."
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
+                        )*/
 
                         WeatherReadingsGrid(
-                            readings = listOfNotNull(
+                            readings = listOf(
                                 WeatherReading(
                                     label = "Category",
                                     value = item.category.replaceFirstChar { it.uppercase() },
                                     icon = Icons.Default.Category
                                 ),
-                                item.address?.takeIf { it.isNotBlank() }?.let {
-                                    WeatherReading(
-                                        label = "Address",
-                                        value = it,
-                                        icon = Icons.Default.LocationOn
-                                    )
-                                },
-                                item.openingHours?.takeIf { it.isNotBlank() }?.let {
-                                    WeatherReading(
-                                        label = "Opening Hours",
-                                        value = it,
-                                        icon = Icons.Default.AccessTime
-                                    )
-                                },
+                                WeatherReading(
+                                    label = "Address",
+                                    value = if (!item.address.isNullOrBlank()) item.address else "No information available",
+                                    icon = Icons.Default.LocationOn
+                                ),
+                                WeatherReading(
+                                    label = "Opening Hours",
+                                    value = if (!item.openingHours.isNullOrBlank()) item.openingHours else "No information available",
+                                    icon = Icons.Default.AccessTime
+                                ),
                                 if (item.outdoorSeating) {
                                     WeatherReading(
                                         label = "Seating",
                                         value = "Outdoor available",
                                         icon = Icons.Default.WbSunny
                                     )
-                                } else null,
-                                WeatherReading(
-                                    label = "Coordinates",
-                                    value = "${"%.4f".format(item.latitude)}, ${"%.4f".format(item.longitude)}",
-                                    icon = Icons.Default.Place
-                                )
+                                } else {
+                                    WeatherReading(
+                                        label = "Seating",
+                                        value = "Indoor only",
+                                        icon = Icons.Default.WbSunny
+                                    )
+                                }
                             )
                         )
                     }

@@ -2,16 +2,23 @@ package com.emirgasic.forecastfm.data.repository
 
 import android.content.ContentResolver
 import com.emirgasic.forecastfm.core.utils.resolveImageUrlOr
+import com.emirgasic.forecastfm.data.local.datastore.ProfileCacheManager
 import com.emirgasic.forecastfm.data.model.Profile
 import com.emirgasic.forecastfm.data.model.ProfilePost
-import com.emirgasic.forecastfm.network.ApiClient
 import com.emirgasic.forecastfm.network.profile.ProfileApi
 import com.emirgasic.forecastfm.network.profile.UpdateProfileRequest
 
 class ProfileRepository(
-    private val profileApi: ProfileApi
+    private val profileApi: ProfileApi,
+    private val cacheManager: ProfileCacheManager? = null
 ) {
 
+    // 1. Read from DataStore (Instant)
+    suspend fun getLocalProfile(): Profile? {
+        return cacheManager?.getCachedProfile()
+    }
+
+    // 2. Fetch from Network & Update Cache
     suspend fun getProfile(userId: String): Profile {
         val response = profileApi.getProfile(userId)
 
@@ -26,7 +33,7 @@ class ProfileRepository(
             )
         }
 
-        return Profile(
+        val profile = Profile(
             username = response.username,
             bio = response.bio ?: "",
             profileImage = resolveImageUrlOr(
@@ -41,6 +48,11 @@ class ProfileRepository(
             },
             profilePosts = profilePosts
         )
+
+        // Save to DataStore
+        cacheManager?.saveProfile(profile)
+
+        return profile
     }
 
     suspend fun updateProfile(

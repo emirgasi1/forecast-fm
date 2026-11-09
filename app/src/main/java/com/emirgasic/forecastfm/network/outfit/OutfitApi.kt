@@ -31,7 +31,11 @@ class OutfitApi {
             setBody(emptyMap<String, String>())
         }
     }
-
+    suspend fun getGroupedOutfits(): Map<String, List<OutfitResponse>> {
+        return ApiClient.client
+            .get("${ApiClient.baseUrl()}/api/outfits/grouped")
+            .body()
+    }
     suspend fun saveOutfit(outfitId: String, userId: String) {
         ApiClient.client.post("${ApiClient.baseUrl()}/api/outfits/$outfitId/save") {
             header("User-Id", userId)

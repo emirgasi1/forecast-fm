@@ -75,15 +75,15 @@ fun MusicScreen(
                 val userApi = UserApi()
                 val userRepository = UserRepository(userApi)
                 val playlistApi = PlaylistApi()
-                val playlistRepository = PlaylistRepository(playlistApi)
+                val playlistRepository = ServiceLocator.providePlaylistRepository()
 
                 return MusicViewModel(
                     tokenManager = tokenManager,
                     onboardingPrefs = OnboardingPreferences(context),
                     playlistRepository = playlistRepository,
                     locationRepository = ServiceLocator.provideLocationRepository(), // 👈 FIXED
-                    weatherRepository = WeatherRepository(),
-                    musicHistoryRepository = MusicHistoryRepository(),
+                    weatherRepository = ServiceLocator.provideWeatherRepository(),
+                    musicHistoryRepository = ServiceLocator.provideMusicHistoryRepository(),
                     userRepository = userRepository,
                     youTubeRepository = YouTubeRepository()
                 ) as T

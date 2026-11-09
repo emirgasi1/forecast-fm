@@ -100,6 +100,16 @@ fun SavedHubScreen(
                     navController.navigate(Routes.SavedStyles)
                 }
             )
+
+
+            SavedOptionCard(
+                icon = R.drawable.mappin, // Or R.drawable.place, whatever your location icon is
+                title = "Saved Places",
+                description = "View all venues you've saved",
+                onClick = {
+                    navController.navigate(Routes.SavedPlaces)
+                }
+            )
         }
     }
 }

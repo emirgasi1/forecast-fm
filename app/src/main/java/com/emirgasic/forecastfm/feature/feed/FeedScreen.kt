@@ -23,12 +23,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext // 👈 Add this import
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.emirgasic.forecastfm.ForecastFmApp // 👈 Add this import
 import com.emirgasic.forecastfm.R
 import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
@@ -45,6 +47,7 @@ import com.emirgasic.forecastfm.data.repository.PostRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedPostRepository
 import com.emirgasic.forecastfm.data.repository.UserRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.comment.CommentApi
 import com.emirgasic.forecastfm.network.playlist.PlaylistApi
 import com.emirgasic.forecastfm.network.post.PostApi
@@ -55,8 +58,14 @@ fun FeedScreen(
     mainNavController: NavController,
     rootNavController: NavController,
     tokenManager: TokenManager,
-    modifier: Modifier = Modifier,
-    viewModel: FeedViewModel = viewModel(
+    modifier: Modifier = Modifier
+) {
+    // 👈 1. Get the context OUTSIDE the viewModel factory
+    val context = LocalContext.current
+    val app = context.applicationContext as ForecastFmApp
+
+    // 👈 2. Define the viewModel using the DAO from the app context
+    val viewModel: FeedViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
@@ -65,7 +74,7 @@ fun FeedScreen(
                 val postApi = PostApi()
                 val postRepository = PostRepository(postApi)
                 val playlistApi = PlaylistApi()
-                val playlistRepository = PlaylistRepository(playlistApi)
+                val playlistRepository = ServiceLocator.providePlaylistRepository()
                 val commentApi = CommentApi()
                 val commentRepository = CommentRepository(commentApi, userRepository)
 
@@ -75,18 +84,18 @@ fun FeedScreen(
                         userRepository = userRepository,
                         postRepository = postRepository,
                         playlistRepository = playlistRepository,
-                        commentRepository = commentRepository
+                        commentRepository = commentRepository,
+                        feedDao = app.database.feedDao() // 👈 Use the DAO directly
                     ),
                     likeRepository = LikeRepository(),
-                    savedPostRepository = SavedPostRepository(),
-                    savedOutfitRepository = SavedOutfitRepository(),
-                    outfitRepository = OutfitRepository(),
+                    savedPostRepository = ServiceLocator.provideSavedPostRepository(),
+                    savedOutfitRepository = ServiceLocator.provideSavedOutfitRepository(),
+                    outfitRepository = ServiceLocator.provideOutfitRepository(),
                     playlistRepository = playlistRepository
                 ) as T
             }
         }
     )
-) {
 
     val uiState by viewModel.uiState.collectAsState()
     val likedPosts by viewModel.likedPosts.collectAsState()

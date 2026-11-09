@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class StyleDetailViewModel : ViewModel() {
-
-    private val outfitRepository = OutfitRepository()
+class StyleDetailViewModel(
+    private val outfitRepository: OutfitRepository // 👈 Inject this instead of creating it inside
+) : ViewModel() {
 
     private val _outfit = MutableStateFlow<Outfit?>(null)
     val outfit: StateFlow<Outfit?> = _outfit.asStateFlow()

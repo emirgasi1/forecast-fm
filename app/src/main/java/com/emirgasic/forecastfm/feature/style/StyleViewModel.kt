@@ -3,19 +3,25 @@ package com.emirgasic.forecastfm.feature.style
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.emirgasic.forecastfm.core.datastore.TokenManager
+import com.emirgasic.forecastfm.data.local.datastore.WeatherCacheManager
+import com.emirgasic.forecastfm.data.model.Outfit
 import com.emirgasic.forecastfm.data.model.Style
+import com.emirgasic.forecastfm.data.model.WeatherCondition
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class StyleViewModel(
     private val tokenManager: TokenManager,
     private val outfitRepository: OutfitRepository,
-    private val savedOutfitRepository: SavedOutfitRepository
+    private val savedOutfitRepository: SavedOutfitRepository,
+    private val weatherCacheManager: WeatherCacheManager
 ) : ViewModel() {
 
     private val _style = MutableStateFlow<Style?>(null)
@@ -30,19 +36,41 @@ class StyleViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _currentCondition = MutableStateFlow(WeatherCondition.UNKNOWN)
+    val currentCondition: StateFlow<WeatherCondition> = _currentCondition.asStateFlow()
+
+    init {
+        savedOutfitRepository.getSavedOutfitIds()
+            .onEach { ids ->
+                _savedOutfitIds.value = ids.toSet()
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun loadStyle() {
         viewModelScope.launch {
-            // Only show the full-screen loading spinner if we don't have data yet.
-            // If we are just refreshing, it happens silently in the background.
             if (_style.value == null) {
                 _isLoading.value = true
             }
             _error.value = null
 
             try {
-                val outfits = outfitRepository.getTrendingOutfits()
-                android.util.Log.d("ImageDebug", "Loading URL: ${outfits.firstOrNull()?.imageUrl}")
-                _style.value = Style(outfits = outfits)
+                val weatherData = weatherCacheManager.getCachedWeatherData()
+                val condition = WeatherCondition.from(weatherData?.weather?.condition)
+                _currentCondition.value = condition
+
+                val allOutfits = outfitRepository.getGroupedOutfits().values.flatten()
+
+                val filteredOutfits = if (condition.bucket == WeatherCondition.Bucket.ALL) {
+                    allOutfits
+                } else {
+                    val matches = allOutfits.filter {
+                        WeatherCondition.from(it.weatherCondition).bucket == condition.bucket
+                    }
+                    matches.ifEmpty { allOutfits }
+                }
+
+                _style.value = Style(outfits = filteredOutfits)
             } catch (e: Exception) {
                 _error.value = e.message
             }
@@ -51,36 +79,32 @@ class StyleViewModel(
         }
     }
 
-    fun loadSavedOutfits() {
-        viewModelScope.launch {
-            try {
-                val userId = tokenManager.getUserId().first()
-                if (userId != null) {
-                    val savedOutfits = savedOutfitRepository.getSavedOutfits(userId)
-                    _savedOutfitIds.value = savedOutfits.map { it.id }.toSet()
-                }
-            } catch (_: Exception) {
-                // Silent failure
-            }
-        }
-    }
-
     fun toggleSaveOutfit(outfitId: String) {
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first() ?: return@launch
-
                 val isSaved = _savedOutfitIds.value.contains(outfitId)
 
-                if (isSaved) {
-                    savedOutfitRepository.unsaveOutfit(outfitId, userId)
-                    _savedOutfitIds.value = _savedOutfitIds.value - outfitId
-                } else {
-                    savedOutfitRepository.saveOutfit(outfitId, userId)
-                    _savedOutfitIds.value = _savedOutfitIds.value + outfitId
+                // 1. Update the UI instantly
+                savedOutfitRepository.toggleSaveOutfit(outfitId, userId, isSaved)
+
+                // 2. If we are liking it (not un-liking), increment the like count locally
+                if (!isSaved) {
+                    val currentOutfits = _style.value?.outfits ?: return@launch
+                    val updatedOutfits = currentOutfits.map { outfit ->
+                        if (outfit.id == outfitId) {
+                            outfit.copy(likes = outfit.likes + 1)
+                        } else {
+                            outfit
+                        }
+                    }
+                    _style.value = _style.value?.copy(outfits = updatedOutfits)
+
+                    // 3. Tell the backend to increment the like
+                    outfitRepository.likeOutfit(outfitId)
                 }
             } catch (_: Exception) {
-                // Silent failure — state unchanged
+                // Silent fail
             }
         }
     }
@@ -91,7 +115,6 @@ class StyleViewModel(
                 outfitRepository.likeOutfit(outfitId)
                 loadStyle()
             } catch (_: Exception) {
-                // Silent failure
             }
         }
     }

@@ -32,6 +32,7 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 
 @Composable
 fun SavedStylesScreen(
@@ -44,7 +45,7 @@ fun SavedStylesScreen(
                 @Suppress("UNCHECKED_CAST")
                 return SavedStylesViewModel(
                     tokenManager = tokenManager,
-                    savedOutfitRepository = SavedOutfitRepository()
+                    savedOutfitRepository = ServiceLocator.provideSavedOutfitRepository()
                 ) as T
             }
         }

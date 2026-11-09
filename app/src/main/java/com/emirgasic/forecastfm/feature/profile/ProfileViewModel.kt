@@ -20,18 +20,33 @@ class ProfileViewModel(
 
     fun loadProfile() {
         viewModelScope.launch {
-            _uiState.value = ProfileUiState.Loading
+            // 1. Try to load from cache first (DataStore)
+            val cachedProfile = profileRepository.getLocalProfile()
+            if (cachedProfile != null) {
+                _uiState.value = ProfileUiState.Success(cachedProfile)
+                // Note: We do NOT set _uiState to Loading if we have cached data,
+                // so the UI shows the old data instantly while refreshing in the background.
+            } else {
+                // If there's no cache (first launch), show the loading spinner
+                _uiState.value = ProfileUiState.Loading
+            }
 
+            // 2. Fetch fresh data from the network
             try {
                 val userId = tokenManager.getUserId().first()
                     ?: throw Exception("User not logged in")
 
-                val profile = profileRepository.getProfile(userId)
-                _uiState.value = ProfileUiState.Success(profile)
+                val networkProfile = profileRepository.getProfile(userId)
+                _uiState.value = ProfileUiState.Success(networkProfile)
+
             } catch (e: Exception) {
-                _uiState.value = ProfileUiState.Error(
-                    e.message ?: "Failed to load profile"
-                )
+                // If network fails, but we have a cached profile, just keep showing the cache.
+                // Only show an error if the screen is completely empty.
+                if (cachedProfile == null) {
+                    _uiState.value = ProfileUiState.Error(
+                        e.message ?: "Failed to load profile"
+                    )
+                }
             }
         }
     }

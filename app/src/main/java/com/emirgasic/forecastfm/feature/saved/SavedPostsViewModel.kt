@@ -28,10 +28,9 @@ class SavedPostsViewModel(
             try {
                 val userId = tokenManager.getUserId().first()
                 if (userId != null) {
-                    _savedPosts.value = savedPostRepository.getSavedPosts(userId)
+                    _savedPosts.value = savedPostRepository.getSavedPostDetails(userId)
                 }
             } catch (_: Exception) {
-                // Silent failure
             }
             _isLoading.value = false
         }
@@ -41,11 +40,10 @@ class SavedPostsViewModel(
         viewModelScope.launch {
             try {
                 val userId = tokenManager.getUserId().first() ?: return@launch
+                savedPostRepository.toggleSavePost(postId, userId, true)
 
-                savedPostRepository.unsavePost(postId, userId)
                 _savedPosts.value = _savedPosts.value.filter { it.id != postId }
             } catch (_: Exception) {
-                // Silent failure
             }
         }
     }

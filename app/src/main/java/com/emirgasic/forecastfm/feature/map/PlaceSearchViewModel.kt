@@ -9,6 +9,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class PlaceSearchViewModel(
@@ -28,6 +30,20 @@ class PlaceSearchViewModel(
     val error: StateFlow<String?> = _error.asStateFlow()
 
     private var searchJob: Job? = null
+    private var allLocalPlaces: List<Place> = emptyList()
+
+    init {
+        // 👈 Observe Room continuously in the background
+        repository.getLocalPlaces()
+            .onEach { places ->
+                allLocalPlaces = places
+                // If there's already a query, re-filter the list
+                if (_query.value.isNotBlank()) {
+                    performLocalSearch(_query.value)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun updateQuery(value: String) {
         _query.value = value
@@ -41,19 +57,32 @@ class PlaceSearchViewModel(
         }
 
         searchJob = viewModelScope.launch {
-            delay(300)
+            // Add a tiny debounce so we don't filter on every single keystroke instantly
+            delay(200)
             _isLoading.value = true
             _error.value = null
 
-            try {
-                _results.value = repository.searchPlaces(value)
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Search failed"
-                _results.value = emptyList()
-            } finally {
-                _isLoading.value = false
-            }
+            performLocalSearch(value)
+
+            _isLoading.value = false
         }
+    }
+
+    private fun performLocalSearch(query: String) {
+        // If Room is somehow completely empty (e.g., first launch offline), show an error
+        if (allLocalPlaces.isEmpty()) {
+            _error.value = "No offline data available"
+            _results.value = emptyList()
+            return
+        }
+
+        // 👈 Instant local search
+        val filtered = allLocalPlaces.filter { place ->
+            place.name.contains(query, ignoreCase = true) ||
+                    place.category.contains(query, ignoreCase = true) ||
+                    place.address?.contains(query, ignoreCase = true) == true
+        }
+        _results.value = filtered.take(50) // Limit to 50 results for the UI
     }
 
     fun clear() {

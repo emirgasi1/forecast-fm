@@ -1,4 +1,4 @@
-package com.emirgasic.forecastfm.data.local.entities
+package com.emirgasic.forecastfm.data.local.entities.location
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

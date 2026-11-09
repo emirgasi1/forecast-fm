@@ -1,35 +1,17 @@
 package com.emirgasic.forecastfm.feature.style
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -37,9 +19,10 @@ import com.emirgasic.forecastfm.core.datastore.TokenManager
 import com.emirgasic.forecastfm.core.navigation.Routes
 import com.emirgasic.forecastfm.core.ui.components.common.LoadingScreen
 import com.emirgasic.forecastfm.core.ui.components.common.ScreenTitle
-import com.emirgasic.forecastfm.core.ui.components.style.OutfitCard
+import com.emirgasic.forecastfm.core.ui.components.style.HeroOutfitCard
 import com.emirgasic.forecastfm.data.repository.OutfitRepository
 import com.emirgasic.forecastfm.data.repository.SavedOutfitRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
 @Composable
@@ -53,8 +36,9 @@ fun StyleScreen(
                 @Suppress("UNCHECKED_CAST")
                 return StyleViewModel(
                     tokenManager = tokenManager,
-                    outfitRepository = OutfitRepository(),
-                    savedOutfitRepository = SavedOutfitRepository()
+                    outfitRepository = ServiceLocator.provideOutfitRepository(),
+                    savedOutfitRepository = ServiceLocator.provideSavedOutfitRepository(),
+                    weatherCacheManager = ServiceLocator.provideWeatherCacheManager()
                 ) as T
             }
         }
@@ -64,135 +48,112 @@ fun StyleScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val savedOutfitIds by viewModel.savedOutfitIds.collectAsState()
+    val currentCondition by viewModel.currentCondition.collectAsState()
 
     val forecastColors = LocalForecastColors.current
 
-    // 1. Listen for the refresh signal from AddOutfitScreen
     val shouldRefresh by navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getStateFlow("refresh_style", false)
         ?.collectAsState() ?: remember { mutableStateOf(false) }
 
-    // 2. This single effect runs on FIRST load (shouldRefresh is false)
-    // AND runs when returning from AddOutfit (shouldRefresh is true)
     LaunchedEffect(shouldRefresh) {
         if (shouldRefresh) {
-            // Clear the flag so it doesn't loop
             navController.currentBackStackEntry?.savedStateHandle?.set("refresh_style", false)
         }
-        // Always load the data
         viewModel.loadStyle()
-        viewModel.loadSavedOutfits()
     }
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(
-                top = 20.dp,
-                start = 10.dp,
-                end = 10.dp
-            )
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp, start = 16.dp, end = 16.dp)
+                .zIndex(1f), // Keeps it above the scrolling cards
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ScreenTitle(title = "Style")
+
+            IconButton(
+                onClick = { navController.navigate(Routes.AddOutfit) }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add outfit",
+                    tint = forecastColors.primary
+                )
+            }
+        }
+
         when {
             isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     LoadingScreen()
                 }
             }
             error != null -> {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "Couldn't load outfits",
-                        color = forecastColors.title,
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    Text("Couldn't load outfits", color = forecastColors.title, style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = error ?: "",
-                        color = forecastColors.muted,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text(error ?: "", color = forecastColors.muted, style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.loadStyle() }) {
-                        Text("Retry")
-                    }
+                    Button(onClick = { viewModel.loadStyle() }) { Text("Retry") }
                 }
             }
             style != null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ScreenTitle(
-                            title = "Style",
-                        )
+                val allOutfits = style!!.outfits
 
-                        IconButton(
-                            onClick = {
-                                navController.navigate(Routes.AddOutfit)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add outfit",
-                                tint = forecastColors.primary
-                            )
-                        }
+                if (allOutfits.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("No outfits available", color = forecastColors.muted)
+                    }
+                } else {
+
+                    val currentBucketOutfits = allOutfits.filter {
+                        com.emirgasic.forecastfm.data.model.WeatherCondition.from(it.weatherCondition).bucket == currentCondition.bucket
+                    }
+                    val otherOutfits = allOutfits.filter {
+                        com.emirgasic.forecastfm.data.model.WeatherCondition.from(it.weatherCondition).bucket != currentCondition.bucket
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    val sortedOutfits = currentBucketOutfits + otherOutfits
 
-                    Text(
-                        text = "Trending outfits inspired by Sarajevo weather",
-                        color = forecastColors.muted,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    val pagerState = rememberPagerState(pageCount = { sortedOutfits.size })
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    VerticalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 80.dp, bottom = 24.dp),
+                        pageSpacing = 16.dp
+                    ) { page ->
+                        val outfit = sortedOutfits[page]
+                        val isSaved = outfit.id in savedOutfitIds
 
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        contentPadding = PaddingValues(bottom = 24.dp)
-                    ) {
-                        items(style!!.outfits) { outfit ->
-                            val isSaved = outfit.id in savedOutfitIds
-
-                            OutfitCard(
-                                imageUrl = outfit.imageUrl,
-                                title = outfit.title,
-                                weatherCondition = outfit.weatherCondition,
-                                season = outfit.season,
-                                likes = outfit.likes,
-                                isSaved = isSaved,
-                                onLikeClick = {
-                                    viewModel.toggleSaveOutfit(outfit.id)
-                                },
-                                onClick = {
-                                    navController.navigate(Routes.styleDetailRoute(outfit.id))
-                                }
-                            )
-                        }
+                        HeroOutfitCard(
+                            imageUrl = outfit.imageUrl,
+                            title = outfit.title,
+                            weatherCondition = outfit.weatherCondition,
+                            season = outfit.season,
+                            likes = outfit.likes,
+                            storeName = outfit.storeName,
+                            storeAddress = outfit.storeAddress,
+                            price = outfit.price,
+                            isSaved = isSaved,
+                            onLikeClick = { viewModel.toggleSaveOutfit(outfit.id) },
+                            onClick = { navController.navigate(Routes.styleDetailRoute(outfit.id)) },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                 }
             }

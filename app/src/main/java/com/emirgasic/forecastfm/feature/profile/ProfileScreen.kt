@@ -46,6 +46,7 @@ import com.emirgasic.forecastfm.core.ui.components.profile.ProfileHeader
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfilePostCard
 import com.emirgasic.forecastfm.core.ui.components.profile.ProfileStatsCard
 import com.emirgasic.forecastfm.data.repository.ProfileRepository
+import com.emirgasic.forecastfm.di.ServiceLocator
 import com.emirgasic.forecastfm.network.profile.ProfileApi
 import com.emirgasic.forecastfm.ui.theme.LocalForecastColors
 
@@ -61,7 +62,7 @@ fun ProfileScreen(
                 @Suppress("UNCHECKED_CAST")
                 return ProfileViewModel(
                     tokenManager = tokenManager,
-                    profileRepository = ProfileRepository(ProfileApi())
+                    profileRepository = ServiceLocator.provideProfileRepository()
                 ) as T
             }
         }

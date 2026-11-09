@@ -33,13 +33,7 @@ class HomeViewModel(
             _uiState.value = HomeUiState.Loading
 
             try {
-                val userId = tokenManager.getUserId().first()
-                    ?: throw Exception("User not logged in")
-
-
-                @Suppress("UNUSED_EXPRESSION")
-                userId
-
+                // 1. Locations (Room)
                 val locations = locationRepository.getLocalLocations().first()
                 if (locations.isEmpty()) throw Exception("No locations available")
 
@@ -49,13 +43,27 @@ class HomeViewModel(
                     userLng = userLongitude
                 )
 
-                val weatherData = weatherRepository.getWeather(
-                    location = location.name,
-                    latitude = location.latitude,
-                    longitude = location.longitude
-                )
+                // 2. Weather (DataStore Cache -> Network)
+                val weatherData = try {
+                    weatherRepository.getWeather(
+                        location = location.name,
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                } catch (e: Exception) {
+                    // If weather fails and there's no cache, we throw so the screen shows an error.
+                    // But if we have cached weather, the repository handles it and won't throw.
+                    throw Exception("Could not load weather offline.")
+                }
 
-                val allPlaylists = playlistRepository.getPlaylists()
+                // 3. Playlists (Room Cache -> Network)
+                // We change getPlaylists() to getLocalPlaylists().first() so it works offline!
+                var allPlaylists = playlistRepository.getLocalPlaylists().first()
+
+                if (allPlaylists.isEmpty()) {
+                    // If Room is empty, try network (this happens if they open app for first time offline)
+                    allPlaylists = playlistRepository.getPlaylists()
+                }
 
                 val userGenres = onboardingPrefs.musicGenres.first()
                 val userMoods = onboardingPrefs.moods.first()
@@ -84,5 +92,4 @@ class HomeViewModel(
                 )
             }
         }
-    }
-}
+    }}

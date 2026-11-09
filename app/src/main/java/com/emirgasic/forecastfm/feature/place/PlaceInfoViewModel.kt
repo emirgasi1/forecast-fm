@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class PlaceInfoViewModel(
@@ -32,24 +34,42 @@ class PlaceInfoViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private var currentPlaceId: String? = null
+
     fun loadPlace(placeId: String) {
+        currentPlaceId = placeId
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val result = placeRepository.getPlaceById(placeId)
-                _place.value = result
+                // 1. Try to load from Room first (Offline-first)
+                val localPlaces = placeRepository.getLocalPlaces().first()
+                val localPlace = localPlaces.firstOrNull { it.id == placeId }
 
-                result?.venueId?.let { venueId ->
+                if (localPlace != null) {
+                    _place.value = localPlace
+                    // We can still try to refresh from network in the background if we want,
+                    // but for now, if it's in Room, we're good.
+                } else {
+                    // 2. If not in Room, fetch from API
+                    val result = placeRepository.getPlaceById(placeId)
+                    _place.value = result
+                }
+
+                // 3. Load Location Name
+                _place.value?.venueId?.let { venueId ->
                     val location = locationRepository.getLocationById(venueId)
                     _locationName.value = location?.name
                 }
 
-                val userId = tokenManager.getUserId().first()
-                if (userId != null) {
-                    _isSaved.value = savedPlaceRepository.isPlaceSaved(placeId, userId)
-                }
-            } catch (_: Exception) {
-                // Silent failure — screen shows "place not found" state
+                // 4. Check if it's saved in Room
+                savedPlaceRepository.isPlaceSavedLocally(placeId)
+                    .onEach { saved ->
+                        _isSaved.value = saved
+                    }
+                    .launchIn(viewModelScope)
+
+            } catch (e: Exception) {
+                // Silent failure
             }
             _isLoading.value = false
         }
@@ -58,18 +78,13 @@ class PlaceInfoViewModel(
     fun toggleSave() {
         viewModelScope.launch {
             try {
-                val placeId = _place.value?.id ?: return@launch
+                val placeId = currentPlaceId ?: return@launch
+                val currentlySaved = _isSaved.value
                 val userId = tokenManager.getUserId().first() ?: return@launch
 
-                if (_isSaved.value) {
-                    savedPlaceRepository.unsavePlace(placeId, userId)
-                    _isSaved.value = false
-                } else {
-                    savedPlaceRepository.savePlace(placeId, userId)
-                    _isSaved.value = true
-                }
-            } catch (_: Exception) {
-                // Silent failure — state unchanged
+                savedPlaceRepository.toggleSavePlace(placeId, userId, currentlySaved)
+
+            } catch (e: Exception) {
             }
         }
     }

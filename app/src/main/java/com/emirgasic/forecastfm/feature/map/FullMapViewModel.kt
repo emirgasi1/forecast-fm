@@ -85,14 +85,28 @@ class FullMapViewModel(
     )
 
     init {
+        // 👈 Observe Room for Locations
         locationRepository.getLocalLocations()
             .onEach { locations ->
                 _locations.value = locations
                 rebuildMarkers()
             }
             .launchIn(viewModelScope)
-    }
 
+        // 👈 Observe Room for Places
+        placeRepository.getLocalPlaces()
+            .onEach { places ->
+                _places.value = places
+                rebuildMarkers()
+            }
+            .launchIn(viewModelScope)
+
+        // 👈 Sync to network in background
+        viewModelScope.launch {
+            try { locationRepository.syncLocationsFromApi() } catch (_: Exception) {}
+            try { placeRepository.syncPlacesFromApi() } catch (_: Exception) {}
+        }
+    }
     fun loadPlaces() {
         viewModelScope.launch {
             try {

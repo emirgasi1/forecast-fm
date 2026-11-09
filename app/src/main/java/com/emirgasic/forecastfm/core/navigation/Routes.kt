@@ -32,6 +32,8 @@ object Routes {
 
     const val PrivacyPolicy = "privacy_policy"
 
+    const val SavedPlaces = "saved_places"
+
     const val Onboarding = "onboarding"
 
     const val AddOutfit = "add_outfit"

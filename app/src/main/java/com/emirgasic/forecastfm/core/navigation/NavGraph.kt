@@ -30,6 +30,7 @@ import com.emirgasic.forecastfm.feature.music.playlist.PlaylistScreen
 import com.emirgasic.forecastfm.feature.onboarding.OnboardingScreen
 import com.emirgasic.forecastfm.feature.place.PlaceInfoScreen
 import com.emirgasic.forecastfm.feature.saved.SavedHubScreen
+import com.emirgasic.forecastfm.feature.saved.SavedPlacesScreen
 import com.emirgasic.forecastfm.feature.saved.SavedPlaylistsScreen
 import com.emirgasic.forecastfm.feature.saved.SavedPostsScreen
 import com.emirgasic.forecastfm.feature.saved.SavedStylesScreen
@@ -98,6 +99,11 @@ fun NavGraph(
                 tokenManager = tokenManager
             )
         }
+
+        composable(Routes.SavedPlaces) {
+            SavedPlacesScreen(navController = navController)
+        }
+
 
         composable(Routes.SavedHub) {
             SavedHubScreen(
